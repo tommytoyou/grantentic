@@ -45,7 +45,7 @@ class CostMetrics(BaseModel):
     input_tokens: int
     output_tokens: int
     cost_usd: float
-    model: str = "claude-sonnet-4"
+    model: str = "claude-sonnet-4-5"
     timestamp: datetime = Field(default_factory=datetime.now)
 
 
@@ -64,5 +64,5 @@ class CompanyContext(BaseModel):
     market_opportunity: Dict[str, Any]
     current_progress: Dict[str, Any]
     funding_needs: Dict[str, Any]
-    intellectual_property: Dict[str, str]
+    intellectual_property: Dict[str, Any]
     social_impact: str

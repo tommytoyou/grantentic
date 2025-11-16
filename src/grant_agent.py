@@ -1,5 +1,6 @@
 import anthropic
 import json
+import os
 from pathlib import Path
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
@@ -13,9 +14,16 @@ class GrantAgent:
     """AI agent for generating grant proposal sections"""
     
     def __init__(self, cost_tracker: CostTracker):
-        self.client = anthropic.Anthropic()
+        # Configure Anthropic client for Replit AI Integrations
+        api_key = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_API_KEY")
+        base_url = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_BASE_URL")
+        
+        self.client = anthropic.Anthropic(
+            api_key=api_key,
+            base_url=base_url
+        )
         self.cost_tracker = cost_tracker
-        self.model = "claude-sonnet-4"
+        self.model = "claude-sonnet-4-5"
         
         # Load company context
         with open("data/company_context.json", "r") as f:

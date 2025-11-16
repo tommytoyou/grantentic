@@ -12,13 +12,17 @@ class CostTracker:
     """Track and report API usage costs"""
     
     PRICING = {
-        "claude-sonnet-4": {
+        "claude-sonnet-4-5": {
             "input": 3.00 / 1_000_000,   # $3 per million input tokens
             "output": 15.00 / 1_000_000   # $15 per million output tokens
         },
-        "claude-sonnet-4-5": {
-            "input": 3.00 / 1_000_000,
-            "output": 15.00 / 1_000_000
+        "claude-opus-4-1": {
+            "input": 15.00 / 1_000_000,
+            "output": 75.00 / 1_000_000
+        },
+        "claude-haiku-4-5": {
+            "input": 0.80 / 1_000_000,
+            "output": 4.00 / 1_000_000
         }
     }
     
@@ -36,10 +40,10 @@ class CostTracker:
         operation: str,
         input_tokens: int,
         output_tokens: int,
-        model: str = "claude-sonnet-4"
+        model: str = "claude-sonnet-4-5"
     ):
         """Record API usage and calculate cost"""
-        pricing = self.PRICING.get(model, self.PRICING["claude-sonnet-4"])
+        pricing = self.PRICING.get(model, self.PRICING["claude-sonnet-4-5"])
         
         cost = (
             input_tokens * pricing["input"] +
