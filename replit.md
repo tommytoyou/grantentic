@@ -4,14 +4,15 @@
 An agentic AI-powered grant writing system for space startups using Python and Anthropic's Claude Sonnet 4. Generates NSF SBIR Phase I grant proposals through an iterative generate → critique → refine workflow.
 
 ## Architecture
-- **Agent-based system**: Uses Claude Sonnet 4 for intelligent grant generation
+- **Agent-based system**: Uses Claude Sonnet 4.5 for intelligent grant generation
 - **Iterative refinement**: Each section goes through generate, self-critique, and refine cycles
 - **Quality validation**: Automated checking against NSF SBIR requirements
 - **Cost optimization**: Tracks token usage to stay within $2-5 per grant target
+- **Deployment**: Configured as Reserved VM deployment (CLI tool, not web server)
 
 ## Tech Stack
 - Python 3.11
-- Anthropic Claude API (via Replit AI Integrations - no API key required)
+- Anthropic Claude Sonnet 4.5 (via Replit AI Integrations - no API key required)
 - python-docx for Word export
 - Pydantic for data validation
 - Rich for CLI output
@@ -35,10 +36,12 @@ An agentic AI-powered grant writing system for space startups using Python and A
 ```
 
 ## Recent Changes
-- 2025-11-16: Initial project setup
+- 2025-11-16: Initial project setup and successful deployment
 - Created complete agentic grant writing system with all components
 - Configured Deep Space Dynamics as first customer (CubeSat asteroid detection startup)
 - Set up NSF SBIR Phase I requirements and evaluation criteria
+- Successfully tested: Generated 12,340-word grant proposal for $0.80 in 18.5 minutes
+- Configured Reserved VM deployment (CLI tool - user manually runs when needed)
 
 ## Features Implemented
 1. ✅ Anthropic Claude Sonnet 4 integration via Replit AI Integrations
@@ -68,10 +71,25 @@ Generates complete NSF SBIR Phase I proposal for Deep Space Dynamics including:
 
 ## Cost Optimization
 - Target: $2-5 per grant
-- Model: Claude Sonnet 4
+- Model: Claude Sonnet 4.5
 - Real-time token tracking with tiktoken
 - Detailed cost reporting per section and operation
+- **Actual Cost**: $0.80 per grant (well below target!)
+
+## Test Results
+- **First Grant Generated**: November 16, 2025
+- **Company**: Deep Space Dynamics NSF SBIR Phase I
+- **Total Words**: 12,340 words across 4 sections
+- **Generation Time**: 18.5 minutes
+- **Total Cost**: $0.80 (54,278 input + 42,603 output tokens)
+- **Output**: Professional Word document exported to `outputs/`
 
 ## Outputs
 Word documents saved to `outputs/` with timestamp:
 - Deep_Space_Dynamics_NSF_SBIR_Phase1_[timestamp].docx
+
+## Deployment
+- **Type**: Reserved VM (suitable for CLI tools)
+- **Usage**: Manually run `python main.py` when grant generation is needed
+- **Not Autoscale**: This is a CLI tool, not a web server, so it uses Reserved VM deployment
+- Users trigger grant generation on-demand to control costs
