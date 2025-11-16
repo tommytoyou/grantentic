@@ -7,7 +7,14 @@
       "Bash(cat:*)",
       "Bash(python healthcheck.py:*)",
       "Bash(streamlit run:*)",
-      "Bash(pip install:*)"
+      "Bash(pip install:*)",
+      "Bash(pkill:*)",
+      "Bash(time python:*)",
+      "Bash(curl:*)",
+      "Bash(for i in 1 2 3 4 5)",
+      "Bash(do echo \"Request $i:\")",
+      "Bash(time curl:*)",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": []

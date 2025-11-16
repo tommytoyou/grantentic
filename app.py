@@ -2,11 +2,13 @@
 """
 Grantentic - Streamlit Web Application
 AI-Powered Grant Writing System for NSF, DoD, and NASA SBIR Phase I proposals
+
+OPTIMIZED FOR FAST HEALTH CHECKS - All heavy imports are deferred
 """
 
 import streamlit as st
 
-# Configure page FIRST before any other imports
+# Configure page FIRST - this is the only thing that runs immediately
 st.set_page_config(
     page_title="Grantentic - AI Grant Writer",
     page_icon="🚀",
@@ -14,60 +16,68 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Now import other modules
-import json
-import time
-from pathlib import Path
-from datetime import datetime
-import io
-import traceback
-import sys
-
-# Import Grantentic modules (lazy loading for faster startup)
-from config import Config
-
-# Lazy import flag
-_modules_loaded = False
-
-def lazy_load_modules():
-    """Lazy load heavy modules only when needed"""
-    global _modules_loaded
-    if not _modules_loaded:
-        global CostTracker, GrantAgent, AgenticWorkflow, QualityChecker
-        global DocxExporter, load_agency_requirements, GrantProposal, CompanyContext, GrantSection
-
-        from src.cost_tracker import CostTracker
-        from src.grant_agent import GrantAgent
-        from src.agentic_workflow import AgenticWorkflow
-        from src.quality_checker import QualityChecker
-        from src.docx_exporter import DocxExporter
-        from src.agency_loader import load_agency_requirements
-        from src.models import GrantProposal, CompanyContext, GrantSection
-
-        _modules_loaded = True
-
-
-# Initialize session state with minimal overhead
+# Initialize session state ONLY (no imports, no file I/O)
+if 'app_initialized' not in st.session_state:
+    st.session_state.app_initialized = False
 if 'company_data' not in st.session_state:
-    st.session_state.company_data = None  # Lazy load later
-
+    st.session_state.company_data = None
 if 'generated_proposal' not in st.session_state:
     st.session_state.generated_proposal = None
-
 if 'quality_report' not in st.session_state:
     st.session_state.quality_report = None
-
 if 'generation_in_progress' not in st.session_state:
     st.session_state.generation_in_progress = False
-
 if 'data_loaded' not in st.session_state:
     st.session_state.data_loaded = False
+
+
+def get_lazy_imports():
+    """Import all modules lazily when needed - returns dict of imported modules"""
+    import json
+    import time
+    from pathlib import Path
+    from datetime import datetime
+    import io
+    import traceback
+    import sys
+
+    from config import Config
+    from src.cost_tracker import CostTracker
+    from src.grant_agent import GrantAgent
+    from src.agentic_workflow import AgenticWorkflow
+    from src.quality_checker import QualityChecker
+    from src.docx_exporter import DocxExporter
+    from src.agency_loader import load_agency_requirements
+    from src.models import GrantProposal, CompanyContext, GrantSection
+
+    return {
+        'json': json,
+        'time': time,
+        'Path': Path,
+        'datetime': datetime,
+        'io': io,
+        'traceback': traceback,
+        'sys': sys,
+        'Config': Config,
+        'CostTracker': CostTracker,
+        'GrantAgent': GrantAgent,
+        'AgenticWorkflow': AgenticWorkflow,
+        'QualityChecker': QualityChecker,
+        'DocxExporter': DocxExporter,
+        'load_agency_requirements': load_agency_requirements,
+        'GrantProposal': GrantProposal,
+        'CompanyContext': CompanyContext,
+        'GrantSection': GrantSection
+    }
 
 
 def load_company_data():
     """Lazy load company data only when needed"""
     if not st.session_state.data_loaded:
         try:
+            imports = get_lazy_imports()
+            json = imports['json']
+
             with open('data/company_context.json', 'r') as f:
                 st.session_state.company_data = json.load(f)
             st.session_state.data_loaded = True
@@ -88,14 +98,11 @@ def load_company_data():
 
 
 def create_proposal_from_sections(company_name: str, sections: dict, agency_loader):
-    """Create proposal from sections - loads GrantProposal lazily"""
-    lazy_load_modules()
-    return _create_proposal_from_sections_impl(company_name, sections, agency_loader)
+    """Create proposal from sections"""
+    imports = get_lazy_imports()
+    GrantProposal = imports['GrantProposal']
+    GrantSection = imports['GrantSection']
 
-def _create_proposal_from_sections_impl(company_name: str, sections: dict, agency_loader):
-    """
-    Dynamically create proposal object based on agency sections
-    """
     # Section mapping (same as main.py)
     section_map = {
         # NSF sections
@@ -173,8 +180,8 @@ def _create_proposal_from_sections_impl(company_name: str, sections: dict, agenc
 
 def render_sidebar():
     """Render sidebar with agency selector and settings"""
-    # Lazy load modules when sidebar is rendered
-    lazy_load_modules()
+    imports = get_lazy_imports()
+    load_agency_requirements = imports['load_agency_requirements']
 
     with st.sidebar:
         st.title("🚀 Grantentic")
@@ -246,10 +253,13 @@ def render_sidebar():
 
 def render_company_editor():
     """Render company data editor form"""
+    imports = get_lazy_imports()
+    json = imports['json']
+
     # Ensure company data is loaded
     if not st.session_state.data_loaded:
         load_company_data()
-    
+
     st.header("📝 Company Information")
     st.caption("Edit your company details for the grant proposal")
 
@@ -363,8 +373,14 @@ def render_company_editor():
 
 def generate_proposal(agency, agency_loader, iterations):
     """Generate grant proposal with real-time progress updates"""
-    # Ensure modules are loaded
-    lazy_load_modules()
+    imports = get_lazy_imports()
+    time = imports['time']
+    traceback = imports['traceback']
+    CostTracker = imports['CostTracker']
+    GrantAgent = imports['GrantAgent']
+    AgenticWorkflow = imports['AgenticWorkflow']
+    QualityChecker = imports['QualityChecker']
+    DocxExporter = imports['DocxExporter']
 
     # Progress containers
     progress_container = st.container()
@@ -491,6 +507,10 @@ def render_results():
         st.info("👆 Generate a proposal to see results here")
         return
 
+    imports = get_lazy_imports()
+    Path = imports['Path']
+    datetime = imports['datetime']
+
     prop = st.session_state.generated_proposal
 
     st.header("📊 Generated Proposal")
@@ -571,22 +591,24 @@ def render_results():
 
 
 def main():
-    """Main application"""
+    """Main application - optimized for fast initial load"""
 
-    # Quick health check - app is running
-    # This ensures Replit health checks pass quickly
+    # Render minimal page first for fast health checks
+    st.title("🚀 Grantentic - AI-Powered Grant Writing")
+    st.caption("Generate professional SBIR Phase I proposals for NSF, DoD, and NASA")
+
+    # Mark app as initialized after first render
+    if not st.session_state.app_initialized:
+        st.session_state.app_initialized = True
 
     try:
-        # Render sidebar and get settings
+        # Render sidebar - this loads agency data
         agency, agency_loader, iterations, auto_trim = render_sidebar()
 
-        # Main content
-        st.title("🚀 Grantentic - AI-Powered Grant Writing")
-        st.caption("Generate professional SBIR Phase I proposals for NSF, DoD, and NASA")
-        
-        # Load company data lazily after initial render
-        load_company_data()
-        
+        # Load company data lazily
+        if not st.session_state.data_loaded:
+            load_company_data()
+
     except Exception as e:
         st.error(f"Error initializing application: {e}")
         st.write("Please refresh the page or contact support if the issue persists.")

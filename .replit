@@ -47,17 +47,13 @@ outputType = "console"
 deploymentTarget = "autoscale"
 run = ["sh", "-c", "streamlit run app.py --server.port 5000 --server.address 0.0.0.0 --server.headless true --server.enableCORS false --server.enableXsrfProtection false"]
 
-# Health check configuration
+# Health check configuration - optimized for fast response
 [deployment.healthcheck]
 path = "/"
-timeout = 30
-interval = 5
-retries = 3
+timeout = 10        # Reduced from 30s - app responds in <1s
+interval = 3        # Check every 3 seconds
+retries = 3         # 3 retries before failing
 
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-[[ports]]
-localPort = 41055
-externalPort = 3000
