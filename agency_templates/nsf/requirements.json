@@ -1,0 +1,178 @@
+{
+  "agency": "NSF",
+  "program": "SBIR Phase I",
+  "funding_amount": 275000,
+  "duration_months": 6,
+  "description": "National Science Foundation Small Business Innovation Research Phase I",
+
+  "sections": {
+    "project_pitch": {
+      "name": "Project Pitch",
+      "required": true,
+      "min_pages": 1,
+      "max_pages": 2,
+      "min_words": 400,
+      "max_words": 800,
+      "order": 1,
+      "guidelines": "Write a compelling 1-2 page project pitch that clearly states the problem, solution, innovation, market opportunity, and Phase I objectives. Make it accessible to non-specialist reviewers.",
+      "required_keywords": ["innovation", "problem", "solution", "market", "Phase I"],
+      "description": "Executive summary of the proposed innovation, market opportunity, and Phase I goals"
+    },
+    "technical_objectives": {
+      "name": "Technical Objectives",
+      "required": true,
+      "min_pages": 5,
+      "max_pages": 6,
+      "min_words": 2000,
+      "max_words": 2400,
+      "order": 2,
+      "guidelines": "Write a detailed 5-6 page technical plan covering: innovation details, current TRL level, Phase I research methodology, key technical risks and mitigation strategies, success metrics, timeline with milestones, and path to Phase II. Be specific and demonstrate deep technical expertise.",
+      "required_keywords": ["methodology", "risk", "milestone", "feasibility", "TRL"],
+      "description": "Detailed technical approach, methodology, and research plan for Phase I"
+    },
+    "broader_impacts": {
+      "name": "Broader Impacts",
+      "required": true,
+      "min_pages": 1,
+      "max_pages": 2,
+      "min_words": 400,
+      "max_words": 800,
+      "order": 3,
+      "guidelines": "Write a 1-2 page broader impacts section covering societal benefits beyond commercialization, advancement of scientific knowledge, diversity and inclusion efforts, and ethical considerations. Show genuine commitment to positive impact.",
+      "required_keywords": ["societal", "impact", "benefit", "broader"],
+      "description": "Societal benefits, scientific advancement, and broader impacts beyond commercial success"
+    },
+    "commercialization_plan": {
+      "name": "Commercialization Plan",
+      "required": true,
+      "min_pages": 2,
+      "max_pages": 3,
+      "min_words": 800,
+      "max_words": 1200,
+      "order": 4,
+      "guidelines": "Write a 2-3 page commercialization plan with market analysis, target customers, competitive positioning, business model, go-to-market strategy, customer validation evidence, IP strategy, and financial projections. Demonstrate commercial viability.",
+      "required_keywords": ["market", "customer", "revenue", "competitive", "commercialization"],
+      "description": "Market analysis, business model, and path to commercialization"
+    },
+    "budget_justification": {
+      "name": "Budget and Budget Justification",
+      "required": true,
+      "min_pages": 2,
+      "max_pages": 3,
+      "min_words": 800,
+      "max_words": 1200,
+      "order": 5,
+      "guidelines": "Write a detailed 2-3 page budget and justification for the $275,000 Phase I grant over 6 months. Break down costs into: (1) Personnel costs with salaries and % effort for each team member, (2) Equipment and materials needed for Phase I research, (3) Travel for conferences and customer meetings, (4) Overhead and indirect costs at appropriate rates, (5) Other direct costs. For each line item, provide detailed justification explaining why it's necessary for Phase I success and how costs were estimated. Ensure budget is realistic, well-justified, and aligned with proposed work.",
+      "required_keywords": ["personnel", "equipment", "overhead", "justification"],
+      "description": "Detailed budget breakdown and justification for all costs"
+    },
+    "work_plan": {
+      "name": "Work Plan and Timeline",
+      "required": true,
+      "min_pages": 2,
+      "max_pages": 3,
+      "min_words": 800,
+      "max_words": 1200,
+      "order": 6,
+      "guidelines": "Write a detailed 2-3 page work plan with month-by-month timeline for the 6-month Phase I project. Include: (1) Detailed monthly milestones and deliverables, (2) Task dependencies and critical path, (3) Risk mitigation strategies for key technical risks, (4) Success metrics and validation criteria for each milestone, (5) Go/no-go decision points, (6) Resource allocation and team responsibilities. Make the plan specific, realistic, and demonstrate clear path to Phase I objectives.",
+      "required_keywords": ["month", "milestone", "timeline", "deliverable"],
+      "description": "Month-by-month work plan with milestones and deliverables"
+    },
+    "biographical_sketches": {
+      "name": "Key Personnel Biographical Sketches",
+      "required": true,
+      "min_pages": 2,
+      "max_pages": 8,
+      "min_words": 800,
+      "max_words": 3200,
+      "order": 7,
+      "guidelines": "Write comprehensive 2-page biographical sketches for each key team member. For each person include: (1) Full name and role, (2) Education background with degrees and institutions, (3) Relevant professional experience with specific achievements, (4) Publications and patents relevant to the project, (5) Previous grants and collaborations, (6) Specific expertise and contributions to this project. Use the team information from company context. Make each bio substantive and demonstrate the team's qualifications to execute this project.",
+      "required_keywords": ["education", "experience", "PhD", "publications"],
+      "description": "2-page biographical sketches for each key team member"
+    },
+    "facilities_equipment": {
+      "name": "Facilities, Equipment, and Other Resources",
+      "required": true,
+      "min_pages": 1,
+      "max_pages": 2,
+      "min_words": 400,
+      "max_words": 800,
+      "order": 8,
+      "guidelines": "Write a detailed 1-2 page description of available resources including: (1) Development and testing facilities with specific capabilities, (2) Existing equipment and instrumentation that will be used, (3) Software tools, licenses, and computational resources, (4) Manufacturing and prototyping partnerships, (5) Access to specialized facilities (clean rooms, testing chambers, etc.), (6) University or research institution partnerships. Demonstrate that the team has or can access all necessary resources to complete Phase I work successfully.",
+      "required_keywords": ["facilities", "equipment", "resources"],
+      "description": "Available facilities, equipment, and institutional resources"
+    }
+  },
+
+  "evaluation_criteria": {
+    "intellectual_merit": {
+      "weight": 0.5,
+      "description": "The potential to advance knowledge",
+      "sub_criteria": [
+        "How important is the proposed activity to advancing knowledge?",
+        "How well qualified is the proposer to conduct the project?",
+        "To what extent does the proposed activity suggest and explore creative, original concepts?",
+        "How well conceived and organized is the proposed activity?",
+        "Is there sufficient access to resources?"
+      ]
+    },
+    "broader_impacts": {
+      "weight": 0.25,
+      "description": "The potential to benefit society",
+      "sub_criteria": [
+        "What is the potential for the proposed activity to benefit society?",
+        "To what extent does the activity promote teaching, training, and learning?",
+        "How well does the activity broaden participation of underrepresented groups?",
+        "Will results be disseminated broadly to enhance scientific understanding?",
+        "May the results be used to enhance infrastructure for research and education?"
+      ]
+    },
+    "commercialization_potential": {
+      "weight": 0.25,
+      "description": "Commercial potential and market opportunity",
+      "sub_criteria": [
+        "What is the market opportunity for this innovation?",
+        "How strong is the commercialization plan?",
+        "Is the business model viable?",
+        "Does the team have relevant commercial experience?",
+        "Are there Letters of Intent or customer validation?"
+      ]
+    }
+  },
+
+  "format_specifications": {
+    "font": "Times New Roman or Computer Modern",
+    "font_size": 11,
+    "line_spacing": 1.0,
+    "margins": {
+      "top": 1.0,
+      "bottom": 1.0,
+      "left": 1.0,
+      "right": 1.0
+    },
+    "page_numbers": true,
+    "headers_footers": true,
+    "words_per_page": 400,
+    "references_format": "Any standard format (APA, IEEE, etc.)"
+  },
+
+  "special_requirements": {
+    "trl_focus": true,
+    "trl_range": "3-6",
+    "phase_ii_path": true,
+    "broader_impacts_required": true,
+    "diversity_encouraged": true,
+    "subawards_allowed": true,
+    "foreign_participation_restrictions": true,
+    "sbir_data_rights": true
+  },
+
+  "submission_requirements": {
+    "letters_of_support": "Optional but recommended",
+    "current_and_pending": "Required",
+    "facilities_resources": "Required",
+    "data_management_plan": "Required if generating data",
+    "postdoctoral_mentoring": "Required if funding postdocs",
+    "bio_sketch_format": "NSF format (2 pages max per person)"
+  }
+}

@@ -1,0 +1,236 @@
+{
+  "agency": "DoD",
+  "program": "SBIR Phase I",
+  "funding_amount": 200000,
+  "duration_months": 6,
+  "description": "Department of Defense Small Business Innovation Research Phase I (Air Force, Space Force)",
+
+  "sections": {
+    "technical_abstract": {
+      "name": "Technical Abstract",
+      "required": true,
+      "min_pages": 0.25,
+      "max_pages": 1,
+      "min_words": 100,
+      "max_words": 400,
+      "order": 1,
+      "guidelines": "Write a 1-page technical abstract summarizing the innovation, technical approach, military relevance, and expected outcomes. Focus on how this addresses DoD mission needs.",
+      "required_keywords": ["innovation", "military", "technical approach", "Phase I"],
+      "description": "Technical summary of innovation and military applications"
+    },
+    "identification_and_significance": {
+      "name": "Identification and Significance of Problem",
+      "required": true,
+      "min_pages": 1,
+      "max_pages": 2,
+      "min_words": 400,
+      "max_words": 800,
+      "order": 2,
+      "guidelines": "Clearly identify the specific DoD problem or capability gap. Explain why current solutions are inadequate and why this innovation is significant for military operations. Reference specific DoD requirements, mission areas, or capability gaps.",
+      "required_keywords": ["problem", "military capability", "DoD requirement", "significance"],
+      "description": "Problem definition and significance to DoD mission"
+    },
+    "technical_objectives": {
+      "name": "Phase I Technical Objectives",
+      "required": true,
+      "min_pages": 3,
+      "max_pages": 4,
+      "min_words": 1200,
+      "max_words": 1600,
+      "order": 3,
+      "guidelines": "Define specific, measurable Phase I technical objectives. Describe the technical approach, methodology, and proof-of-concept demonstrations. Include TRL advancement plan (typically TRL 3 to TRL 4-5). Address technical risks and mitigation strategies.",
+      "required_keywords": ["objective", "methodology", "TRL", "proof-of-concept", "risk"],
+      "description": "Specific Phase I technical goals and approach"
+    },
+    "work_plan": {
+      "name": "Work Plan",
+      "required": true,
+      "min_pages": 2,
+      "max_pages": 3,
+      "min_words": 800,
+      "max_words": 1200,
+      "order": 4,
+      "guidelines": "Provide month-by-month work plan for 6-month Phase I. Include specific milestones, deliverables, performance metrics, and decision points. Show critical path and task dependencies. Align with DoD reporting requirements.",
+      "required_keywords": ["month", "milestone", "deliverable", "schedule"],
+      "description": "Detailed work plan with timeline and milestones"
+    },
+    "related_work": {
+      "name": "Related Work",
+      "required": true,
+      "min_pages": 1,
+      "max_pages": 2,
+      "min_words": 400,
+      "max_words": 800,
+      "order": 5,
+      "guidelines": "Describe prior related work by the company and others. Explain how this proposal builds on or differs from existing solutions. Demonstrate awareness of competitive landscape and DoD existing capabilities.",
+      "required_keywords": ["prior work", "competitive", "state-of-the-art"],
+      "description": "Review of related work and competitive analysis"
+    },
+    "dual_use_applications": {
+      "name": "Dual Use and Commercialization",
+      "required": true,
+      "min_pages": 1,
+      "max_pages": 2,
+      "min_words": 400,
+      "max_words": 800,
+      "order": 6,
+      "guidelines": "Describe both military and commercial applications. Explain transition path to DoD acquisition programs (Phase III). Identify potential DoD customers and commercial markets. Include letters of support if available.",
+      "required_keywords": ["dual use", "commercial", "Phase III", "transition"],
+      "description": "Military and commercial applications, transition strategy"
+    },
+    "company_capabilities": {
+      "name": "Company Capabilities and Experience",
+      "required": true,
+      "min_pages": 1,
+      "max_pages": 2,
+      "min_words": 400,
+      "max_words": 800,
+      "order": 7,
+      "guidelines": "Describe company facilities, equipment, and relevant experience. Highlight prior DoD contracts or relevant projects. Demonstrate capability to execute Phase I and potential for Phase II/III.",
+      "required_keywords": ["facilities", "experience", "capability", "team"],
+      "description": "Company qualifications, facilities, and relevant experience"
+    },
+    "key_personnel": {
+      "name": "Key Personnel",
+      "required": true,
+      "min_pages": 1,
+      "max_pages": 3,
+      "min_words": 400,
+      "max_words": 1200,
+      "order": 8,
+      "guidelines": "Provide brief biographies (1-page max each) for Principal Investigator and key personnel. Focus on relevant technical expertise and experience. Include security clearance status if applicable.",
+      "required_keywords": ["expertise", "experience", "qualifications"],
+      "description": "Biographical information for key personnel"
+    },
+    "budget_justification": {
+      "name": "Cost Proposal and Budget Justification",
+      "required": true,
+      "min_pages": 2,
+      "max_pages": 4,
+      "min_words": 800,
+      "max_words": 1600,
+      "order": 9,
+      "guidelines": "Detailed budget for up to $200,000 Phase I. Break down by: Direct Labor, Materials, Equipment, Travel, Consultants, Subcontractors, Other Direct Costs, Indirect Costs, Profit/Fee. Justify each line item with calculations and explanations. Must align with work plan.",
+      "required_keywords": ["budget", "labor", "materials", "justification"],
+      "description": "Detailed cost proposal with line-item justifications"
+    }
+  },
+
+  "evaluation_criteria": {
+    "technical_merit": {
+      "weight": 0.4,
+      "description": "Technical excellence and innovation",
+      "sub_criteria": [
+        "Soundness and technical merit of proposed approach",
+        "Qualifications of proposed personnel and adequacy of available facilities",
+        "Feasibility of achieving Phase I technical objectives within 6 months",
+        "Realism of proposed costs in relation to proposed research",
+        "Adequacy of Phase I effort for Phase II"
+      ]
+    },
+    "dod_relevance": {
+      "weight": 0.3,
+      "description": "Relevance to DoD mission and needs",
+      "sub_criteria": [
+        "Potential contribution to DoD mission",
+        "Alignment with specific DoD requirements or capability gaps",
+        "Military utility and operational impact",
+        "Transition potential to DoD acquisition programs",
+        "Dual-use potential"
+      ]
+    },
+    "commercialization": {
+      "weight": 0.2,
+      "description": "Commercial potential and Phase III path",
+      "sub_criteria": [
+        "Potential for commercial success",
+        "Market size and opportunity",
+        "Company's commercialization plan and capability",
+        "Path to Phase III (DoD sales) and beyond",
+        "Dual-use applications"
+      ]
+    },
+    "team_capability": {
+      "weight": 0.1,
+      "description": "Team qualifications and resources",
+      "sub_criteria": [
+        "Qualifications of Principal Investigator",
+        "Company's relevant experience and past performance",
+        "Adequacy of facilities and equipment",
+        "Ability to execute and deliver results",
+        "Prior DoD contract performance if applicable"
+      ]
+    }
+  },
+
+  "format_specifications": {
+    "font": "Times New Roman",
+    "font_size": 12,
+    "line_spacing": 1.0,
+    "margins": {
+      "top": 1.0,
+      "bottom": 1.0,
+      "left": 1.0,
+      "right": 1.0
+    },
+    "page_numbers": true,
+    "headers_footers": false,
+    "words_per_page": 400,
+    "references_format": "Any standard format",
+    "volume_limit": "25 pages for technical volume"
+  },
+
+  "special_requirements": {
+    "trl_focus": true,
+    "trl_range": "3-5",
+    "phase_ii_path": true,
+    "phase_iii_transition": true,
+    "sbir_data_rights": true,
+    "security_clearance": "Not required for Phase I, may be needed for classified work",
+    "u.s._citizen_pi": "Principal Investigator must be U.S. citizen",
+    "small_business_prime": "Small business must be prime contractor",
+    "cost_share": "Not required for Phase I",
+    "itar_compliance": "May be required depending on topic",
+    "military_relevance": "Must demonstrate clear DoD application",
+    "dual_use_preferred": true
+  },
+
+  "submission_requirements": {
+    "company_registry": "Required (SAM.gov registration)",
+    "cost_proposal": "Required (separate volume)",
+    "letters_of_support": "Strongly encouraged",
+    "quad_chart": "Required (1-page summary)",
+    "technical_data_rights": "Required assertion",
+    "certifications": "Various DoD certifications required",
+    "pi_commitment": "Minimum 20% time commitment during Phase I"
+  },
+
+  "topic_areas": {
+    "air_force": [
+      "Advanced Materials",
+      "Autonomous Systems",
+      "Cyber Security",
+      "Directed Energy",
+      "Electronic Warfare",
+      "Human Systems",
+      "Information Systems",
+      "Nuclear Technology",
+      "Power and Energy",
+      "Sensors",
+      "Space Technology",
+      "Weapons"
+    ],
+    "space_force": [
+      "Space Domain Awareness",
+      "Satellite Communications",
+      "Position, Navigation, and Timing",
+      "Space Control",
+      "Space Superiority",
+      "Launch and Range",
+      "Battle Management",
+      "Cyber for Space Systems",
+      "Ground Systems",
+      "Space Weather"
+    ]
+  }
+}

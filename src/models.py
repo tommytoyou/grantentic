@@ -18,23 +18,31 @@ class GrantProposal(BaseModel):
     company_name: str
     grant_type: str = "NSF SBIR Phase I"
     created_at: datetime = Field(default_factory=datetime.now)
-    
+
     project_pitch: GrantSection
     technical_objectives: GrantSection
     broader_impacts: GrantSection
     commercialization_plan: GrantSection
-    
+    budget_justification: GrantSection
+    work_plan: GrantSection
+    biographical_sketches: GrantSection
+    facilities_equipment: GrantSection
+
     total_word_count: int = 0
     total_cost: float = 0.0
     generation_time_seconds: float = 0.0
-    
+
     def calculate_totals(self):
         """Calculate total word count across all sections"""
         self.total_word_count = (
             self.project_pitch.word_count +
             self.technical_objectives.word_count +
             self.broader_impacts.word_count +
-            self.commercialization_plan.word_count
+            self.commercialization_plan.word_count +
+            self.budget_justification.word_count +
+            self.work_plan.word_count +
+            self.biographical_sketches.word_count +
+            self.facilities_equipment.word_count
         )
 
 

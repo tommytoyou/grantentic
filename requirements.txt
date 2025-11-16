@@ -1,0 +1,11 @@
+# Core dependencies
+anthropic>=0.20.0
+pydantic>=2.0.0
+python-docx>=1.1.0
+rich>=13.0.0
+
+# Web interface
+streamlit>=1.30.0
+
+# Development
+pytest>=7.0.0

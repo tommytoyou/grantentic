@@ -6,33 +6,38 @@ from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from src.models import CompanyContext, GrantSection
 from src.cost_tracker import CostTracker
+from src.agency_loader import AgencyLoader
+from config import Config
 
 console = Console()
 
 
 class GrantAgent:
     """AI agent for generating grant proposal sections"""
-    
-    def __init__(self, cost_tracker: CostTracker):
+
+    def __init__(self, cost_tracker: CostTracker, agency_loader: AgencyLoader):
         # Configure Anthropic client for Replit AI Integrations
         api_key = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_API_KEY")
         base_url = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_BASE_URL")
-        
+
         self.client = anthropic.Anthropic(
             api_key=api_key,
             base_url=base_url
         )
         self.cost_tracker = cost_tracker
-        self.model = "claude-sonnet-4-5"
-        
+        self.model = Config.MODEL
+        self.agency_loader = agency_loader
+
         # Load company context
         with open("data/company_context.json", "r") as f:
             data = json.load(f)
             self.company_context = CompanyContext(**data)
-        
-        # Load NSF requirements
-        with open("data/nsf_sbir_requirements.txt", "r") as f:
-            self.nsf_requirements = f.read()
+
+        # Generate agency-specific requirements text
+        self.agency_requirements = self.agency_loader.generate_requirements_text()
+
+        # Get section guidelines
+        self.section_guidelines = self.agency_loader.get_section_guidelines()
     
     def _call_claude(self, system_prompt: str, user_prompt: str, max_tokens: int = 4000) -> tuple[str, int, int]:
         """Call Claude API and track usage"""
@@ -53,54 +58,53 @@ class GrantAgent:
     def generate_section(self, section_name: str, target_length: str) -> GrantSection:
         """Generate initial draft of a grant section"""
         console.print(f"\n[bold blue]📝 Generating {section_name}...[/bold blue]")
-        
-        system_prompt = f"""You are an expert grant writer specializing in NSF SBIR proposals. 
+
+        # Get agency info
+        agency_info = self.agency_loader.requirements
+        funding_amount = self.agency_loader.get_funding_amount()
+        duration_months = self.agency_loader.get_duration_months()
+
+        system_prompt = f"""You are an expert grant writer specializing in {agency_info.agency} {agency_info.program} proposals.
 You have deep knowledge of what makes successful grant applications and how to communicate complex technical concepts clearly.
 
 Your task is to write compelling, evidence-based grant proposal sections that:
 1. Clearly articulate value and innovation
 2. Demonstrate technical feasibility
 3. Show commercial potential
-4. Follow NSF evaluation criteria
+4. Follow {agency_info.agency} evaluation criteria
 5. Are written in clear, accessible language
 
-NSF Requirements:
-{self.nsf_requirements}
+{agency_info.agency} {agency_info.program} Requirements:
+{self.agency_requirements}
 """
-        
+
         company_json = self.company_context.model_dump_json(indent=2)
-        
-        section_guidelines = {
-            "Project Pitch": "Write a compelling 1-2 page project pitch that clearly states the problem, solution, innovation, market opportunity, and Phase I objectives. Make it accessible to non-specialist reviewers.",
-            "Technical Objectives": "Write a detailed 5-6 page technical plan covering: innovation details, current TRL level, Phase I research methodology, key technical risks and mitigation strategies, success metrics, timeline with milestones, and path to Phase II. Be specific and demonstrate deep technical expertise.",
-            "Broader Impacts": "Write a 1-2 page broader impacts section covering societal benefits beyond commercialization, advancement of scientific knowledge, diversity and inclusion efforts, and ethical considerations. Show genuine commitment to positive impact.",
-            "Commercialization Plan": "Write a 2-3 page commercialization plan with market analysis, target customers, competitive positioning, business model, go-to-market strategy, customer validation evidence, IP strategy, and financial projections. Demonstrate commercial viability."
-        }
-        
-        user_prompt = f"""Generate the "{section_name}" section for an NSF SBIR Phase I grant proposal.
+
+        user_prompt = f"""Generate the "{section_name}" section for a {agency_info.agency} {agency_info.program} grant proposal.
 
 Target length: {target_length}
 
 Guidelines for this section:
-{section_guidelines.get(section_name, "")}
+{self.section_guidelines.get(section_name, "")}
 
 Company Information:
 {company_json}
 
 Requirements:
-- Follow NSF SBIR evaluation criteria exactly
+- Follow {agency_info.agency} {agency_info.program} evaluation criteria exactly
 - Write in clear, professional, compelling prose
 - Use specific details and evidence from the company context
 - Avoid jargon and explain technical concepts clearly
 - Create a strong, coherent narrative
-- Focus on what will be accomplished in Phase I (6-12 months, $275K)
+- Focus on what will be accomplished in Phase I ({duration_months} months, ${funding_amount:,})
 - Be realistic about scope and timeline
+- Address {agency_info.agency}-specific requirements and priorities
 
 Generate the complete section now:"""
-        
+
         with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}")) as progress:
             task = progress.add_task(f"Calling Claude for {section_name}...", total=None)
-            content, input_tokens, output_tokens = self._call_claude(system_prompt, user_prompt, max_tokens=6000)
+            content, input_tokens, output_tokens = self._call_claude(system_prompt, user_prompt, max_tokens=Config.MAX_TOKENS_GENERATE)
         
         # Track cost
         self.cost_tracker.record_usage(section_name, "generate", input_tokens, output_tokens, self.model)
@@ -118,23 +122,25 @@ Generate the complete section now:"""
     def critique_section(self, section: GrantSection) -> str:
         """Generate critical feedback on a section"""
         console.print(f"[bold yellow]🔍 Critiquing {section.name}...[/bold yellow]")
-        
-        system_prompt = f"""You are a critical NSF SBIR grant reviewer with high standards.
+
+        agency_info = self.agency_loader.requirements
+
+        system_prompt = f"""You are a critical {agency_info.agency} {agency_info.program} grant reviewer with high standards.
 Your job is to identify weaknesses, gaps, and areas for improvement in grant proposals.
 
 Be constructive but thorough in identifying:
 - Missing information or insufficient detail
 - Weak arguments or unsupported claims
 - Unclear explanations
-- Misalignment with NSF criteria
+- Misalignment with {agency_info.agency} criteria
 - Overly ambitious or unrealistic statements
 - Missing risk mitigation
 - Generic or vague content
 
-NSF Requirements:
-{self.nsf_requirements}
+{agency_info.agency} {agency_info.program} Requirements:
+{self.agency_requirements}
 """
-        
+
         user_prompt = f"""Review this grant section and provide detailed, actionable critique:
 
 Section: {section.name}
@@ -143,16 +149,17 @@ Current draft:
 {section.content}
 
 Provide specific feedback on:
-1. Alignment with NSF evaluation criteria
-2. Clarity and accessibility for non-specialist reviewers
+1. Alignment with {agency_info.agency} evaluation criteria
+2. Clarity and accessibility for reviewers
 3. Strength of evidence and specificity
 4. Missing information or gaps
 5. Overstatements or unrealistic claims
 6. Areas that need more detail or better explanation
+7. Agency-specific requirements and priorities
 
 Be thorough and constructive:"""
-        
-        critique, input_tokens, output_tokens = self._call_claude(system_prompt, user_prompt, max_tokens=2000)
+
+        critique, input_tokens, output_tokens = self._call_claude(system_prompt, user_prompt, max_tokens=Config.MAX_TOKENS_CRITIQUE)
         
         self.cost_tracker.record_usage(section.name, "critique", input_tokens, output_tokens, self.model)
         
@@ -162,14 +169,16 @@ Be thorough and constructive:"""
     def refine_section(self, section: GrantSection, critique: str) -> GrantSection:
         """Refine section based on critique"""
         console.print(f"[bold cyan]✨ Refining {section.name}...[/bold cyan]")
-        
+
+        agency_info = self.agency_loader.requirements
+
         system_prompt = f"""You are an expert grant writer who excels at incorporating feedback to improve proposals.
 Your task is to refine grant sections based on constructive critique while maintaining the core message and evidence.
 
-NSF Requirements:
-{self.nsf_requirements}
+{agency_info.agency} {agency_info.program} Requirements:
+{self.agency_requirements}
 """
-        
+
         user_prompt = f"""Refine this grant section based on the critique provided:
 
 Original Section:
@@ -185,11 +194,12 @@ Instructions:
 - Improve clarity and accessibility
 - Maintain appropriate scope for Phase I
 - Keep the compelling narrative
-- Ensure alignment with NSF criteria
+- Ensure alignment with {agency_info.agency} criteria
+- Address agency-specific requirements
 
 Generate the improved version:"""
-        
-        refined_content, input_tokens, output_tokens = self._call_claude(system_prompt, user_prompt, max_tokens=6000)
+
+        refined_content, input_tokens, output_tokens = self._call_claude(system_prompt, user_prompt, max_tokens=Config.MAX_TOKENS_REFINE)
         
         self.cost_tracker.record_usage(section.name, "refine", input_tokens, output_tokens, self.model)
         

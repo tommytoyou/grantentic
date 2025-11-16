@@ -1,0 +1,49 @@
+# Streamlit Configuration for Replit Deployment
+
+[server]
+# Server settings for Replit
+headless = true
+port = 5000
+address = "0.0.0.0"
+
+# CORS and XSRF settings for Replit
+enableCORS = false
+enableXsrfProtection = false
+
+# WebSocket settings
+enableWebsocketCompression = true
+
+# File watching
+fileWatcherType = "none"
+
+# Faster startup
+runOnSave = false
+
+[browser]
+# Browser settings
+gatherUsageStats = false
+serverAddress = "0.0.0.0"
+serverPort = 5000
+
+[theme]
+# Custom theme
+primaryColor = "#4A90E2"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F0F2F6"
+textColor = "#262730"
+font = "sans serif"
+
+[client]
+# Client settings for better performance
+showErrorDetails = true
+toolbarMode = "minimal"
+
+[runner]
+# Runner settings
+magicEnabled = true
+fastReruns = true
+
+[logger]
+# Logging
+level = "info"
+messageFormat = "%(asctime)s %(message)s"

@@ -49,19 +49,27 @@ class DocxExporter:
             "1. Project Pitch",
             "2. Technical Objectives",
             "3. Broader Impacts",
-            "4. Commercialization Plan"
+            "4. Commercialization Plan",
+            "5. Budget and Budget Justification",
+            "6. Work Plan and Timeline",
+            "7. Key Personnel Biographical Sketches",
+            "8. Facilities, Equipment, and Other Resources"
         ]
         for item in toc_items:
             doc.add_paragraph(item, style='List Bullet')
-        
+
         doc.add_page_break()
-        
+
         # Add each section
         sections = [
             (1, "Project Pitch", proposal.project_pitch),
             (2, "Technical Objectives", proposal.technical_objectives),
             (3, "Broader Impacts", proposal.broader_impacts),
-            (4, "Commercialization Plan", proposal.commercialization_plan)
+            (4, "Commercialization Plan", proposal.commercialization_plan),
+            (5, "Budget and Budget Justification", proposal.budget_justification),
+            (6, "Work Plan and Timeline", proposal.work_plan),
+            (7, "Key Personnel Biographical Sketches", proposal.biographical_sketches),
+            (8, "Facilities, Equipment, and Other Resources", proposal.facilities_equipment)
         ]
         
         for num, title, section in sections:
@@ -83,7 +91,7 @@ class DocxExporter:
                         para.paragraph_format.line_spacing = 1.15
             
             # Add page break after each section except the last
-            if num < 4:
+            if num < 8:
                 doc.add_page_break()
         
         # Footer with metadata

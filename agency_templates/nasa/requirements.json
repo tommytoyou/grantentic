@@ -1,0 +1,250 @@
+{
+  "agency": "NASA",
+  "program": "SBIR Phase I",
+  "funding_amount": 150000,
+  "duration_months": 6,
+  "description": "NASA Small Business Innovation Research Phase I",
+
+  "sections": {
+    "technical_abstract": {
+      "name": "Technical Abstract",
+      "required": true,
+      "min_pages": 0.5,
+      "max_pages": 1,
+      "min_words": 200,
+      "max_words": 400,
+      "order": 1,
+      "guidelines": "Write a concise technical abstract (200-400 words) summarizing the innovation, anticipated results, and potential NASA applications. Focus on how this addresses specific NASA mission needs.",
+      "required_keywords": ["innovation", "NASA", "space", "Phase I"],
+      "description": "Technical summary for NASA reviewers and program managers"
+    },
+    "innovation_and_technical_approach": {
+      "name": "Innovation and Technical Approach",
+      "required": true,
+      "min_pages": 3,
+      "max_pages": 5,
+      "min_words": 1200,
+      "max_words": 2000,
+      "order": 2,
+      "guidelines": "Describe the innovation and its significance to NASA. Explain the technical approach, methodology, and how it advances state-of-the-art. Address technical feasibility, TRL advancement (typically 2 to 4), and how Phase I will demonstrate proof-of-concept. Include discussion of technical risks and mitigation.",
+      "required_keywords": ["innovation", "state-of-the-art", "methodology", "TRL", "feasibility"],
+      "description": "Detailed technical innovation and approach"
+    },
+    "anticipated_benefits": {
+      "name": "Anticipated Benefits",
+      "required": true,
+      "min_pages": 1,
+      "max_pages": 2,
+      "min_words": 400,
+      "max_words": 800,
+      "order": 3,
+      "guidelines": "Describe specific benefits to NASA missions and programs. Address both near-term and long-term applications. Include potential spinoff applications for other government agencies and commercial markets. Be specific about which NASA centers, directorates, or missions would benefit.",
+      "required_keywords": ["NASA missions", "benefit", "applications", "space"],
+      "description": "Benefits to NASA and potential applications"
+    },
+    "work_plan": {
+      "name": "Work Plan",
+      "required": true,
+      "min_pages": 2,
+      "max_pages": 3,
+      "min_words": 800,
+      "max_words": 1200,
+      "order": 4,
+      "guidelines": "Provide detailed 6-month work plan with monthly tasks, milestones, and deliverables. Include Gantt chart or timeline. Show technical performance metrics and success criteria for each milestone. Identify go/no-go decision points. Plan must be realistic for 6 months and $150K.",
+      "required_keywords": ["month", "milestone", "deliverable", "performance metrics"],
+      "description": "Detailed schedule with milestones and metrics"
+    },
+    "related_research": {
+      "name": "Related Research",
+      "required": true,
+      "min_pages": 1,
+      "max_pages": 2,
+      "min_words": 400,
+      "max_words": 800,
+      "order": 5,
+      "guidelines": "Summarize relevant prior research by the proposing team and others. Cite key publications and patents. Explain how this work differs from and builds upon prior art. Demonstrate understanding of current state-of-the-art in the field.",
+      "required_keywords": ["prior research", "state-of-the-art", "publications"],
+      "description": "Review of related work and prior art"
+    },
+    "commercialization_strategy": {
+      "name": "Commercialization Strategy",
+      "required": true,
+      "min_pages": 1,
+      "max_pages": 2,
+      "min_words": 400,
+      "max_words": 800,
+      "order": 6,
+      "guidelines": "Describe the commercialization strategy including NASA and non-NASA markets. Identify potential NASA customers, other government agencies, and commercial applications. Explain path to Phase II and beyond. Include discussion of IP strategy and competitive advantages.",
+      "required_keywords": ["commercialization", "market", "Phase II", "customers"],
+      "description": "Commercialization plan and market strategy"
+    },
+    "facilities_and_equipment": {
+      "name": "Facilities and Equipment",
+      "required": true,
+      "min_pages": 0.5,
+      "max_pages": 1,
+      "min_words": 200,
+      "max_words": 400,
+      "order": 7,
+      "guidelines": "Describe available facilities, equipment, and resources. Identify any unique capabilities. Explain how facilities are adequate for proposed Phase I work. Include any university, NASA center, or other partnerships.",
+      "required_keywords": ["facilities", "equipment", "capabilities"],
+      "description": "Description of available facilities and resources"
+    },
+    "key_personnel": {
+      "name": "Key Personnel and Qualifications",
+      "required": true,
+      "min_pages": 1,
+      "max_pages": 3,
+      "min_words": 400,
+      "max_words": 1200,
+      "order": 8,
+      "guidelines": "Provide biographical sketches for Principal Investigator and key personnel (1 page max per person). Include education, relevant experience, publications, and role in the project. Demonstrate team's capability to successfully execute Phase I.",
+      "required_keywords": ["PI", "qualifications", "experience", "education"],
+      "description": "Team qualifications and biographical information"
+    },
+    "budget_narrative": {
+      "name": "Budget Narrative and Justification",
+      "required": true,
+      "min_pages": 2,
+      "max_pages": 3,
+      "min_words": 800,
+      "max_words": 1200,
+      "order": 9,
+      "guidelines": "Provide detailed budget up to $150,000 for 6-month Phase I. Break down by: Direct Labor (by person with rates), Fringe Benefits, Materials and Supplies, Equipment, Travel, Consultants/Subcontractors, Other Direct Costs, Indirect Costs. Justify each item and show calculations. Budget must align with work plan.",
+      "required_keywords": ["budget", "labor", "materials", "justification"],
+      "description": "Detailed budget with line-item justifications"
+    }
+  },
+
+  "evaluation_criteria": {
+    "technical_merit": {
+      "weight": 0.35,
+      "description": "Scientific and technical merit of the innovation",
+      "sub_criteria": [
+        "Degree of innovation and technical merit",
+        "Soundness of technical approach and methodology",
+        "Qualifications of Principal Investigator and team",
+        "Adequacy of resources and facilities",
+        "Realism of cost and schedule"
+      ]
+    },
+    "nasa_relevance": {
+      "weight": 0.35,
+      "description": "Relevance to NASA mission and needs",
+      "sub_criteria": [
+        "Relevance to NASA mission objectives and needs",
+        "Potential contribution to NASA programs and missions",
+        "TRL advancement appropriate for Phase I",
+        "Feasibility of achieving stated Phase I objectives",
+        "Clear path to Phase II development"
+      ]
+    },
+    "commercialization": {
+      "weight": 0.2,
+      "description": "Commercial potential and feasibility",
+      "sub_criteria": [
+        "Potential for commercial application and success",
+        "Size and accessibility of market",
+        "Company's ability to commercialize",
+        "Dual-use potential (NASA and commercial)",
+        "Intellectual property strategy"
+      ]
+    },
+    "experience": {
+      "weight": 0.1,
+      "description": "Company capability and experience",
+      "sub_criteria": [
+        "Company's relevant experience and past performance",
+        "Track record with NASA or other government agencies",
+        "Quality of facilities and resources",
+        "Team stability and commitment",
+        "Prior SBIR/STTR success if applicable"
+      ]
+    }
+  },
+
+  "format_specifications": {
+    "font": "Times New Roman, Palatino, or Computer Modern",
+    "font_size": 12,
+    "line_spacing": 1.0,
+    "margins": {
+      "top": 1.0,
+      "bottom": 1.0,
+      "left": 1.0,
+      "right": 1.0
+    },
+    "page_numbers": true,
+    "headers_footers": true,
+    "words_per_page": 400,
+    "references_format": "Any standard format (APA, IEEE, Chicago)",
+    "volume_limit": "Maximum 20 pages for technical proposal"
+  },
+
+  "special_requirements": {
+    "trl_focus": true,
+    "trl_range": "2-4",
+    "phase_ii_path": true,
+    "sbir_data_rights": true,
+    "export_control": "May apply depending on technology",
+    "u.s._citizen_pi": "Not required, but work must be performed in U.S.",
+    "pi_commitment": "Minimum 1/3 time during Phase I",
+    "small_business_majority": "Small business must perform >50% of work",
+    "nasa_collaboration": "Encouraged but not required",
+    "dual_use_applications": "Encouraged",
+    "technology_taxonomy": "Must align with NASA Technology Taxonomy"
+  },
+
+  "submission_requirements": {
+    "company_registry": "Required (SAM.gov registration)",
+    "sbir_company_registry": "Required (SBC registry)",
+    "cost_proposal": "Required (separate volume)",
+    "letters_of_support": "Optional but helpful",
+    "current_and_pending": "Required",
+    "quad_chart": "Required (1-page summary)",
+    "data_rights_assertions": "Required",
+    "certifications": "Various NASA certifications required",
+    "subtopic_alignment": "Must respond to specific subtopic"
+  },
+
+  "nasa_mission_areas": {
+    "aeronautics": [
+      "Advanced Air Vehicles",
+      "Airspace Operations and Safety",
+      "Transformative Aeronautics Concepts"
+    ],
+    "space_technology": [
+      "Entry, Descent, and Landing",
+      "In-Space Propulsion",
+      "Nanotechnology",
+      "Robotics and Autonomous Systems",
+      "Space Power and Energy Storage"
+    ],
+    "human_exploration": [
+      "Advanced Life Support",
+      "Environmental Control and Life Support",
+      "EVA Systems",
+      "Human Health and Performance",
+      "Radiation Protection"
+    ],
+    "science": [
+      "Astrophysics",
+      "Earth Science",
+      "Heliophysics",
+      "Planetary Science"
+    ],
+    "space_operations": [
+      "Communications and Navigation",
+      "Ground Systems",
+      "Launch Services",
+      "Space Operations and Research"
+    ]
+  },
+
+  "trl_definitions": {
+    "TRL_2": "Technology concept and/or application formulated",
+    "TRL_3": "Analytical and experimental critical function and/or proof of concept",
+    "TRL_4": "Component and/or breadboard validation in laboratory environment",
+    "TRL_5": "Component and/or breadboard validation in relevant environment",
+    "TRL_6": "System/subsystem model or prototype demonstration in relevant environment"
+  }
+}

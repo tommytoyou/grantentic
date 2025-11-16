@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -m py_compile:*)",
+      "Bash(python3:*)",
+      "Bash(test:*)",
+      "Bash(cat:*)",
+      "Bash(python healthcheck.py:*)",
+      "Bash(streamlit run:*)",
+      "Bash(pip install:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
