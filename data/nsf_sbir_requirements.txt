@@ -1,0 +1,142 @@
+NSF SBIR Phase I Grant Requirements and Evaluation Criteria
+
+PROGRAM OVERVIEW:
+The NSF Small Business Innovation Research (SBIR) Phase I program provides funding up to $275,000 for 6-12 months to establish technical feasibility and commercial potential of innovative technologies.
+
+PHASE I OBJECTIVES:
+1. Demonstrate scientific and technical merit
+2. Establish feasibility of proposed innovation
+3. Show potential for commercial application
+4. Demonstrate team capability to execute
+
+ELIGIBILITY REQUIREMENTS:
+- For-profit small business (≤500 employees)
+- U.S.-based and majority U.S.-owned
+- Principal Investigator primarily employed by company
+- Research must be performed in the United States
+
+EVALUATION CRITERIA (Weighted equally):
+
+1. INTELLECTUAL MERIT
+   - Soundness of technical approach
+   - Innovation and originality
+   - Qualifications of team
+   - Adequacy of resources
+   - Clear technical objectives and feasibility plan
+   - Novelty compared to existing solutions
+   - Scientific/technical risk and mitigation strategies
+
+2. BROADER IMPACTS
+   - Potential to benefit society
+   - Advancement of discovery and understanding
+   - Broadening participation of underrepresented groups
+   - Enhancement of research infrastructure
+   - Benefits beyond science and engineering
+   - Societal impact of successful commercialization
+
+3. COMMERCIAL IMPACT
+   - Market opportunity size and accessibility
+   - Clear path to revenue and profitability
+   - Competitive advantage and barriers to entry
+   - Go-to-market strategy
+   - Customer validation and letters of support
+   - Realistic business model
+   - Economic impact potential
+   - Scalability of solution
+
+4. TEAM QUALIFICATIONS
+   - Relevant technical expertise
+   - Track record of execution
+   - Commercialization experience
+   - Advisors and partnerships
+   - Diversity and complementary skills
+
+REQUIRED PROPOSAL SECTIONS:
+
+PROJECT PITCH (1-2 pages):
+- Clear problem statement
+- Proposed solution and innovation
+- Market opportunity
+- Competitive landscape
+- Team overview
+- Phase I objectives and success criteria
+
+TECHNICAL OBJECTIVES (5-6 pages):
+- Detailed technical approach
+- Innovation and scientific merit
+- Current state of technology (TRL level)
+- Phase I research plan and methodology
+- Key technical risks and mitigation
+- Success metrics and validation approach
+- Timeline and milestones
+- Path to Phase II
+
+BROADER IMPACTS (1-2 pages):
+- Societal benefits beyond commercial success
+- Scientific/technical knowledge advancement
+- Educational opportunities
+- Diversity and inclusion efforts
+- Environmental sustainability
+- Infrastructure improvements
+- Ethical considerations
+
+COMMERCIALIZATION PLAN (2-3 pages):
+- Market analysis and size
+- Target customers and value proposition
+- Competitive analysis
+- Business model and revenue streams
+- Go-to-market strategy
+- Customer discovery and validation
+- Intellectual property strategy
+- Team capability for commercialization
+- Financial projections
+- Path beyond Phase I funding
+
+QUALITY STANDARDS:
+
+Writing Quality:
+- Clear, concise, and well-organized
+- Free of jargon; accessible to non-specialist reviewers
+- Strong, compelling narrative
+- Evidence-based claims with citations where appropriate
+- Logical flow between sections
+
+Technical Quality:
+- Specific, measurable objectives
+- Realistic timeline and milestones
+- Appropriate methodology
+- Risk awareness and mitigation plans
+- Clear success criteria
+- Demonstrates deep domain expertise
+
+Commercial Quality:
+- Market-validated opportunity
+- Realistic financial projections
+- Clear competitive differentiation
+- Evidence of customer interest
+- Viable business model
+- Scalable approach
+
+Common Weaknesses to Avoid:
+- Overly ambitious scope for Phase I
+- Insufficient technical detail
+- Weak commercial validation
+- Unclear success metrics
+- Generic market analysis
+- Missing risk mitigation
+- Poor team-technology fit
+- Lack of customer evidence
+- Unrealistic timelines
+- Ignoring competitors
+
+Success Factors:
+- Focus on feasibility demonstration
+- Clear Phase I deliverables
+- Strong preliminary data
+- Customer letters of support
+- Well-defined market niche
+- Realistic resource allocation
+- Team expertise alignment
+- Clear IP strategy
+- Measurable milestones
+- Compelling societal benefit
