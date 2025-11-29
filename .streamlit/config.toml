@@ -1,12 +1,11 @@
-# Streamlit Configuration for Replit Deployment
+# Streamlit Configuration for Streamlit Cloud Deployment
 
 [server]
-# Server settings for Replit
+# Server settings for Streamlit Cloud
 headless = true
-port = 5000
 address = "0.0.0.0"
 
-# CORS and XSRF settings for Replit
+# CORS and XSRF settings
 enableCORS = false
 enableXsrfProtection = false
 
@@ -22,8 +21,6 @@ runOnSave = false
 [browser]
 # Browser settings
 gatherUsageStats = false
-serverAddress = "0.0.0.0"
-serverPort = 5000
 
 [theme]
 # Custom theme

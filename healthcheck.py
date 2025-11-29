@@ -8,12 +8,12 @@ import requests
 import sys
 import time
 
-def check_health(url="http://localhost:5000", timeout=10, max_retries=3):
+def check_health(url="http://localhost:8501", timeout=10, max_retries=3):
     """
     Check if Streamlit app is responding
 
     Args:
-        url: URL to check (default: localhost:5000)
+        url: URL to check (default: localhost:8501)
         timeout: Request timeout in seconds
         max_retries: Number of retries before failing
 
@@ -64,7 +64,7 @@ def main():
         print("\n✗ Health check failed!")
         print("\nTroubleshooting steps:")
         print("1. Ensure Streamlit is running: streamlit run app.py")
-        print("2. Check if port 5000 is available: lsof -i :5000")
+        print("2. Check if port 8501 is available: lsof -i :8501")
         print("3. Check logs for errors")
         print("4. Try restarting the application")
         sys.exit(1)

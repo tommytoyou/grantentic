@@ -14,7 +14,10 @@
       "Bash(for i in 1 2 3 4 5)",
       "Bash(do echo \"Request $i:\")",
       "Bash(time curl:*)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(python -m streamlit:*)",
+      "Bash(where:*)",
+      "Bash(py -m streamlit:*)"
     ],
     "deny": [],
     "ask": []
