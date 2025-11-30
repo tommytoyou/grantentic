@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Grantentic</title>
+    <script>
+      // Ensure title stays as Grantentic during loading
+      document.title = "Grantentic";
+
+      // Observer to prevent Streamlit from changing the title during load
+      const observer = new MutationObserver(function(mutations) {
+        if (document.title !== "Grantentic - AI Grant Writer" &&
+            document.title !== "Grantentic") {
+          document.title = "Grantentic";
+        }
+      });
+
+      observer.observe(document.querySelector('head'), {
+        subtree: true,
+        childList: true,
+        characterData: true
+      });
+
+      // Allow the final title from st.set_page_config after app loads
+      window.addEventListener('load', function() {
+        setTimeout(function() {
+          observer.disconnect();
+        }, 3000);
+      });
+    </script>
+  </head>
+  <body></body>
+</html>

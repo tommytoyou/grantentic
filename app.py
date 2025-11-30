@@ -16,6 +16,35 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# Inject JavaScript to ensure title is "Grantentic" during loading
+# This prevents the default "Streamlit" title from ever appearing
+st.markdown(
+    """
+    <script>
+        // Set title immediately
+        document.title = "Grantentic - AI Grant Writer";
+
+        // Monitor and correct any title changes during load
+        const titleObserver = new MutationObserver(function() {
+            if (document.title === "Streamlit" || document.title === "") {
+                document.title = "Grantentic - AI Grant Writer";
+            }
+        });
+
+        const titleElement = document.querySelector('title');
+        if (titleElement) {
+            titleObserver.observe(titleElement, { childList: true, characterData: true, subtree: true });
+        }
+
+        // Clean up observer after page fully loads
+        window.addEventListener('load', function() {
+            setTimeout(function() { titleObserver.disconnect(); }, 5000);
+        });
+    </script>
+    """,
+    unsafe_allow_html=True
+)
+
 # Initialize session state ONLY (no imports, no file I/O)
 if 'app_initialized' not in st.session_state:
     st.session_state.app_initialized = False
