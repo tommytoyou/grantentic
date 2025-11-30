@@ -14,9 +14,14 @@
       "min_words": 400,
       "max_words": 800,
       "order": 1,
-      "guidelines": "Write a compelling 1-2 page project pitch that clearly states the problem, solution, innovation, market opportunity, and Phase I objectives. Make it accessible to non-specialist reviewers.",
-      "required_keywords": ["innovation", "problem", "solution", "market", "Phase I"],
-      "description": "Executive summary of the proposed innovation, market opportunity, and Phase I goals"
+      "guidelines": "Write a compelling 1-2 page project pitch that captures reviewer attention in the first paragraph. STRUCTURE: (1) Opening hook with quantified problem impact - 'The $X industry loses $Y annually to [problem]'; (2) Your solution and what makes it different - avoid 'novel approach', instead specify 'first technology to combine [A] with [B]'; (3) Technical innovation in accessible terms; (4) Market opportunity with bottom-up sizing; (5) 3-4 measurable Phase I objectives; (6) Team credibility highlight. CRITICAL: Reviewers decide in 30 seconds if this is worth reading carefully. Lead with impact, not background. Avoid: 'We believe', 'We hope', vague superlatives, jargon. Include: specific numbers, named customer types, clear differentiation from alternatives.",
+      "required_keywords": ["innovation", "problem", "solution", "market", "Phase I", "feasibility"],
+      "description": "Executive summary that hooks reviewers with quantified impact and clear innovation",
+      "winning_examples": [
+        "BAD: 'Current methods are inefficient and we propose a novel solution.'",
+        "GOOD: 'U.S. manufacturers lose $4.2B annually to equipment failures, with current predictive systems achieving only 62% accuracy. Our physics-informed ML platform demonstrates 94% accuracy in preliminary tests, potentially preventing $2.8B in annual losses.'"
+      ],
+      "reviewer_psychology": "Reviewers read 15-20 proposals per panel. They decide in the first paragraph whether to engage deeply or skim. Your pitch must immediately communicate: clear problem, genuinely novel solution, credible team, achievable scope."
     },
     "technical_objectives": {
       "name": "Technical Objectives",
@@ -26,9 +31,14 @@
       "min_words": 2000,
       "max_words": 2400,
       "order": 2,
-      "guidelines": "Write a detailed 5-6 page technical plan covering: innovation details, current TRL level, Phase I research methodology, key technical risks and mitigation strategies, success metrics, timeline with milestones, and path to Phase II. Be specific and demonstrate deep technical expertise.",
-      "required_keywords": ["methodology", "risk", "milestone", "feasibility", "TRL"],
-      "description": "Detailed technical approach, methodology, and research plan for Phase I"
+      "guidelines": "Write a detailed 5-6 page technical plan demonstrating scientific rigor. STRUCTURE: (1) Technical Innovation Deep Dive - what's genuinely new, quantified comparison to alternatives, underlying scientific principle; (2) Current TRL with evidence of preliminary work; (3) Phase I Research Plan with numbered objectives, each having specific tasks and measurable success criteria; (4) Technical Risk Matrix with probability, impact, and mitigation for each risk (hiding risks looks naive - reviewers know they exist); (5) Phase II Vision showing logical progression. CRITICAL SUCCESS FACTORS: Specific hypotheses with testable predictions, methodology that's rigorous but explainable, scope narrow and deep (not broad and shallow), clear definition of what 'success' looks like with quantified metrics. FATAL FLAWS: Objectives that can't be measured, tasks requiring more than $275K, missing risk discussion, academic jargon without practical application.",
+      "required_keywords": ["methodology", "risk", "milestone", "feasibility", "TRL", "hypothesis", "metrics", "validation"],
+      "description": "Rigorous technical approach demonstrating deep expertise and achievable Phase I scope",
+      "winning_examples": [
+        "BAD: 'We will develop an improved algorithm.'",
+        "GOOD: 'Objective 1: Validate core hypothesis that combining [approach A] with [approach B] achieves >90% accuracy on benchmark dataset X. Success Criteria: (a) Accuracy ≥90% vs. current best of 78%, (b) Processing time <100ms, (c) Memory footprint <2GB. Risk: Limited training data availability (Medium probability, High impact). Mitigation: Partnership with [institution] providing access to 50,000+ labeled samples.'"
+      ],
+      "reviewer_psychology": "Technical reviewers are experts. They spot hand-waving immediately. They want to see: you understand the problem deeply, your approach is scientifically grounded, you've thought through what could go wrong, and your scope matches the funding."
     },
     "broader_impacts": {
       "name": "Broader Impacts",
@@ -38,9 +48,14 @@
       "min_words": 400,
       "max_words": 800,
       "order": 3,
-      "guidelines": "Write a 1-2 page broader impacts section covering societal benefits beyond commercialization, advancement of scientific knowledge, diversity and inclusion efforts, and ethical considerations. Show genuine commitment to positive impact.",
-      "required_keywords": ["societal", "impact", "benefit", "broader"],
-      "description": "Societal benefits, scientific advancement, and broader impacts beyond commercial success"
+      "guidelines": "Write a 1-2 page broader impacts section that NSF actually cares about - this is NOT an afterthought. STRUCTURE: (1) Quantified societal benefits - 'Will reduce X by Y% for Z population', not 'will benefit society'; (2) Broadening participation with SPECIFIC programs - internship partnerships with HBCUs (name them), curriculum integration plans, outreach to underrepresented groups with actual mechanisms; (3) Educational impacts - training programs, knowledge dissemination, open-source contributions; (4) Environmental sustainability considerations; (5) Scientific knowledge advancement - publications, datasets, tools to be shared. CRITICAL: NSF reviewers take this section as seriously as technical merit. Generic statements like 'will create jobs' or 'benefits the economy' score poorly. Describe CONCRETE actions with timelines.",
+      "required_keywords": ["societal", "impact", "benefit", "broader", "diversity", "education", "community", "underrepresented"],
+      "description": "Concrete societal benefits with specific programs, not generic statements",
+      "winning_examples": [
+        "BAD: 'This technology will benefit society and create jobs.'",
+        "GOOD: 'This technology will reduce agricultural water usage by 2.3M acre-feet annually, directly benefiting 12,000 family farms in drought-affected regions. We will partner with FAMU (letter attached) to host 4 summer interns from underrepresented backgrounds, with curriculum modules integrated into their Agricultural Engineering program. All non-proprietary algorithms will be open-sourced under MIT license.'"
+      ],
+      "reviewer_psychology": "NSF's broader impacts criterion is legally mandated and taken seriously. Proposals that treat it as boilerplate get marked down. Reviewers look for: specificity, commitment, alignment with project activities, genuine consideration of societal benefit beyond profit."
     },
     "commercialization_plan": {
       "name": "Commercialization Plan",
@@ -50,9 +65,14 @@
       "min_words": 800,
       "max_words": 1200,
       "order": 4,
-      "guidelines": "Write a 2-3 page commercialization plan with market analysis, target customers, competitive positioning, business model, go-to-market strategy, customer validation evidence, IP strategy, and financial projections. Demonstrate commercial viability.",
-      "required_keywords": ["market", "customer", "revenue", "competitive", "commercialization"],
-      "description": "Market analysis, business model, and path to commercialization"
+      "guidelines": "Write a 2-3 page commercialization plan proving you understand business, not just technology. STRUCTURE: (1) Market Analysis using BOTTOM-UP sizing - 'Our target segment is X customers spending $Y/year on Z, totaling $[specific]M' NOT 'The global market is $50B (Gartner)'; (2) Target Customers - named types, their pain points, why they'll pay, evidence of conversations or LOIs; (3) Competitive Analysis - name actual competitors, your specific advantages (not just 'better'), barriers to entry (saying 'no competitors' is a red flag); (4) Business Model - how you make money, pricing rationale, unit economics; (5) Go-to-Market - customer discovery in Phase I, pilots in Phase II, scale post-SBIR; (6) IP Strategy - patents filed/planned, trade secrets, freedom to operate; (7) Team commercial capability. FATAL FLAWS: Top-down only market sizing, 'figure out market in Phase II', no customer evidence, missing competitive analysis.",
+      "required_keywords": ["market", "customer", "revenue", "competitive", "commercialization", "business model", "pricing", "LOI"],
+      "description": "Evidence-based commercial viability with customer validation",
+      "winning_examples": [
+        "BAD: 'The global AI market is $150B and we will capture 1%.'",
+        "GOOD: 'Our initial target: 2,400 mid-size manufacturers ($50-500M revenue) spending average $180K/year on predictive maintenance, representing a $432M addressable market. Customer discovery: Interviewed 23 manufacturing VPs; 18 expressed strong interest at $50K/year price point (interview notes in Appendix). Two LOIs attached from [Company A] and [Company B] committing to $75K pilot agreements contingent on Phase I success.'"
+      ],
+      "reviewer_psychology": "Commercialization reviewers have business backgrounds. They've seen hundreds of 'huge market, we just need 1%' pitches. They want evidence: Who have you talked to? What did they say? Would they pay? How much? Named interest beats theoretical markets every time."
     },
     "budget_justification": {
       "name": "Budget and Budget Justification",
@@ -62,9 +82,14 @@
       "min_words": 800,
       "max_words": 1200,
       "order": 5,
-      "guidelines": "Write a detailed 2-3 page budget and justification for the $275,000 Phase I grant over 6 months. Break down costs into: (1) Personnel costs with salaries and % effort for each team member, (2) Equipment and materials needed for Phase I research, (3) Travel for conferences and customer meetings, (4) Overhead and indirect costs at appropriate rates, (5) Other direct costs. For each line item, provide detailed justification explaining why it's necessary for Phase I success and how costs were estimated. Ensure budget is realistic, well-justified, and aligned with proposed work.",
-      "required_keywords": ["personnel", "equipment", "overhead", "justification"],
-      "description": "Detailed budget breakdown and justification for all costs"
+      "guidelines": "Write a detailed 2-3 page budget for $275,000 over 6 months showing fiscal responsibility. STRUCTURE: (1) Personnel (60-70% typical) - Name, role, % effort, rate for each person. PI MUST show >50% effort for NSF. Justify why each person is needed for specific tasks; (2) Fringe Benefits - use your approved rate (25-40% typical); (3) Equipment >$5,000 - justify purchase vs. rental, include quotes; (4) Materials/Supplies - itemize major categories; (5) Travel - customer discovery trips, conferences, NSF meetings. Itemize each: destination, purpose, estimated cost; (6) Consultants/Subcontractors - name each, justify how they fill gaps. MUST be <33% (small business majority rule); (7) Indirect Costs - negotiated rate or de minimis 10%. CRITICAL: Budget must align with technical tasks. Reviewers check if your stated objectives match your spending. RED FLAGS: PI effort too low, large unexplained categories, equipment that should be existing infrastructure, subcontracts exceeding limits.",
+      "required_keywords": ["personnel", "equipment", "overhead", "justification", "labor", "fringe", "travel", "indirect"],
+      "description": "Budget aligned with technical objectives showing fiscal responsibility",
+      "winning_examples": [
+        "BAD: 'Personnel: $180,000; Equipment: $50,000; Other: $45,000'",
+        "GOOD: 'Personnel ($176,000): Dr. Jane Smith, PI, 60% effort, 6 months @ $160K/year = $48,000 - leads algorithm development (Tasks 1.1-1.3); John Doe, Senior Engineer, 100% effort @ $95K/year = $47,500 - implements prototype (Tasks 2.1-2.4)... Equipment ($35,000): GPU Computing Cluster - NVIDIA A100 x2 @ $15,000 each - required for training large models within Phase I timeline; alternative cloud compute would cost $45,000 over 6 months...'"
+      ],
+      "reviewer_psychology": "Budget reviewers verify alignment between what you say you'll do and what you're paying for. Disconnects raise red flags. They also check: Is PI committed enough? Are you trying to sneak in costs that should be covered by company infrastructure? Does the total make sense for the scope?"
     },
     "work_plan": {
       "name": "Work Plan and Timeline",
@@ -74,9 +99,14 @@
       "min_words": 800,
       "max_words": 1200,
       "order": 6,
-      "guidelines": "Write a detailed 2-3 page work plan with month-by-month timeline for the 6-month Phase I project. Include: (1) Detailed monthly milestones and deliverables, (2) Task dependencies and critical path, (3) Risk mitigation strategies for key technical risks, (4) Success metrics and validation criteria for each milestone, (5) Go/no-go decision points, (6) Resource allocation and team responsibilities. Make the plan specific, realistic, and demonstrate clear path to Phase I objectives.",
-      "required_keywords": ["month", "milestone", "timeline", "deliverable"],
-      "description": "Month-by-month work plan with milestones and deliverables"
+      "guidelines": "Write a detailed 2-3 page work plan proving you've thought through execution. STRUCTURE: (1) Visual Timeline/Gantt - show all tasks, dependencies, major milestones; (2) Month-by-Month Breakdown - 'Month 1: [specific activities]' for all 6 months; (3) Milestones Table with columns: Milestone | Month | Deliverable | Measurable Success Criteria; (4) Go/No-Go Decision Points - what would cause pivot or stop? Shows mature thinking; (5) Resource Allocation - which team members on which tasks, aligned with budget; (6) Risk-Adjusted Schedule - buffer for high-risk tasks, alternative paths. CRITICAL: Every milestone must have MEASURABLE success criteria. 'Complete algorithm development' is bad. 'Algorithm achieves >90% accuracy on benchmark with <100ms latency' is good. FATAL FLAWS: Unrealistic compression, no buffer for problems, missing dependencies, milestones without criteria, tasks disconnected from objectives.",
+      "required_keywords": ["month", "milestone", "timeline", "deliverable", "task", "go/no-go", "criteria", "risk"],
+      "description": "Realistic month-by-month plan with measurable milestones and decision points",
+      "winning_examples": [
+        "BAD: 'Months 1-2: Development; Months 3-4: Testing; Months 5-6: Validation'",
+        "GOOD: 'Month 1: (a) Finalize algorithm architecture based on preliminary design, (b) Acquire and preprocess training data from partner [X], (c) Establish baseline metrics. Milestone M1 (end Month 1): Architecture document approved, 10,000 labeled samples processed. Go/No-Go: If data acquisition delayed >2 weeks, activate backup data source from [Y]. Month 2: (a) Implement core algorithm (Tasks 1.1-1.3), (b) Begin initial training runs...'"
+      ],
+      "reviewer_psychology": "Work plan reviewers assess: Is this team organized? Have they done this before? Will they recognize problems early? Are milestones gates or rubber stamps? They want to see project management sophistication, not just technical capability."
     },
     "biographical_sketches": {
       "name": "Key Personnel Biographical Sketches",
@@ -86,9 +116,14 @@
       "min_words": 800,
       "max_words": 3200,
       "order": 7,
-      "guidelines": "Write comprehensive 2-page biographical sketches for each key team member. For each person include: (1) Full name and role, (2) Education background with degrees and institutions, (3) Relevant professional experience with specific achievements, (4) Publications and patents relevant to the project, (5) Previous grants and collaborations, (6) Specific expertise and contributions to this project. Use the team information from company context. Make each bio substantive and demonstrate the team's qualifications to execute this project.",
-      "required_keywords": ["education", "experience", "PhD", "publications"],
-      "description": "2-page biographical sketches for each key team member"
+      "guidelines": "Write comprehensive 2-page biographical sketches for each key team member following NSF format. FOR EACH PERSON: (1) Name, Title, Role in Project; (2) Professional Preparation - degrees, institutions, years, relevant certifications; (3) Appointments - current position and relevant prior positions; (4) Products - 5 most relevant publications, patents, other products related to this work; (5) Synergistic Activities - related projects, leadership roles, broader impacts activities; (6) Role and Commitment - specific responsibilities, % effort, why this person is essential. STRATEGIES: Lead with most relevant experience, emphasize prior SBIR/STTR success, show direct connections to technical area, if team has gaps, explain how consultants/advisors fill them. Demonstrate commercialization experience where possible. CRITICAL: Reviewers ask 'Can this team execute THIS project?' Connect each bio explicitly to project needs.",
+      "required_keywords": ["education", "experience", "PhD", "publications", "expertise", "role", "commitment"],
+      "description": "Team qualifications explicitly connected to project requirements",
+      "winning_examples": [
+        "BAD: 'Dr. Smith has 20 years of experience in the field.'",
+        "GOOD: 'Dr. Jane Smith, PhD (MIT, 2010) in Machine Learning, will serve as PI dedicating 60% effort. Directly relevant: (1) Led NSF SBIR Phase II ($1M) developing similar ML algorithms, successfully commercialized; (2) 12 publications in Nature/Science on neural network architectures, including Smith et al. 2022 which established the theoretical foundation for this proposal; (3) 3 patents on predictive maintenance ML methods (US Patent #X,XXX,XXX). Role: Leads algorithm development (Objectives 1-2), supervises validation testing, primary contact with NSF.'"
+      ],
+      "reviewer_psychology": "Team review is about trust. Reviewers ask: Will these people actually do what they claim? Is the PI committed enough? Does the team collectively cover all needed skills? Prior SBIR success is golden - it proves you can execute."
     },
     "facilities_equipment": {
       "name": "Facilities, Equipment, and Other Resources",
@@ -98,44 +133,90 @@
       "min_words": 400,
       "max_words": 800,
       "order": 8,
-      "guidelines": "Write a detailed 1-2 page description of available resources including: (1) Development and testing facilities with specific capabilities, (2) Existing equipment and instrumentation that will be used, (3) Software tools, licenses, and computational resources, (4) Manufacturing and prototyping partnerships, (5) Access to specialized facilities (clean rooms, testing chambers, etc.), (6) University or research institution partnerships. Demonstrate that the team has or can access all necessary resources to complete Phase I work successfully.",
-      "required_keywords": ["facilities", "equipment", "resources"],
-      "description": "Available facilities, equipment, and institutional resources"
+      "guidelines": "Write a 1-2 page description proving you have infrastructure to execute. STRUCTURE: (1) Laboratory/Development Facilities - physical location, size, key capabilities, relevant certifications (ISO, etc.); (2) Equipment - major equipment available with capabilities and specs; (3) Computational Resources - computing infrastructure, software licenses, cloud resources; (4) Partner Facilities - university partnerships, national lab access, customer facilities for testing (include letters if available); (5) Collaborative Arrangements - formal agreements, shared facilities. CRITICAL: Demonstrate you can do the work WITHOUT major equipment purchases eating the budget. Show access to specialized facilities if needed. Highlight partnerships that strengthen capability. If you're a startup, emphasize cloud resources, partnerships, and planned infrastructure.",
+      "required_keywords": ["facilities", "equipment", "resources", "computing", "laboratory", "partnership"],
+      "description": "Evidence of infrastructure capability without requiring major budget allocation",
+      "winning_examples": [
+        "BAD: 'We have office space and computers.'",
+        "GOOD: 'Primary Facility: 3,500 sq ft R&D laboratory in Austin, TX with: (a) ML Development Environment: 8-node GPU cluster (NVIDIA V100s) capable of training large models, 100TB storage array, high-speed networking; (b) Testing Lab: Environmental chamber (-40°C to +85°C), vibration testing equipment for hardware validation. Partner Facilities: (a) UT Austin - Access to Texas Advanced Computing Center (TACC) under Dr. Smith collaboration agreement (letter attached); (b) Pilot testing agreement with [Manufacturing Partner] providing access to production line for real-world validation (LOI attached).'"
+      ],
+      "reviewer_psychology": "Facilities review is about risk. Can you actually do this work? If your budget has $100K for equipment and your facilities are sparse, reviewers worry. If you show strong existing infrastructure plus smart partnerships, they trust you can execute."
     }
   },
 
   "evaluation_criteria": {
     "intellectual_merit": {
       "weight": 0.5,
-      "description": "The potential to advance knowledge",
+      "description": "The potential to advance knowledge - this is 50% of your score",
       "sub_criteria": [
-        "How important is the proposed activity to advancing knowledge?",
-        "How well qualified is the proposer to conduct the project?",
-        "To what extent does the proposed activity suggest and explore creative, original concepts?",
-        "How well conceived and organized is the proposed activity?",
-        "Is there sufficient access to resources?"
+        "How important is the proposed activity to advancing knowledge? (Not just incremental - must be transformative)",
+        "How well qualified is the proposer to conduct the project? (Direct experience matters)",
+        "To what extent does the proposed activity suggest and explore creative, original concepts? (Differentiation from alternatives)",
+        "How well conceived and organized is the proposed activity? (Methodology rigor)",
+        "Is there sufficient access to resources? (Team, facilities, budget alignment)"
+      ],
+      "what_reviewers_actually_look_for": [
+        "Clear articulation of the knowledge gap being addressed",
+        "Specific hypotheses with testable predictions",
+        "Evidence that current approaches fundamentally cannot solve the problem",
+        "Preliminary data demonstrating feasibility",
+        "Risk acknowledgment with credible mitigation"
+      ],
+      "common_rejection_reasons": [
+        "Incremental improvement rather than innovation",
+        "Vague claims without differentiation from alternatives",
+        "Scope too broad for Phase I funding",
+        "Missing or unrealistic risk assessment",
+        "Team lacks specific expertise for this work"
       ]
     },
     "broader_impacts": {
       "weight": 0.25,
-      "description": "The potential to benefit society",
+      "description": "The potential to benefit society - taken seriously at NSF",
       "sub_criteria": [
-        "What is the potential for the proposed activity to benefit society?",
-        "To what extent does the activity promote teaching, training, and learning?",
-        "How well does the activity broaden participation of underrepresented groups?",
-        "Will results be disseminated broadly to enhance scientific understanding?",
-        "May the results be used to enhance infrastructure for research and education?"
+        "What is the potential for the proposed activity to benefit society? (Must be specific and quantified)",
+        "To what extent does the activity promote teaching, training, and learning? (Concrete programs)",
+        "How well does the activity broaden participation of underrepresented groups? (Named partnerships)",
+        "Will results be disseminated broadly to enhance scientific understanding? (Publications, open source)",
+        "May the results be used to enhance infrastructure for research and education? (Lasting contributions)"
+      ],
+      "what_reviewers_actually_look_for": [
+        "Quantified societal benefits beyond commercial success",
+        "Specific outreach programs with named partners",
+        "Educational components integrated into the project",
+        "Environmental sustainability considerations",
+        "Commitment to knowledge sharing"
+      ],
+      "common_rejection_reasons": [
+        "Generic statements like 'will benefit society'",
+        "Only listing commercial benefits",
+        "No specific diversity or outreach programs",
+        "Afterthought treatment of this section"
       ]
     },
     "commercialization_potential": {
       "weight": 0.25,
-      "description": "Commercial potential and market opportunity",
+      "description": "Commercial potential and market opportunity - evidence required",
       "sub_criteria": [
-        "What is the market opportunity for this innovation?",
-        "How strong is the commercialization plan?",
-        "Is the business model viable?",
-        "Does the team have relevant commercial experience?",
-        "Are there Letters of Intent or customer validation?"
+        "What is the market opportunity for this innovation? (Bottom-up analysis)",
+        "How strong is the commercialization plan? (Customer evidence)",
+        "Is the business model viable? (Unit economics)",
+        "Does the team have relevant commercial experience? (Track record)",
+        "Are there Letters of Intent or customer validation? (Named interest)"
+      ],
+      "what_reviewers_actually_look_for": [
+        "Named potential customers with evidence of conversations",
+        "Bottom-up market sizing with clear assumptions",
+        "Honest competitive analysis naming real competitors",
+        "Viable business model with pricing rationale",
+        "Clear path from Phase I to Phase II to market"
+      ],
+      "common_rejection_reasons": [
+        "Top-down TAM/SAM/SOM without customer evidence",
+        "Claiming no competitors exist",
+        "No evidence of customer engagement",
+        "Unrealistic pricing or adoption assumptions",
+        "Unclear revenue model"
       ]
     }
   },
@@ -164,15 +245,40 @@
     "diversity_encouraged": true,
     "subawards_allowed": true,
     "foreign_participation_restrictions": true,
-    "sbir_data_rights": true
+    "sbir_data_rights": true,
+    "pi_minimum_effort": "Principal Investigator must dedicate >50% effort to the project"
   },
 
   "submission_requirements": {
-    "letters_of_support": "Optional but recommended",
+    "letters_of_support": "Optional but strongly recommended - customer LOIs significantly strengthen commercialization",
     "current_and_pending": "Required",
     "facilities_resources": "Required",
     "data_management_plan": "Required if generating data",
     "postdoctoral_mentoring": "Required if funding postdocs",
     "bio_sketch_format": "NSF format (2 pages max per person)"
-  }
+  },
+
+  "fatal_flaws_to_avoid": [
+    "Using 'we believe' or 'we hope' - shows uncertainty, not conviction",
+    "Scope creep - trying to solve everything in 6 months",
+    "Missing risk acknowledgment - reviewers know risks exist; hiding them looks naive",
+    "Generic competitive analysis - 'no direct competitors' is always a red flag",
+    "Budget-objective mismatch - objectives that need $500K proposed for $275K",
+    "Jargon overload - if reviewers can't understand it, they score it low",
+    "Missing preliminary data - some evidence of feasibility is expected",
+    "Generic broader impacts - must be specific to this project"
+  ],
+
+  "top_15_percent_characteristics": [
+    "Opens with quantified problem impact that hooks reviewer immediately",
+    "Clear differentiation from all alternatives with specific technical rationale",
+    "Bottom-up market sizing with evidence of customer conversations",
+    "Named customer interest (LOIs, pilot commitments)",
+    "Specific, measurable success criteria for every objective",
+    "Honest risk assessment with credible mitigation strategies",
+    "Team bios explicitly connected to project requirements",
+    "Broader impacts with named partners and specific programs",
+    "Budget perfectly aligned with technical tasks",
+    "Phase II path that's logical but not assumed"
+  ]
 }

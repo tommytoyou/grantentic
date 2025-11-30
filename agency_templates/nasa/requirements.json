@@ -14,9 +14,14 @@
       "min_words": 200,
       "max_words": 400,
       "order": 1,
-      "guidelines": "Write a concise technical abstract (200-400 words) summarizing the innovation, anticipated results, and potential NASA applications. Focus on how this addresses specific NASA mission needs.",
-      "required_keywords": ["innovation", "NASA", "space", "Phase I"],
-      "description": "Technical summary for NASA reviewers and program managers"
+      "guidelines": "Write a concise technical abstract (200-400 words) that speaks NASA's language of scientific excellence and mission impact. STRUCTURE: (1) Innovation and its significance - what's genuinely new and why it matters for NASA; (2) Alignment with NASA Technology Taxonomy - cite specific taxonomy area; (3) NASA missions/programs that need this - name them specifically; (4) TRL advancement (typically TRL 2→4); (5) Key Phase I objectives; (6) Commercial/dual-use applications. CRITICAL: NASA reviewers are world-class scientists and engineers. They expect scientific rigor and precision. Use NASA terminology correctly. Reference Technology Roadmaps. AVOID: Incremental improvements, generic 'space applications', technologies not designed for space environment.",
+      "required_keywords": ["innovation", "NASA", "space", "Phase I", "TRL", "mission"],
+      "description": "Technical summary demonstrating scientific merit and NASA mission alignment",
+      "winning_examples": [
+        "BAD: 'We propose an innovative solution for space applications.'",
+        "GOOD: 'This innovation addresses NASA's critical need for high-efficiency power storage in deep space environments (Technology Taxonomy TX03.1.3). Our solid-state battery technology operates across -150°C to +120°C with 2.3x the energy density of current Li-ion systems, directly enabling extended Artemis lunar surface operations and Mars transit missions. Phase I advances from TRL 2 to TRL 4 through thermal cycling validation in simulated lunar environment. Commercial applications include LEO constellation operators requiring 50% longer orbital life.'"
+      ],
+      "reviewer_psychology": "NASA reviewers are often PhDs who've spent careers on space technology. They expect scientific precision and genuine understanding of space environment challenges. Hype is immediately detected and penalized."
     },
     "innovation_and_technical_approach": {
       "name": "Innovation and Technical Approach",
@@ -26,9 +31,14 @@
       "min_words": 1200,
       "max_words": 2000,
       "order": 2,
-      "guidelines": "Describe the innovation and its significance to NASA. Explain the technical approach, methodology, and how it advances state-of-the-art. Address technical feasibility, TRL advancement (typically 2 to 4), and how Phase I will demonstrate proof-of-concept. Include discussion of technical risks and mitigation.",
-      "required_keywords": ["innovation", "state-of-the-art", "methodology", "TRL", "feasibility"],
-      "description": "Detailed technical innovation and approach"
+      "guidelines": "Describe your innovation with scientific rigor befitting NASA. STRUCTURE: (1) Innovation significance - what knowledge gap are you addressing? How does this advance state-of-the-art? Quantify the improvement; (2) Technical Approach - detailed methodology with scientific justification. NASA reviewers are experts; show your depth; (3) Space environment considerations (if applicable) - radiation, thermal, vacuum, microgravity. Show you understand operational context; (4) TRL assessment - current TRL with evidence, target TRL with specific exit criteria; (5) Phase I objectives - numbered, measurable, with success criteria; (6) Technical risks and mitigation - NASA expects realistic assessment. CRITICAL SUCCESS FACTORS: Quantified advancement over state-of-art, rigorous methodology, understanding of space environment, measurable success criteria. FATAL FLAWS: Incremental improvements, ignoring space environment, unrealistic TRL claims, academic research without mission application.",
+      "required_keywords": ["innovation", "state-of-the-art", "methodology", "TRL", "feasibility", "space environment", "radiation", "thermal"],
+      "description": "Scientifically rigorous innovation with quantified advancement and space environment awareness",
+      "winning_examples": [
+        "BAD: 'Our approach improves upon existing methods.'",
+        "GOOD: 'Current state-of-art (JPL's RadTol memory, 2023): 256Mb capacity, 100 krad TID tolerance, SEL threshold 60 MeV-cm²/mg. Our approach: Novel error-correction architecture achieving 1Gb capacity, 300 krad TID tolerance, SEL threshold >100 MeV-cm²/mg. Scientific basis: We exploit [specific physics principle] first demonstrated in [citation], enabling 3x density while improving radiation hardness. Methodology: (1) Simulate radiation transport using SPENVIS/CREME96 for lunar surface and Mars transit environments; (2) Fabricate test structures using [process]; (3) Validate at NASA GSFC Radiation Test Facility. TRL 2 evidence: Preliminary simulations (Appendix B) show 40% improvement in SEU rate.'"
+      ],
+      "reviewer_psychology": "NASA technical reviewers are among the world's best in their fields. Hand-waving is immediately spotted. They want to see: genuine scientific innovation, understanding of the physics, space environment awareness, and rigorous methodology."
     },
     "anticipated_benefits": {
       "name": "Anticipated Benefits",
@@ -38,9 +48,14 @@
       "min_words": 400,
       "max_words": 800,
       "order": 3,
-      "guidelines": "Describe specific benefits to NASA missions and programs. Address both near-term and long-term applications. Include potential spinoff applications for other government agencies and commercial markets. Be specific about which NASA centers, directorates, or missions would benefit.",
-      "required_keywords": ["NASA missions", "benefit", "applications", "space"],
-      "description": "Benefits to NASA and potential applications"
+      "guidelines": "Describe specific benefits to NASA with mission-level detail. STRUCTURE: (1) Primary NASA benefit - which specific NASA missions or programs? Name them: Artemis, Europa Clipper, Mars Sample Return, specific Earth Science missions, etc.; (2) NASA Centers that would use this - JPL, GSFC, Marshall, etc. Include evidence of engagement if available; (3) Technology Taxonomy alignment - cite specific area(s); (4) Near-term applications - what could use this in the next 5 years; (5) Long-term vision - how does this enable future NASA capabilities; (6) Spinoff applications - other government agencies, commercial space, terrestrial. CRITICAL: NASA wants to see you understand their mission needs, not generic 'space benefits'. Reference NASA Technology Roadmaps, Decadal Surveys, mission requirements.",
+      "required_keywords": ["NASA missions", "benefit", "applications", "space", "mission", "technology"],
+      "description": "Mission-specific NASA benefits with named programs and technology taxonomy alignment",
+      "winning_examples": [
+        "BAD: 'This technology benefits NASA's space exploration efforts.'",
+        "GOOD: 'Primary NASA Benefit: Enables Artemis III-VII lunar surface EVA suits to operate 8 hours vs. current 6-hour limitation, directly addressing EVA-23-002 requirement. NASA Center Interest: JSC Crew and Thermal Systems Division (Dr. Jane Smith, letter attached) identified this as critical for sustained lunar presence. Technology Taxonomy: TX06.2.1 (Active Thermal Control). Near-term insertion: ISS EMU upgrade (2027 planned), Gateway PPE thermal system. Long-term: Mars transit ECLSS requires similar capability. Spinoff: LEO commercial stations (Axiom, Orbital Reef) have identical thermal challenges; LOI from Axiom thermal lead attached.'"
+      ],
+      "reviewer_psychology": "NASA reviewers want to see you've done your homework on NASA's actual needs. Generic benefits score poorly. Specific mission references, Technology Taxonomy alignment, and evidence of NASA engagement (letters from NASA technologists) are highly valued."
     },
     "work_plan": {
       "name": "Work Plan",
@@ -50,9 +65,14 @@
       "min_words": 800,
       "max_words": 1200,
       "order": 4,
-      "guidelines": "Provide detailed 6-month work plan with monthly tasks, milestones, and deliverables. Include Gantt chart or timeline. Show technical performance metrics and success criteria for each milestone. Identify go/no-go decision points. Plan must be realistic for 6 months and $150K.",
-      "required_keywords": ["month", "milestone", "deliverable", "performance metrics"],
-      "description": "Detailed schedule with milestones and metrics"
+      "guidelines": "Provide detailed 6-month work plan demonstrating execution capability. STRUCTURE: (1) Gantt chart or visual timeline showing tasks, dependencies, milestones; (2) Month-by-month breakdown with specific activities - 'Month 1: (a) task, (b) task...'; (3) Milestones table: Milestone | Month | Deliverable | Success Criteria | Verification Method; (4) Go/No-Go decision points - what would cause pivot or stop; (5) Performance metrics for each milestone - must be quantified; (6) Resource allocation - who does what, aligned with budget. CRITICAL: $150K for 6 months is LIMITED. Scope must be narrow and achievable. Every milestone needs QUANTIFIED success criteria. AVOID: Overambitious scope, vague timelines, milestones without measurable criteria.",
+      "required_keywords": ["month", "milestone", "deliverable", "performance metrics", "task", "schedule"],
+      "description": "Realistic 6-month plan with quantified milestones appropriate for $150K budget",
+      "winning_examples": [
+        "BAD: 'Months 1-3: Development. Months 4-6: Testing and analysis.'",
+        "GOOD: 'Month 1: (a) Complete thermal model calibration using COMSOL, (b) Procure test materials from [vendor], (c) Establish baseline measurements. Milestone M1 (end Month 1): Thermal model validated against published data (±5% accuracy). Go/No-Go: If model error >10%, extend calibration 2 weeks using contingency. Month 2: (a) Fabricate test articles per Design-001 spec, (b) Instrument with thermocouples (12-point array), (c) Begin thermal vacuum chamber setup... Milestone M2 (end Month 3): Test articles survive 100 thermal cycles (-150°C to +120°C) with <2% performance degradation. Success criteria: Thermal conductivity remains within 95% of initial value.'"
+      ],
+      "reviewer_psychology": "NASA program managers want realistic plans. $150K doesn't go far. Proposals that try to do too much for the budget get rejected. Clear milestones with quantified criteria show you understand project management."
     },
     "related_research": {
       "name": "Related Research",
@@ -62,9 +82,14 @@
       "min_words": 400,
       "max_words": 800,
       "order": 5,
-      "guidelines": "Summarize relevant prior research by the proposing team and others. Cite key publications and patents. Explain how this work differs from and builds upon prior art. Demonstrate understanding of current state-of-the-art in the field.",
-      "required_keywords": ["prior research", "state-of-the-art", "publications"],
-      "description": "Review of related work and prior art"
+      "guidelines": "Demonstrate scholarly awareness of the field including NASA-funded work. STRUCTURE: (1) State-of-the-art review - academic literature with citations; (2) NASA-funded prior work - SBIR/STTR, center R&D, university partnerships; (3) Commercial developments in this space; (4) Your differentiation - specific technical advantages over each alternative; (5) How you build on prior art - what foundation enables your approach; (6) Why existing solutions don't meet NASA needs. CRITICAL: NASA reviewers know the literature. Demonstrate scholarship. Explain why your approach is different AND better than what's been tried. AVOID: Ignoring NASA-funded alternatives, claiming no prior work exists.",
+      "required_keywords": ["prior research", "state-of-the-art", "publications", "literature", "differentiation"],
+      "description": "Scholarly review demonstrating field knowledge and clear differentiation",
+      "winning_examples": [
+        "BAD: 'Limited prior work exists in this area.'",
+        "GOOD: 'State-of-art: (1) JPL's work on high-temp batteries (Chen et al., 2023, NASA TM-2023-XXXX) achieved 80°C operation but sacrificed 40% capacity; (2) MIT/Draper SBIR Phase II (NNX17xxx, $750K) demonstrated 100°C but with 2-hour cycling lifetime; (3) Commercial (Saft, Quallion): -40°C to +60°C range, insufficient for lunar surface application. Our approach differs by [specific technical difference], enabling full temperature range with projected 500+ cycle lifetime. Building on: Our preliminary work (Smith & Jones, 2024, J. Power Sources) demonstrated the core mechanism at 25°C; Phase I extends to relevant temperature range.'"
+      ],
+      "reviewer_psychology": "NASA reviewers are scientists who value scholarly rigor. They know what's been funded and published. Ignoring relevant work looks uninformed. Clear differentiation from alternatives, including NASA-funded work, builds credibility."
     },
     "commercialization_strategy": {
       "name": "Commercialization Strategy",
@@ -74,9 +99,14 @@
       "min_words": 400,
       "max_words": 800,
       "order": 6,
-      "guidelines": "Describe the commercialization strategy including NASA and non-NASA markets. Identify potential NASA customers, other government agencies, and commercial applications. Explain path to Phase II and beyond. Include discussion of IP strategy and competitive advantages.",
-      "required_keywords": ["commercialization", "market", "Phase II", "customers"],
-      "description": "Commercialization plan and market strategy"
+      "guidelines": "Describe path to NASA infusion and commercial success. STRUCTURE: (1) NASA infusion pathway - specific missions, programs, or centers with timeline; (2) Other government agencies - DoD, NOAA, DOE applications; (3) Commercial space market - LEO operators, lunar companies, launch providers. Name potential customers; (4) Terrestrial applications - dual-use that de-risks NASA investment; (5) Business model - how you make money; (6) IP strategy - patents, licensing approach; (7) Phase II and beyond - what comes next. CRITICAL: NASA's goal is technology that gets used. Show clear path from Phase I success to NASA mission insertion AND commercial applications. Named customers with evidence of interest are powerful.",
+      "required_keywords": ["commercialization", "market", "Phase II", "customers", "NASA infusion", "commercial space"],
+      "description": "NASA infusion pathway plus commercial/dual-use applications",
+      "winning_examples": [
+        "BAD: 'This technology has significant commercial potential.'",
+        "GOOD: 'NASA Infusion: Primary target is Artemis lunar surface power system (2028 CDR). NASA STMD TRL-raising through Lunar Surface Innovation Initiative. Letter of interest from MSFC Power Systems branch chief attached. Commercial Space: LEO constellation operators (SpaceX Starlink, Amazon Kuiper) require extended orbital life - LOI from SpaceX thermal team for $200K pilot if Phase I successful. Terrestrial: EV battery thermal management ($8.2B market, 18% CAGR) uses identical principles - partnership discussions with Rivian underway. IP: Provisional patent filed (App #63/xxx,xxx); freedom-to-operate analysis complete. Phase II ($750K): Deliver flight-qualifiable prototype for NASA environmental testing.'"
+      ],
+      "reviewer_psychology": "NASA wants technologies that transition to missions AND create commercial value. The combination de-risks NASA's investment. Evidence of customer interest (LOIs, partnership discussions) significantly strengthens proposals."
     },
     "facilities_and_equipment": {
       "name": "Facilities and Equipment",
@@ -86,9 +116,14 @@
       "min_words": 200,
       "max_words": 400,
       "order": 7,
-      "guidelines": "Describe available facilities, equipment, and resources. Identify any unique capabilities. Explain how facilities are adequate for proposed Phase I work. Include any university, NASA center, or other partnerships.",
-      "required_keywords": ["facilities", "equipment", "capabilities"],
-      "description": "Description of available facilities and resources"
+      "guidelines": "Describe infrastructure proving capability to execute NASA-quality work. STRUCTURE: (1) Laboratory facilities - location, capabilities, certifications; (2) Key equipment - major items relevant to proposed work; (3) Computational resources - for modeling and simulation; (4) NASA center access - any partnerships or facility agreements; (5) Partner facilities - universities, national labs, commercial test facilities; (6) Quality systems - ISO certification or equivalent if applicable. CRITICAL: NASA work often requires specialized testing (thermal vacuum, vibration, radiation). Show access to these capabilities if needed. $150K doesn't allow major equipment purchases; show existing infrastructure.",
+      "required_keywords": ["facilities", "equipment", "capabilities", "laboratory", "testing"],
+      "description": "Infrastructure demonstrating NASA-quality work capability",
+      "winning_examples": [
+        "BAD: 'We have adequate facilities and equipment.'",
+        "GOOD: 'Primary Facility: 2,500 sq ft cleanroom (Class 10,000) in Boulder, CO. Equipment: (a) Thermal vacuum chamber (-180°C to +200°C, 10⁻⁶ torr), (b) Environmental test chamber for thermal cycling, (c) Electrical characterization suite including potentiostat and impedance analyzer. Computational: COMSOL Multiphysics license, 64-core simulation cluster. NASA Center Access: Agreement with NASA GSFC for radiation testing at Radiation Effects Facility (letter attached). University Partnership: CU Boulder Aerospace Dept. thermal vacuum facility available under Prof. Smith collaboration (letter attached).'"
+      ],
+      "reviewer_psychology": "NASA reviewers assess: Can you actually do this work? Space-relevant testing is expensive. Showing existing infrastructure and smart partnerships (especially NASA center access) builds confidence you can execute with the limited Phase I budget."
     },
     "key_personnel": {
       "name": "Key Personnel and Qualifications",
@@ -98,9 +133,14 @@
       "min_words": 400,
       "max_words": 1200,
       "order": 8,
-      "guidelines": "Provide biographical sketches for Principal Investigator and key personnel (1 page max per person). Include education, relevant experience, publications, and role in the project. Demonstrate team's capability to successfully execute Phase I.",
-      "required_keywords": ["PI", "qualifications", "experience", "education"],
-      "description": "Team qualifications and biographical information"
+      "guidelines": "Provide bios demonstrating aerospace expertise and NASA understanding. FOR EACH PERSON: (1) Name, title, role, % effort; (2) Education - degrees, institutions, fields; (3) Aerospace/NASA experience - prior NASA work, aerospace industry, relevant research; (4) Key publications and patents - especially NASA-relevant work; (5) Specific responsibilities on this project; (6) Why this person is essential for success. CRITICAL: PI must dedicate minimum 1/3 time. Team must collectively cover all technical needs. NASA/aerospace experience highly valued. Publications in relevant fields demonstrate expertise. AVOID: Generic bios without NASA/aerospace connection.",
+      "required_keywords": ["PI", "qualifications", "experience", "education", "aerospace", "NASA"],
+      "description": "Team qualifications emphasizing aerospace/NASA experience",
+      "winning_examples": [
+        "BAD: 'Dr. Smith has extensive experience in battery technology.'",
+        "GOOD: 'Dr. Jane Smith, PI (33% effort): PhD Stanford 2012, Materials Science specializing in solid-state electrochemistry. NASA/Aerospace Experience: (a) 6 years at JPL developing Mars rover battery systems, (b) PI on NASA SBIR Phase II NNX19xxx ($750K, successfully completed with flight unit delivered), (c) Co-I on Europa Clipper power system trade study. Publications: 23 peer-reviewed papers including 5 in J. Power Sources on space battery applications. Patents: 3 issued, 2 pending on solid-state electrolyte technology directly relevant to this proposal. Role: Overall technical leadership, electrochemical cell design (Objectives 1-2), NASA interface.'"
+      ],
+      "reviewer_psychology": "NASA trusts teams with NASA experience. Prior SBIR success, especially with delivered hardware, is golden. Publications in relevant journals demonstrate scientific credibility. Show the team collectively has all needed skills."
     },
     "budget_narrative": {
       "name": "Budget Narrative and Justification",
@@ -110,9 +150,14 @@
       "min_words": 800,
       "max_words": 1200,
       "order": 9,
-      "guidelines": "Provide detailed budget up to $150,000 for 6-month Phase I. Break down by: Direct Labor (by person with rates), Fringe Benefits, Materials and Supplies, Equipment, Travel, Consultants/Subcontractors, Other Direct Costs, Indirect Costs. Justify each item and show calculations. Budget must align with work plan.",
-      "required_keywords": ["budget", "labor", "materials", "justification"],
-      "description": "Detailed budget with line-item justifications"
+      "guidelines": "Provide detailed budget for $150,000 over 6 months. STRUCTURE: (1) Direct Labor - name, role, hours, rate for each person. PI must be minimum 1/3 effort; (2) Fringe Benefits - rate and basis; (3) Materials and Supplies - itemized with justification; (4) Equipment - items >$5K need strong justification (limited budget!); (5) Travel - itemize each trip: purpose, destination, cost. Include NASA program reviews; (6) Subcontractors/Consultants - name, scope, cost. Must be <50% for small business majority; (7) Other Direct Costs - testing fees, etc.; (8) Indirect Costs - rate and basis. CRITICAL: $150K is limited. Budget must align with work plan. Every cost needs justification. PI effort requirement is strict (1/3 minimum).",
+      "required_keywords": ["budget", "labor", "materials", "justification", "direct", "indirect"],
+      "description": "Realistic budget aligned with work plan for limited Phase I funding",
+      "winning_examples": [
+        "BAD: 'Labor: $90,000; Materials: $30,000; Indirect: $30,000'",
+        "GOOD: 'Direct Labor ($82,500): Dr. Jane Smith, PI, 346 hrs (33% of 6 months) @ $150/hr = $51,900 - leads cell design and testing per Objectives 1-2; John Doe, Research Engineer, 400 hrs @ $75/hr = $30,000 - fabrication and characterization... Materials ($18,000): Solid electrolyte precursors (500g @ $200/g = $10,000) - required for 20 test cells; Electrode materials ($5,000); Characterization consumables ($3,000)... Travel ($4,500): NASA SBIR Program Review, Washington DC (2 people, 3 days) = $3,000; Customer meeting at SpaceX, Hawthorne = $1,500... Indirect ($36,000): 45% of direct labor, consistent with company-wide rate...'"
+      ],
+      "reviewer_psychology": "NASA cost reviewers check alignment between technical plan and budget. PI effort requirements are enforced. $150K doesn't go far; unrealistic budgets get rejected. Show you can accomplish Phase I goals with the available funding."
     }
   },
 
@@ -126,17 +171,45 @@
         "Qualifications of Principal Investigator and team",
         "Adequacy of resources and facilities",
         "Realism of cost and schedule"
+      ],
+      "what_reviewers_actually_look_for": [
+        "Genuine advancement of state-of-the-art with quantified improvement",
+        "Scientifically rigorous technical approach",
+        "Understanding of space environment constraints",
+        "Accurate TRL assessment with realistic advancement plan",
+        "Comprehensive risk identification with credible mitigation"
+      ],
+      "common_rejection_reasons": [
+        "Incremental improvements rather than innovation",
+        "Ignoring space environment requirements",
+        "Unrealistic TRL claims without evidence",
+        "Methodology lacks scientific rigor",
+        "Team lacks relevant aerospace expertise"
       ]
     },
     "nasa_relevance": {
       "weight": 0.35,
-      "description": "Relevance to NASA mission and needs",
+      "description": "Relevance to NASA mission and needs - equal weight with technical merit",
       "sub_criteria": [
         "Relevance to NASA mission objectives and needs",
         "Potential contribution to NASA programs and missions",
         "TRL advancement appropriate for Phase I",
         "Feasibility of achieving stated Phase I objectives",
         "Clear path to Phase II development"
+      ],
+      "what_reviewers_actually_look_for": [
+        "Alignment with specific NASA Technology Taxonomy areas",
+        "Named NASA missions or programs that need this capability",
+        "Understanding of NASA's technical requirements and constraints",
+        "Evidence of NASA center engagement or interest",
+        "Clear path to mission infusion"
+      ],
+      "common_rejection_reasons": [
+        "No alignment with NASA Technology Taxonomy",
+        "Generic 'space applications' without mission specifics",
+        "Technology solves already-solved NASA problem",
+        "No understanding of NASA's actual needs",
+        "No path to NASA mission insertion"
       ]
     },
     "commercialization": {
@@ -148,6 +221,20 @@
         "Company's ability to commercialize",
         "Dual-use potential (NASA and commercial)",
         "Intellectual property strategy"
+      ],
+      "what_reviewers_actually_look_for": [
+        "Credible dual-use applications beyond NASA",
+        "Commercial space market customers identified",
+        "Clear path to NASA infusion plus commercial sales",
+        "Evidence of customer interest (LOIs, discussions)",
+        "Viable business model"
+      ],
+      "common_rejection_reasons": [
+        "NASA-only application with no commercial path",
+        "No evidence of market interest",
+        "Unrealistic market sizing",
+        "No commercialization strategy",
+        "No IP protection plan"
       ]
     },
     "experience": {
@@ -159,6 +246,20 @@
         "Quality of facilities and resources",
         "Team stability and commitment",
         "Prior SBIR/STTR success if applicable"
+      ],
+      "what_reviewers_actually_look_for": [
+        "Prior NASA SBIR/STTR success",
+        "Team members with NASA or aerospace experience",
+        "Relationships with NASA centers",
+        "Facilities capable of space-relevant testing",
+        "Track record of delivering hardware/results"
+      ],
+      "common_rejection_reasons": [
+        "No aerospace heritage or NASA connections",
+        "Team lacks relevant experience",
+        "Facilities inadequate for proposed work",
+        "No evidence of ability to execute",
+        "Key personnel over-committed"
       ]
     }
   },
@@ -187,10 +288,10 @@
     "sbir_data_rights": true,
     "export_control": "May apply depending on technology",
     "u.s._citizen_pi": "Not required, but work must be performed in U.S.",
-    "pi_commitment": "Minimum 1/3 time during Phase I",
+    "pi_commitment": "Minimum 1/3 time during Phase I (strictly enforced)",
     "small_business_majority": "Small business must perform >50% of work",
     "nasa_collaboration": "Encouraged but not required",
-    "dual_use_applications": "Encouraged",
+    "dual_use_applications": "Encouraged - strengthens proposals",
     "technology_taxonomy": "Must align with NASA Technology Taxonomy"
   },
 
@@ -198,7 +299,7 @@
     "company_registry": "Required (SAM.gov registration)",
     "sbir_company_registry": "Required (SBC registry)",
     "cost_proposal": "Required (separate volume)",
-    "letters_of_support": "Optional but helpful",
+    "letters_of_support": "Optional but highly valuable - especially from NASA technologists",
     "current_and_pending": "Required",
     "quad_chart": "Required (1-page summary)",
     "data_rights_assertions": "Required",
@@ -246,5 +347,31 @@
     "TRL_4": "Component and/or breadboard validation in laboratory environment",
     "TRL_5": "Component and/or breadboard validation in relevant environment",
     "TRL_6": "System/subsystem model or prototype demonstration in relevant environment"
-  }
+  },
+
+  "fatal_flaws_to_avoid": [
+    "No alignment with NASA Technology Taxonomy - must cite specific area",
+    "Ignoring space environment requirements (radiation, thermal, vacuum)",
+    "No identified NASA mission or program customer",
+    "Incremental rather than transformative innovation",
+    "Unrealistic TRL advancement claims without evidence",
+    "Missing commercial/dual-use applications",
+    "Academic research without mission application",
+    "Generic 'space applications' without specifics",
+    "Budget unrealistic for $150K Phase I",
+    "PI effort below 1/3 minimum requirement"
+  ],
+
+  "top_15_percent_characteristics": [
+    "Quantified advancement over state-of-art (e.g., '2.3x improvement in X')",
+    "Specific NASA Technology Taxonomy alignment cited",
+    "Named NASA missions/programs with timeline for insertion",
+    "Letter of support from NASA technologist or center",
+    "Space environment considerations thoroughly addressed",
+    "TRL advancement plan with measurable exit criteria",
+    "Commercial space and terrestrial dual-use applications",
+    "Prior NASA SBIR success or NASA work experience on team",
+    "Milestones with quantified success criteria",
+    "Realistic scope achievable with $150K Phase I budget"
+  ]
 }

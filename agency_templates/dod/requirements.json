@@ -14,9 +14,14 @@
       "min_words": 100,
       "max_words": 400,
       "order": 1,
-      "guidelines": "Write a 1-page technical abstract summarizing the innovation, technical approach, military relevance, and expected outcomes. Focus on how this addresses DoD mission needs.",
-      "required_keywords": ["innovation", "military", "technical approach", "Phase I"],
-      "description": "Technical summary of innovation and military applications"
+      "guidelines": "Write a 1-page technical abstract that speaks DoD language from the first sentence. STRUCTURE: (1) Capability gap being addressed - reference specific BAA topic, DoD requirement, or mission need; (2) Technical approach in operational terms; (3) Military utility - how warfighters will use this; (4) TRL advancement expected (e.g., TRL 3→4); (5) Phase III transition path. CRITICAL: DoD reviewers are often military officers or DoD civilians. They think in terms of missions, not markets. Lead with the military problem, not your technology. Use DoD terminology correctly: SWaP-C, CONOPS, PEO, PM. AVOID: Academic language, commercial-first framing, vague 'military applications.'",
+      "required_keywords": ["innovation", "military", "technical approach", "Phase I", "capability", "mission"],
+      "description": "Technical summary emphasizing military utility and transition potential",
+      "winning_examples": [
+        "BAD: 'We propose an innovative AI solution with military applications.'",
+        "GOOD: 'This effort addresses the Air Force's critical need for real-time threat detection in contested electromagnetic environments (BAA Topic AF###). Our approach advances sensor fusion from TRL 3 to TRL 4, enabling 10x faster target identification with 40% reduction in SWaP. Phase III transition planned with PEO Digital, AFRL Sensors Directorate as transition partner (letter attached).'"
+      ],
+      "reviewer_psychology": "DoD reviewers ask: 'How does this help the warfighter?' Technology for its own sake doesn't impress them. They want to see you understand their mission, their constraints, and how they actually acquire and deploy capability."
     },
     "identification_and_significance": {
       "name": "Identification and Significance of Problem",
@@ -26,9 +31,14 @@
       "min_words": 400,
       "max_words": 800,
       "order": 2,
-      "guidelines": "Clearly identify the specific DoD problem or capability gap. Explain why current solutions are inadequate and why this innovation is significant for military operations. Reference specific DoD requirements, mission areas, or capability gaps.",
-      "required_keywords": ["problem", "military capability", "DoD requirement", "significance"],
-      "description": "Problem definition and significance to DoD mission"
+      "guidelines": "Clearly identify the DoD problem with evidence of operational impact. STRUCTURE: (1) Specific capability gap - reference DoD requirements documents (BAA, AoA, CPD, CDD) or named military programs; (2) Current state and why inadequate - what do warfighters do now and why doesn't it work; (3) Operational consequences of the gap - missions that can't be performed, lives at risk, costs incurred; (4) Why this problem is significant NOW - alignment with DoD modernization priorities (JADC2, ABMS, digital engineering, etc.). CRITICAL: Show you've studied the operational context. Name specific platforms, missions, or programs affected. AVOID: Generic 'the military needs better X' without specifics.",
+      "required_keywords": ["problem", "military capability", "DoD requirement", "significance", "operational", "mission"],
+      "description": "Problem definition anchored in specific DoD requirements and operational impact",
+      "winning_examples": [
+        "BAD: 'Current military systems have performance limitations.'",
+        "GOOD: 'The F-35's current EW suite requires 3.2 seconds for threat classification in dense signal environments, exceeding the 1-second requirement identified in the Joint Air-to-Ground Missile (JAGM) Analysis of Alternatives. This gap affects 2,400+ aircraft across USAF, USN, and allied forces. Our approach directly addresses JADC2 Priority Area 3 (sensor-to-shooter latency) and aligns with AFRL's Autonomy in Contested Environments initiative.'"
+      ],
+      "reviewer_psychology": "DoD reviewers want proof you understand THEIR problem, not a generic problem. Reference to specific documents, programs, and requirements signals you've done your homework. It also helps them see the transition path."
     },
     "technical_objectives": {
       "name": "Phase I Technical Objectives",
@@ -38,9 +48,14 @@
       "min_words": 1200,
       "max_words": 1600,
       "order": 3,
-      "guidelines": "Define specific, measurable Phase I technical objectives. Describe the technical approach, methodology, and proof-of-concept demonstrations. Include TRL advancement plan (typically TRL 3 to TRL 4-5). Address technical risks and mitigation strategies.",
-      "required_keywords": ["objective", "methodology", "TRL", "proof-of-concept", "risk"],
-      "description": "Specific Phase I technical goals and approach"
+      "guidelines": "Define specific, measurable Phase I objectives that prove feasibility. STRUCTURE: (1) Clear TRL advancement plan - state current TRL with evidence, target TRL with exit criteria; (2) Numbered technical objectives with specific performance targets (use military-relevant metrics); (3) Technical approach for each objective - methodology that considers operational environment; (4) Success criteria tied to military requirements; (5) Risk matrix: Risk | Probability | Impact | Mitigation - DoD expects realistic risk assessment; (6) SWaP-C considerations if applicable. CRITICAL: Objectives must be achievable in 6 months with $200K. Scope narrowly. FATAL FLAWS: Academic research without operational application, ignoring SWaP-C, unrealistic TRL claims, missing risk mitigation.",
+      "required_keywords": ["objective", "methodology", "TRL", "proof-of-concept", "risk", "SWaP", "performance", "validation"],
+      "description": "Measurable objectives with TRL advancement plan and military-relevant success criteria",
+      "winning_examples": [
+        "BAD: 'Objective 1: Develop improved algorithm.'",
+        "GOOD: 'Objective 1: Demonstrate signal classification accuracy ≥95% in contested EM environment. Current State: TRL 3 (lab demonstration, 87% accuracy in benign conditions). Phase I Exit Criteria: (a) ≥95% classification accuracy against Red Team signal library, (b) Processing latency <500ms on embedded hardware proxy, (c) Power consumption <15W steady-state. Risk: Adversarial signal spoofing (High probability, High impact). Mitigation: Anti-spoofing techniques from DARPA RadioML program; team includes Dr. X who developed core countermeasures.'"
+      ],
+      "reviewer_psychology": "DoD technical reviewers want to see operational realism. Lab demonstrations are nice, but they care about field conditions. TRL claims must be defensible. Risk acknowledgment shows maturity; hiding risks shows naivety."
     },
     "work_plan": {
       "name": "Work Plan",
@@ -50,9 +65,14 @@
       "min_words": 800,
       "max_words": 1200,
       "order": 4,
-      "guidelines": "Provide month-by-month work plan for 6-month Phase I. Include specific milestones, deliverables, performance metrics, and decision points. Show critical path and task dependencies. Align with DoD reporting requirements.",
-      "required_keywords": ["month", "milestone", "deliverable", "schedule"],
-      "description": "Detailed work plan with timeline and milestones"
+      "guidelines": "Provide month-by-month work plan demonstrating project management capability. STRUCTURE: (1) Gantt chart showing tasks, dependencies, milestones; (2) Month-by-month breakdown with specific activities; (3) Milestone table: Milestone | Month | Deliverable | Success Criteria | Verification Method; (4) Go/No-Go decision points - what would trigger a pivot; (5) DoD reporting alignment - how you'll meet contract reporting requirements; (6) Resource allocation by task. CRITICAL: DoD contracts have reporting requirements (monthly technical reports, Phase I Final Report). Show you understand this. Milestones must have QUANTIFIED success criteria. AVOID: Vague timelines, compressed schedules without justification, missing dependencies.",
+      "required_keywords": ["month", "milestone", "deliverable", "schedule", "task", "report", "verification"],
+      "description": "Detailed work plan with DoD-compliant milestones and reporting",
+      "winning_examples": [
+        "BAD: 'Months 1-3: Algorithm development. Months 4-6: Testing.'",
+        "GOOD: 'Month 1: (a) Finalize algorithm architecture per Objective 1 requirements, (b) Establish test harness using AFRL-provided signal library, (c) Monthly Technical Report #1 to TPOC. Milestone M1 (end Month 2): Algorithm achieves 90% accuracy on training set, passes code review. Go/No-Go: If training accuracy <85%, pivot to ensemble approach (2-week buffer allocated). Month 3: (a) Red Team evaluation against adversarial signals, (b) Begin embedded hardware integration...'"
+      ],
+      "reviewer_psychology": "DoD program managers have been burned by contractors who promise and don't deliver. A detailed work plan with realistic buffers and clear decision points shows you know how to execute. Vague plans signal risk."
     },
     "related_work": {
       "name": "Related Work",
@@ -62,9 +82,14 @@
       "min_words": 400,
       "max_words": 800,
       "order": 5,
-      "guidelines": "Describe prior related work by the company and others. Explain how this proposal builds on or differs from existing solutions. Demonstrate awareness of competitive landscape and DoD existing capabilities.",
-      "required_keywords": ["prior work", "competitive", "state-of-the-art"],
-      "description": "Review of related work and competitive analysis"
+      "guidelines": "Demonstrate awareness of competitive landscape including DoD-funded efforts. STRUCTURE: (1) State-of-the-art in this technical area - academic and commercial; (2) Related DoD programs and investments (DARPA, service labs, other SBIRs); (3) Your differentiation - specific technical advantages over each alternative; (4) How this builds on prior work - yours and others; (5) Why existing solutions are inadequate for this military need. CRITICAL: DoD reviewers know what else has been funded. Show you know too. Explain why your approach is different AND better. AVOID: 'No competitors exist' (always false), ignoring DoD-funded alternatives.",
+      "required_keywords": ["prior work", "competitive", "state-of-the-art", "differentiation", "alternative"],
+      "description": "Competitive analysis including DoD-funded alternatives with clear differentiation",
+      "winning_examples": [
+        "BAD: 'No similar technology exists in the market.'",
+        "GOOD: 'Current approaches: (1) Company X's system (DoD contract #W911xxx): Achieves 85% accuracy but requires 3U form factor and 50W power; (2) DARPA RadioML program: Demonstrated 90% accuracy but processing latency exceeds 2 seconds; (3) Academic state-of-art (Smith et al., 2023): 92% accuracy in simulation only, no hardware demonstration. Our approach: First to combine [technique A] with [technique B], enabling 95% accuracy in 1U form factor at 15W. Preliminary results (Appendix B) demonstrate 89% accuracy in lab tests, with clear path to 95% through Phase I optimization.'"
+      ],
+      "reviewer_psychology": "DoD reviewers are skeptical of 'revolutionary' claims. They've funded many SBIRs and know what's out there. Honest competitive analysis that shows awareness of alternatives AND clear differentiation builds credibility."
     },
     "dual_use_applications": {
       "name": "Dual Use and Commercialization",
@@ -74,9 +99,14 @@
       "min_words": 400,
       "max_words": 800,
       "order": 6,
-      "guidelines": "Describe both military and commercial applications. Explain transition path to DoD acquisition programs (Phase III). Identify potential DoD customers and commercial markets. Include letters of support if available.",
-      "required_keywords": ["dual use", "commercial", "Phase III", "transition"],
-      "description": "Military and commercial applications, transition strategy"
+      "guidelines": "Describe Phase III transition and dual-use potential. STRUCTURE: (1) Phase III DoD Customer - NAME the PEO, PM, or acquisition program with evidence of engagement (LOI strongly recommended); (2) Military platforms and programs that would use this - be specific; (3) Dual-use commercial applications - reduces DoD risk if commercial market exists; (4) Transition timeline - how Phase I leads to Phase II leads to Phase III; (5) Commercialization team capability. CRITICAL: DoD's purpose is getting capability to warfighters, not funding research. Phase III path is ESSENTIAL. Named transition partners with letters are powerful. FATAL FLAWS: 'We will pursue transition opportunities in Phase II' (too vague), no understanding of acquisition process.",
+      "required_keywords": ["dual use", "commercial", "Phase III", "transition", "acquisition", "PEO"],
+      "description": "Clear Phase III transition path with named DoD customers and dual-use applications",
+      "winning_examples": [
+        "BAD: 'This technology has numerous military and commercial applications.'",
+        "GOOD: 'Phase III Path: Transition to F-35 EW upgrade program via PEO Tactical Aircraft (letter of interest from Mr. John Smith, PEO-T Acquisition PM, attached). Alternative insertion: Navy SEWIP Block IV has identified this capability gap in their 2024 AoA. Commercial Markets: FAA NextGen requires similar signal processing for ADS-B verification ($340M annual market); LOI from Honeywell Aerospace for $150K pilot pending Phase I success. Transition Timeline: Phase II (24 months) delivers prototype for AFRL evaluation; Phase III ($2-5M anticipated) produces qualification units for operational test.'"
+      ],
+      "reviewer_psychology": "DoD's #1 frustration with SBIR: technologies that never transition. Reviewers heavily weight evidence of transition path. Named contacts at PEOs/PMs with letters are gold. Dual-use de-risks DoD investment."
     },
     "company_capabilities": {
       "name": "Company Capabilities and Experience",
@@ -86,9 +116,14 @@
       "min_words": 400,
       "max_words": 800,
       "order": 7,
-      "guidelines": "Describe company facilities, equipment, and relevant experience. Highlight prior DoD contracts or relevant projects. Demonstrate capability to execute Phase I and potential for Phase II/III.",
-      "required_keywords": ["facilities", "experience", "capability", "team"],
-      "description": "Company qualifications, facilities, and relevant experience"
+      "guidelines": "Prove you can deliver on DoD contracts. STRUCTURE: (1) Relevant DoD contract history - list contract numbers, values, technical areas, performance; (2) Facilities for this work - lab space, equipment, security infrastructure; (3) Quality management and certifications (ISO, AS9100, CMMI if applicable); (4) Security clearance status - facility clearance, personnel clearances, or path to obtain; (5) ITAR/EAR compliance experience; (6) Previous SBIR/STTR success - Phase I to Phase II conversions, Phase III transitions. CRITICAL: Prior DoD performance is the strongest evidence you can deliver. If first DoD contract, emphasize related commercial work and team DoD experience.",
+      "required_keywords": ["facilities", "experience", "capability", "team", "clearance", "contract"],
+      "description": "DoD contract history and infrastructure demonstrating delivery capability",
+      "winning_examples": [
+        "BAD: 'Our company has extensive experience in the technology sector.'",
+        "GOOD: 'DoD Contract Performance: (1) AFRL Phase II FA8650-XX-C-XXXX ($1.5M): Delivered signal processing algorithms 2 months early, exceeded accuracy requirements by 12%, received 'Excellent' CPARS rating; (2) Navy SBIR Phase I N00014-XX-C-XXXX ($200K): Successfully transitioned to Phase II. Facilities: 5,000 sq ft facility in Dayton, OH with active Secret Facility Clearance (FCL). Equipment includes SIGINT development lab with $2M in test equipment. Personnel: CEO holds active TS/SCI; PI and two engineers hold Secret clearances. ITAR compliance: Registered with DDTC, experienced with ITAR-controlled projects.'"
+      ],
+      "reviewer_psychology": "DoD reviewers assess risk. Prior successful DoD contracts dramatically reduce perceived risk. Security infrastructure matters for sensitive work. CPARS ratings and Phase II conversion rates are tracked."
     },
     "key_personnel": {
       "name": "Key Personnel",
@@ -98,9 +133,14 @@
       "min_words": 400,
       "max_words": 1200,
       "order": 8,
-      "guidelines": "Provide brief biographies (1-page max each) for Principal Investigator and key personnel. Focus on relevant technical expertise and experience. Include security clearance status if applicable.",
-      "required_keywords": ["expertise", "experience", "qualifications"],
-      "description": "Biographical information for key personnel"
+      "guidelines": "Provide bios emphasizing DoD-relevant experience. FOR EACH PERSON: (1) Name, title, role, clearance status; (2) Education and relevant technical expertise; (3) DoD experience - prior contracts, military service, lab experience; (4) Relevant technical accomplishments and publications; (5) Specific responsibilities on this effort; (6) % effort commitment. CRITICAL: PI must be U.S. citizen for most DoD work. Highlight any military service, DoD civilian experience, or cleared status. Show how team collectively covers all technical needs. AVOID: Generic bios without DoD connection.",
+      "required_keywords": ["expertise", "experience", "qualifications", "clearance", "PI"],
+      "description": "Team qualifications emphasizing DoD experience and security status",
+      "winning_examples": [
+        "BAD: 'Dr. Smith is an experienced engineer.'",
+        "GOOD: 'Dr. Jane Smith, PI (U.S. Citizen, Active Secret Clearance): PhD MIT 2010, RF Systems. DoD Experience: 8 years at AFRL Sensors Directorate leading EW algorithm development; PI on 3 successful SBIR Phase IIs with Phase III transitions totaling $4.2M. Publications: 15 peer-reviewed papers on signal processing, including Smith et al. (2022) which forms the technical basis for this proposal. Role: Technical lead for Objectives 1-2, customer interface, 50% effort. Clearance: Active Secret (TS/SCI eligible).'"
+      ],
+      "reviewer_psychology": "Team is critical for DoD. Military or DoD civilian experience signals understanding of the customer. Cleared status matters for classified or sensitive work. Prior SBIR success proves execution capability."
     },
     "budget_justification": {
       "name": "Cost Proposal and Budget Justification",
@@ -110,55 +150,116 @@
       "min_words": 800,
       "max_words": 1600,
       "order": 9,
-      "guidelines": "Detailed budget for up to $200,000 Phase I. Break down by: Direct Labor, Materials, Equipment, Travel, Consultants, Subcontractors, Other Direct Costs, Indirect Costs, Profit/Fee. Justify each line item with calculations and explanations. Must align with work plan.",
-      "required_keywords": ["budget", "labor", "materials", "justification"],
-      "description": "Detailed cost proposal with line-item justifications"
+      "guidelines": "Provide detailed cost proposal per DoD requirements. STRUCTURE: (1) Direct Labor - name, title, hours, rate, justification for each person. PI minimum 20% effort required; (2) Fringe Benefits - rate and basis; (3) Materials - itemized with justification; (4) Equipment - items >$5K with quotes and justification; (5) Travel - itemize each trip: destination, purpose, cost breakdown; (6) Subcontractors - name, scope, cost, justification. Must be <33% for small business majority; (7) Consultants - name, rate, hours, expertise; (8) Other Direct Costs - itemized; (9) Indirect Costs - rate and basis (negotiated rate or provisional); (10) Fee/Profit - typically 7-10% for SBIR. CRITICAL: Budget must align with work plan. Costs must be allowable per FAR. Show your work on calculations.",
+      "required_keywords": ["budget", "labor", "materials", "justification", "direct", "indirect", "rate"],
+      "description": "FAR-compliant cost proposal with detailed justifications",
+      "winning_examples": [
+        "BAD: 'Labor: $120,000; Materials: $30,000; Overhead: $50,000'",
+        "GOOD: 'Direct Labor ($98,400): Dr. Jane Smith, PI, 400 hrs @ $95/hr = $38,000 (50% effort) - leads algorithm development per Objectives 1-2; John Doe, Senior Engineer, 480 hrs @ $75/hr = $36,000 - hardware integration per Objective 3... Materials ($15,000): FPGA development boards (2) @ $3,500 ea = $7,000 - required for embedded implementation; Signal generator rental @ $8,000/6 mo - testing per Milestone M3... Indirect Costs ($35,280): Provisional rate 45% of direct labor, pending DCAA audit... Fee ($14,868): 10% of total cost...'"
+      ],
+      "reviewer_psychology": "DoD cost reviewers verify FAR compliance and alignment with technical work. Unexplained costs raise flags. Well-documented budgets with clear calculations build confidence you'll manage the contract properly."
     }
   },
 
   "evaluation_criteria": {
     "technical_merit": {
       "weight": 0.4,
-      "description": "Technical excellence and innovation",
+      "description": "Technical excellence and innovation - can you do it?",
       "sub_criteria": [
         "Soundness and technical merit of proposed approach",
         "Qualifications of proposed personnel and adequacy of available facilities",
         "Feasibility of achieving Phase I technical objectives within 6 months",
         "Realism of proposed costs in relation to proposed research",
         "Adequacy of Phase I effort for Phase II"
+      ],
+      "what_reviewers_actually_look_for": [
+        "TRL assessment is accurate and advancement plan is realistic",
+        "Technical objectives are specific and measurable",
+        "Methodology considers operational environment constraints",
+        "Risk identification is comprehensive with credible mitigations",
+        "Team has demonstrated relevant technical expertise"
+      ],
+      "common_rejection_reasons": [
+        "Academic research without path to fieldable capability",
+        "Ignoring SWaP-C or operational constraints",
+        "Unrealistic TRL claims without evidence",
+        "Missing or inadequate risk mitigation",
+        "Scope too ambitious for Phase I"
       ]
     },
     "dod_relevance": {
       "weight": 0.3,
-      "description": "Relevance to DoD mission and needs",
+      "description": "Relevance to DoD mission and needs - does DoD need it?",
       "sub_criteria": [
         "Potential contribution to DoD mission",
         "Alignment with specific DoD requirements or capability gaps",
         "Military utility and operational impact",
         "Transition potential to DoD acquisition programs",
         "Dual-use potential"
+      ],
+      "what_reviewers_actually_look_for": [
+        "Specific capability gap or military need identified with references",
+        "Understanding of operational context and warfighter needs",
+        "Alignment with DoD modernization priorities (JADC2, digital transformation)",
+        "Named military programs or platforms that need this capability",
+        "Evidence of DoD customer engagement"
+      ],
+      "common_rejection_reasons": [
+        "Technology looking for a problem",
+        "Generic 'military applications' without specifics",
+        "No reference to DoD requirements or programs",
+        "Solution doesn't fit operational context",
+        "No understanding of how DoD would use this"
       ]
     },
     "commercialization": {
       "weight": 0.2,
-      "description": "Commercial potential and Phase III path",
+      "description": "Commercial potential and Phase III path - will it transition?",
       "sub_criteria": [
         "Potential for commercial success",
         "Market size and opportunity",
         "Company's commercialization plan and capability",
         "Path to Phase III (DoD sales) and beyond",
         "Dual-use applications"
+      ],
+      "what_reviewers_actually_look_for": [
+        "Named Phase III transition partner with evidence of engagement",
+        "Identified acquisition program or PEO/PM contact",
+        "Realistic acquisition pathway understanding",
+        "Dual-use commercial applications that de-risk DoD investment",
+        "Prior transition success"
+      ],
+      "common_rejection_reasons": [
+        "No transition pathway identified",
+        "No understanding of DoD acquisition process",
+        "Vague 'will pursue opportunities in Phase II'",
+        "No evidence of DoD customer engagement",
+        "Unrealistic transition timeline"
       ]
     },
     "team_capability": {
       "weight": 0.1,
-      "description": "Team qualifications and resources",
+      "description": "Team qualifications and resources - can this team deliver?",
       "sub_criteria": [
         "Qualifications of Principal Investigator",
         "Company's relevant experience and past performance",
         "Adequacy of facilities and equipment",
         "Ability to execute and deliver results",
         "Prior DoD contract performance if applicable"
+      ],
+      "what_reviewers_actually_look_for": [
+        "Prior DoD contract performance with positive ratings",
+        "Team members with military or DoD civilian experience",
+        "Security clearance status appropriate for the work",
+        "Prior SBIR success (Phase I to II conversion, Phase III transition)",
+        "Facilities and equipment to perform proposed work"
+      ],
+      "common_rejection_reasons": [
+        "No DoD experience on team",
+        "Missing security clearances for sensitive work",
+        "Facilities inadequate for proposed work",
+        "No evidence of ability to execute DoD contracts",
+        "Key personnel over-committed or unavailable"
       ]
     }
   },
@@ -192,13 +293,14 @@
     "cost_share": "Not required for Phase I",
     "itar_compliance": "May be required depending on topic",
     "military_relevance": "Must demonstrate clear DoD application",
-    "dual_use_preferred": true
+    "dual_use_preferred": true,
+    "pi_minimum_effort": "Minimum 20% time commitment during Phase I"
   },
 
   "submission_requirements": {
     "company_registry": "Required (SAM.gov registration)",
     "cost_proposal": "Required (separate volume)",
-    "letters_of_support": "Strongly encouraged",
+    "letters_of_support": "Strongly encouraged - transition partner letters are highly valuable",
     "quad_chart": "Required (1-page summary)",
     "technical_data_rights": "Required assertion",
     "certifications": "Various DoD certifications required",
@@ -232,5 +334,30 @@
       "Ground Systems",
       "Space Weather"
     ]
-  }
+  },
+
+  "fatal_flaws_to_avoid": [
+    "No identified transition pathway or Phase III customer",
+    "Technology without operational relevance - solution looking for a problem",
+    "Ignoring SWaP-C constraints - size, weight, power, and cost matter",
+    "No risk mitigation for classified or controlled environments",
+    "Academic language instead of operational language",
+    "Unclear data rights strategy",
+    "Generic 'military applications' without specific programs",
+    "Unrealistic TRL claims without supporting evidence",
+    "Missing security considerations for sensitive work"
+  ],
+
+  "top_15_percent_characteristics": [
+    "Opens with specific capability gap referencing DoD requirements documents",
+    "Clear TRL advancement plan with measurable exit criteria",
+    "Named Phase III transition partner with letter of support",
+    "Technical objectives include SWaP-C considerations",
+    "Team includes members with DoD or military experience",
+    "Demonstrates understanding of acquisition process",
+    "Dual-use applications credibly identified",
+    "Risk matrix with realistic assessment and mitigation",
+    "Prior DoD contract performance cited with results",
+    "Aligned with DoD modernization priorities (JADC2, etc.)"
+  ]
 }
