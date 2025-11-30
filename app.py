@@ -29,6 +29,10 @@ if 'generation_in_progress' not in st.session_state:
     st.session_state.generation_in_progress = False
 if 'data_loaded' not in st.session_state:
     st.session_state.data_loaded = False
+if 'output_file' not in st.session_state:
+    st.session_state.output_file = None
+if 'sections' not in st.session_state:
+    st.session_state.sections = None
 
 
 def get_lazy_imports():
