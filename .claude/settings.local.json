@@ -17,7 +17,11 @@
       "Bash(done)",
       "Bash(python -m streamlit:*)",
       "Bash(where:*)",
-      "Bash(py -m streamlit:*)"
+      "Bash(py -m streamlit:*)",
+      "Bash(cd:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push)"
     ],
     "deny": [],
     "ask": []
