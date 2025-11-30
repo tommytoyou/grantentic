@@ -8,41 +8,60 @@ OPTIMIZED FOR FAST HEALTH CHECKS - All heavy imports are deferred
 
 import streamlit as st
 
-# Configure page FIRST - this is the only thing that runs immediately
+# Configure page FIRST - this MUST be the very first Streamlit command
 st.set_page_config(
-    page_title="Grantentic - AI Grant Writer",
+    page_title="Grantentic",
     page_icon="🚀",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Inject JavaScript to ensure title is "Grantentic" during loading
-# This prevents the default "Streamlit" title from ever appearing
-st.markdown(
+# Use st.components.v1.html() to inject JavaScript that actually executes
+# (st.markdown strips <script> tags for security)
+import streamlit.components.v1 as components
+components.html(
     """
     <script>
-        // Set title immediately
-        document.title = "Grantentic - AI Grant Writer";
+        // Set title immediately and keep it set
+        document.title = "Grantentic";
 
-        // Monitor and correct any title changes during load
-        const titleObserver = new MutationObserver(function() {
-            if (document.title === "Streamlit" || document.title === "") {
-                document.title = "Grantentic - AI Grant Writer";
-            }
-        });
-
-        const titleElement = document.querySelector('title');
-        if (titleElement) {
-            titleObserver.observe(titleElement, { childList: true, characterData: true, subtree: true });
+        // Also target the parent window in case we're in an iframe
+        if (window.parent) {
+            window.parent.document.title = "Grantentic";
         }
 
-        // Clean up observer after page fully loads
-        window.addEventListener('load', function() {
-            setTimeout(function() { titleObserver.disconnect(); }, 5000);
+        // Monitor for any title changes and correct them
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (document.title !== "Grantentic") {
+                    document.title = "Grantentic";
+                }
+                if (window.parent && window.parent.document.title !== "Grantentic") {
+                    window.parent.document.title = "Grantentic";
+                }
+            });
         });
+
+        // Observe the title element
+        const titleEl = document.querySelector('title');
+        if (titleEl) {
+            observer.observe(titleEl, { childList: true, characterData: true, subtree: true });
+        }
+
+        // Also observe parent document title
+        if (window.parent && window.parent.document) {
+            const parentTitle = window.parent.document.querySelector('title');
+            if (parentTitle) {
+                observer.observe(parentTitle, { childList: true, characterData: true, subtree: true });
+            }
+        }
+
+        // Stop observing after 10 seconds to avoid performance issues
+        setTimeout(function() { observer.disconnect(); }, 10000);
     </script>
     """,
-    unsafe_allow_html=True
+    height=0,
+    width=0,
 )
 
 # Initialize session state ONLY (no imports, no file I/O)
