@@ -84,11 +84,11 @@ def load_company_data():
         except Exception as e:
             st.error(f"Error loading company data: {e}")
             st.session_state.company_data = {
-                'company_name': 'Example Company',
-                'founded': '2024',
-                'location': 'Boulder, CO',
-                'industry': 'Aerospace',
-                'focus_area': 'Space Technology',
+                'company_name': '',
+                'founded': '',
+                'location': '',
+                'industry': '',
+                'focus_area': '',
                 'mission': '',
                 'problem_statement': '',
                 'solution': '',

@@ -1,99 +1,39 @@
 {
-  "company_name": "Deep Space Dynamics",
-  "founded": "2023",
-  "location": "Boulder, Colorado",
-  "industry": "Aerospace & Defense",
-  "focus_area": "CubeSat-based Asteroid Detection and Planetary Defense",
-  
-  "mission": "To develop affordable, rapidly deployable CubeSat constellations for early detection and tracking of near-Earth asteroids and space debris, enhancing planetary defense capabilities.",
-  
+  "company_name": "",
+  "founded": "",
+  "location": "",
+  "industry": "",
+  "focus_area": "",
+  "mission": "",
   "technology": {
-    "platform": "3U CubeSat constellation",
-    "key_innovations": [
-      "Miniaturized wide-field optical sensors with AI-powered detection algorithms",
-      "Distributed sensor fusion for multi-angle asteroid tracking",
-      "Edge computing for real-time threat assessment",
-      "Autonomous orbit determination and trajectory prediction",
-      "Low-cost mass production techniques for rapid constellation deployment"
-    ],
-    "current_stage": "Prototype development and ground testing",
-    "trl_level": 4
+    "platform": "",
+    "key_innovations": [],
+    "current_stage": "",
+    "trl_level": null
   },
-  
-  "problem_statement": "Current ground-based asteroid detection systems have significant blind spots, limited sky coverage, and weather dependencies. NASA's 2005 Congressional mandate to detect 90% of near-Earth objects larger than 140m is still unmet. The 2013 Chelyabinsk meteor (20m diameter) went undetected, causing extensive damage. Space-based detection offers 24/7 coverage, no atmospheric interference, and earlier warning times critical for planetary defense.",
-  
-  "solution": "A constellation of 12-24 specialized CubeSats in strategic orbits providing continuous sky coverage. Each satellite uses advanced CMOS sensors, machine learning algorithms for automated detection, and constellation-wide data fusion to track asteroids weeks earlier than ground systems. The system costs 100x less than traditional space telescopes while providing superior coverage.",
-  
-  "team": [
-    {
-      "name": "Dr. Sarah Chen",
-      "role": "CEO & Co-founder",
-      "background": "PhD in Aerospace Engineering from MIT, 8 years at NASA JPL working on Near-Earth Object detection missions, led development of machine learning algorithms for NEOWISE"
-    },
-    {
-      "name": "Dr. Marcus Rodriguez",
-      "role": "CTO & Co-founder",
-      "background": "PhD in Optical Systems from Caltech, former SpaceX Starlink engineer, expert in miniaturized space optics and CubeSat design"
-    },
-    {
-      "name": "Dr. Emily Wang",
-      "role": "Chief Data Scientist",
-      "background": "PhD in Computer Science from Stanford, specialized in computer vision and ML for astronomical surveys, formerly at Palomar Observatory"
-    },
-    {
-      "name": "James Mitchell",
-      "role": "VP of Engineering",
-      "background": "MS Aerospace Engineering, 12 years experience in CubeSat development at Planet Labs and Spire Global, led 15+ successful orbital missions"
-    }
-  ],
-  
+  "problem_statement": "",
+  "solution": "",
+  "team": [],
   "market_opportunity": {
-    "target_customers": [
-      "NASA Planetary Defense Coordination Office",
-      "U.S. Space Force",
-      "European Space Agency",
-      "National space agencies worldwide",
-      "Commercial space situational awareness providers"
-    ],
-    "market_size": "$2.8B planetary defense and space situational awareness market by 2030",
-    "competitive_advantage": "100x cost reduction, 24/7 coverage, faster detection, scalable constellation architecture"
+    "target_customers": [],
+    "market_size": "",
+    "competitive_advantage": ""
   },
-  
   "current_progress": {
-    "achievements": [
-      "Prototype sensor payload developed and lab-tested",
-      "AI detection algorithm achieving 94% accuracy on synthetic asteroid data",
-      "Partnerships with University of Colorado for CubeSat bus integration",
-      "MOA signed with NASA Ames for ground station support",
-      "$500K seed funding from aerospace-focused VC"
-    ],
-    "next_milestones": [
-      "Complete flight-ready payload by Q2 2026",
-      "Launch demonstration mission by Q4 2026",
-      "Deploy 4-satellite pathfinder constellation by 2027",
-      "Achieve operational capability with 12+ satellites by 2028"
-    ]
+    "achievements": [],
+    "next_milestones": []
   },
-  
   "funding_needs": {
     "nsf_sbir_phase1": {
-      "amount": "$275,000",
-      "purpose": "Complete engineering development of flight-ready optical payload, validate detection algorithms with on-orbit demonstration, and establish technical feasibility for full constellation deployment",
-      "key_activities": [
-        "Finalize sensor design for space environment",
-        "Develop radiation-hardened computing platform",
-        "Conduct thermal-vacuum testing",
-        "Integrate payload with CubeSat bus",
-        "Perform end-to-end system validation"
-      ]
+      "amount": "",
+      "purpose": "",
+      "key_activities": []
     }
   },
-  
   "intellectual_property": {
-    "patents_filed": 2,
-    "patents_pending": 1,
-    "trade_secrets": "Proprietary sensor calibration algorithms and orbit optimization methods"
+    "patents_filed": 0,
+    "patents_pending": 0,
+    "trade_secrets": ""
   },
-  
-  "social_impact": "Protecting Earth from asteroid impacts saves lives and infrastructure. Our technology enables early warning systems for planetary defense, advances space situational awareness for satellite safety, and democratizes access to space-based Earth protection through affordable CubeSat technology."
+  "social_impact": ""
 }
