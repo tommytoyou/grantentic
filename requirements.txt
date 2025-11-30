@@ -4,6 +4,7 @@ pydantic>=2.0.0
 python-docx>=1.1.0
 rich>=13.0.0
 requests>=2.28.0
+tiktoken
 
 # Web interface
 streamlit>=1.30.0
