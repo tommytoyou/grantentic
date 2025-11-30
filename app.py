@@ -33,6 +33,11 @@ if 'output_file' not in st.session_state:
     st.session_state.output_file = None
 if 'sections' not in st.session_state:
     st.session_state.sections = None
+# Authentication state
+if 'authenticated' not in st.session_state:
+    st.session_state.authenticated = False
+if 'user' not in st.session_state:
+    st.session_state.user = None
 
 
 def get_lazy_imports():
@@ -190,6 +195,14 @@ def render_sidebar():
     with st.sidebar:
         st.title("🚀 Grantentic")
         st.caption("AI-Powered Grant Writing System")
+
+        # Show logged in user and logout button
+        if st.session_state.user:
+            st.caption(f"Signed in as: **{st.session_state.user['username']}**")
+            if st.button("Sign Out", use_container_width=True):
+                st.session_state.authenticated = False
+                st.session_state.user = None
+                st.rerun()
 
         st.divider()
 
@@ -505,6 +518,46 @@ def generate_proposal(agency, agency_loader, iterations):
         return False
 
 
+def render_login_page():
+    """Render the login page for authentication"""
+    from src.auth import authenticate_user, initialize_admin_account
+
+    # Initialize admin account on first run
+    initialize_admin_account()
+
+    # Center the login form
+    col1, col2, col3 = st.columns([1, 2, 1])
+
+    with col2:
+        st.title("🚀 Grantentic")
+        st.subheader("Sign In")
+        st.caption("AI-Powered Grant Writing System")
+
+        st.divider()
+
+        with st.form("login_form"):
+            username = st.text_input("Username", placeholder="Enter your username")
+            password = st.text_input("Password", type="password", placeholder="Enter your password")
+
+            submitted = st.form_submit_button("Sign In", use_container_width=True)
+
+            if submitted:
+                if username and password:
+                    user = authenticate_user(username, password)
+                    if user:
+                        st.session_state.authenticated = True
+                        st.session_state.user = user
+                        st.rerun()
+                    else:
+                        st.error("Invalid username or password")
+                else:
+                    st.warning("Please enter both username and password")
+
+        st.divider()
+        st.caption("Default admin credentials: admin / grantentic2024")
+        st.caption("Please change your password after first login.")
+
+
 def render_results():
     """Render proposal results with tabs and download button"""
     if not st.session_state.generated_proposal:
@@ -596,6 +649,11 @@ def render_results():
 
 def main():
     """Main application - optimized for fast initial load"""
+
+    # Check authentication first
+    if not st.session_state.authenticated:
+        render_login_page()
+        return
 
     # Render minimal page first for fast health checks
     st.title("🚀 Grantentic - AI-Powered Grant Writing")
