@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Grantentic{% endblock %}</title>
+
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10/dist/ext/sse.js"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Custom Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* HTMX loading indicator */
+        .htmx-indicator { display: none; }
+        .htmx-request .htmx-indicator { display: inline-block; }
+        .htmx-request.htmx-indicator { display: inline-block; }
+
+        /* Smooth transitions */
+        .htmx-swapping { opacity: 0; transition: opacity 0.2s ease-out; }
+        .htmx-added { animation: fadeIn 0.3s ease-out; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Progress bar animation */
+        .progress-bar {
+            transition: width 0.3s ease-out;
+        }
+    </style>
+
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-gray-50 min-h-screen">
+    {% block body %}
+    <!-- Navigation -->
+    {% if user %}
+    <nav class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/dashboard" class="flex items-center space-x-2">
+                        <span class="text-2xl">🚀</span>
+                        <span class="text-xl font-bold text-gray-900">Grantentic</span>
+                    </a>
+                    <div class="hidden md:flex ml-10 space-x-4">
+                        <a href="/dashboard" class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md {% if request.url.path == '/dashboard' %}bg-primary-50 text-primary-700{% endif %}">
+                            Dashboard
+                        </a>
+                        <a href="/company" class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md {% if request.url.path == '/company' %}bg-primary-50 text-primary-700{% endif %}">
+                            Company Info
+                        </a>
+                        <a href="/generate" class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md {% if request.url.path == '/generate' %}bg-primary-50 text-primary-700{% endif %}">
+                            Generate
+                        </a>
+                        <a href="/results" class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md {% if request.url.path == '/results' %}bg-primary-50 text-primary-700{% endif %}">
+                            Results
+                        </a>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-gray-600">{{ user.username }}</span>
+                    <a href="/logout" class="text-sm text-gray-500 hover:text-gray-700">Sign Out</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="{% if user %}py-6{% endif %}">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    {% if user %}
+    <footer class="bg-white border-t border-gray-200 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
+            <p class="text-center text-sm text-gray-500">
+                Grantentic - AI-Powered Grant Writing System
+            </p>
+        </div>
+    </footer>
+    {% endif %}
+    {% endblock %}
+
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

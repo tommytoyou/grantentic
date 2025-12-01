@@ -1,0 +1,295 @@
+{% extends "base.html" %}
+
+{% block title %}Generate Proposal - Grantentic{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Generate Grant Proposal</h1>
+        <p class="mt-1 text-gray-600">AI-powered proposal generation for {{ agency_info.agency if agency_info else agency|upper }} SBIR</p>
+    </div>
+
+    <!-- Agency Info Card -->
+    {% if agency_info and not agency_info.error %}
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="text-lg font-semibold text-gray-900">{{ agency_info.agency }} {{ agency_info.program }}</h2>
+                <p class="text-gray-600 text-sm mt-1">{{ agency_info.description }}</p>
+            </div>
+            <a href="/dashboard" class="text-sm text-primary-600 hover:text-primary-700">Change Agency</a>
+        </div>
+
+        <div class="mt-4 grid grid-cols-4 gap-4">
+            <div class="text-center p-3 bg-gray-50 rounded-lg">
+                <div class="text-xl font-bold text-gray-900">{{ agency_info.funding_amount|currency }}</div>
+                <div class="text-xs text-gray-500">Funding</div>
+            </div>
+            <div class="text-center p-3 bg-gray-50 rounded-lg">
+                <div class="text-xl font-bold text-gray-900">{{ agency_info.duration_months }} mo</div>
+                <div class="text-xs text-gray-500">Duration</div>
+            </div>
+            <div class="text-center p-3 bg-gray-50 rounded-lg">
+                <div class="text-xl font-bold text-gray-900">{{ agency_info.sections_count }}</div>
+                <div class="text-xs text-gray-500">Sections</div>
+            </div>
+            <div class="text-center p-3 bg-gray-50 rounded-lg">
+                <div class="text-xl font-bold text-gray-900">$2-5</div>
+                <div class="text-xs text-gray-500">Est. Cost</div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Settings Card -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">Generation Settings</h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label for="iterations" class="block text-sm font-medium text-gray-700 mb-1">
+                    Critique-Refine Iterations
+                </label>
+                <select
+                    id="iterations"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                >
+                    <option value="0">0 - Fast, lower quality</option>
+                    <option value="1" selected>1 - Balanced (recommended)</option>
+                    <option value="2">2 - Higher quality, slower</option>
+                    <option value="3">3 - Maximum quality</option>
+                </select>
+                <p class="mt-1 text-xs text-gray-500">More iterations = better quality but higher cost</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Warning Card -->
+    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
+        <div class="flex items-start">
+            <svg class="w-5 h-5 text-amber-500 mt-0.5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+            <div>
+                <h3 class="text-sm font-medium text-amber-800">Before you generate</h3>
+                <p class="mt-1 text-sm text-amber-700">
+                    Proposal generation takes 2-5 minutes and costs approximately $2-5 in API fees.
+                    Make sure your company information is complete and accurate.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Generate Button -->
+    <div id="generate-section">
+        <button
+            id="start-generate"
+            onclick="startGeneration()"
+            class="w-full py-4 px-6 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl transition-colors flex items-center justify-center"
+        >
+            <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+            Generate {{ agency_info.agency if agency_info else agency|upper }} Proposal
+        </button>
+    </div>
+
+    <!-- Progress Section (hidden initially) -->
+    <div id="progress-section" class="hidden">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">Generating Proposal</h2>
+                <span id="cost-display" class="text-sm font-medium text-gray-600">$0.00</span>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="mb-4">
+                <div class="h-3 bg-gray-200 rounded-full overflow-hidden">
+                    <div id="progress-bar" class="h-full bg-primary-500 progress-bar" style="width: 0%"></div>
+                </div>
+                <div class="flex justify-between mt-1">
+                    <span id="section-text" class="text-sm text-gray-600">Initializing...</span>
+                    <span id="progress-text" class="text-sm text-gray-600">0%</span>
+                </div>
+            </div>
+
+            <!-- Status Log -->
+            <div id="status-log" class="mt-4 max-h-64 overflow-y-auto space-y-2 font-mono text-sm">
+                <!-- Status messages will be added here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Complete Section (hidden initially) -->
+    <div id="complete-section" class="hidden">
+        <div class="bg-green-50 border border-green-200 rounded-xl p-6">
+            <div class="flex items-center mb-4">
+                <svg class="w-8 h-8 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <h2 class="text-xl font-semibold text-green-800">Proposal Generated Successfully!</h2>
+            </div>
+
+            <div class="grid grid-cols-3 gap-4 mb-6">
+                <div class="bg-white rounded-lg p-4 text-center">
+                    <div id="final-words" class="text-2xl font-bold text-gray-900">-</div>
+                    <div class="text-sm text-gray-500">Total Words</div>
+                </div>
+                <div class="bg-white rounded-lg p-4 text-center">
+                    <div id="final-cost" class="text-2xl font-bold text-gray-900">-</div>
+                    <div class="text-sm text-gray-500">Generation Cost</div>
+                </div>
+                <div class="bg-white rounded-lg p-4 text-center">
+                    <div id="final-time" class="text-2xl font-bold text-gray-900">-</div>
+                    <div class="text-sm text-gray-500">Generation Time</div>
+                </div>
+            </div>
+
+            <div class="flex space-x-4">
+                <a
+                    href="/results"
+                    class="flex-1 py-3 px-4 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg text-center transition-colors"
+                >
+                    View Results
+                </a>
+                <button
+                    onclick="location.reload()"
+                    class="py-3 px-4 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-lg transition-colors"
+                >
+                    Generate Another
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Section (hidden initially) -->
+    <div id="error-section" class="hidden">
+        <div class="bg-red-50 border border-red-200 rounded-xl p-6">
+            <div class="flex items-center mb-4">
+                <svg class="w-8 h-8 text-red-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <h2 class="text-xl font-semibold text-red-800">Generation Failed</h2>
+            </div>
+
+            <p id="error-message" class="text-red-700 mb-4">An error occurred during generation.</p>
+
+            <button
+                onclick="location.reload()"
+                class="py-2 px-4 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors"
+            >
+                Try Again
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function startGeneration() {
+    const agency = '{{ agency }}';
+    const iterations = document.getElementById('iterations').value;
+
+    // Hide generate button, show progress
+    document.getElementById('generate-section').classList.add('hidden');
+    document.getElementById('progress-section').classList.remove('hidden');
+
+    // Connect to SSE endpoint
+    const eventSource = new EventSource(`/generate/stream?agency=${agency}&iterations=${iterations}`);
+
+    eventSource.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        handleEvent(data);
+    };
+
+    eventSource.onerror = function(error) {
+        console.error('SSE Error:', error);
+        eventSource.close();
+        showError('Connection lost. Please try again.');
+    };
+}
+
+function handleEvent(data) {
+    const statusLog = document.getElementById('status-log');
+
+    switch(data.type) {
+        case 'status':
+            addLogEntry(data.message, 'info');
+            document.getElementById('section-text').textContent = data.message;
+            break;
+
+        case 'init':
+            addLogEntry(`Generating ${data.total_sections} sections...`, 'info');
+            break;
+
+        case 'section_start':
+            addLogEntry(`Starting: ${data.section} (${data.target})`, 'working');
+            document.getElementById('section-text').textContent = `Section ${data.number}/${data.total}: ${data.section}`;
+            document.getElementById('progress-bar').style.width = `${data.progress}%`;
+            document.getElementById('progress-text').textContent = `${data.progress}%`;
+            break;
+
+        case 'section_complete':
+            addLogEntry(`Completed: ${data.section} (${data.word_count} words)`, 'success');
+            document.getElementById('cost-display').textContent = data.cost;
+            document.getElementById('progress-bar').style.width = `${data.progress}%`;
+            document.getElementById('progress-text').textContent = `${data.progress}%`;
+            break;
+
+        case 'complete':
+            addLogEntry('Generation complete!', 'success');
+            document.getElementById('progress-bar').style.width = '100%';
+            document.getElementById('progress-text').textContent = '100%';
+
+            // Show completion section
+            setTimeout(() => {
+                document.getElementById('progress-section').classList.add('hidden');
+                document.getElementById('complete-section').classList.remove('hidden');
+                document.getElementById('final-words').textContent = data.total_words.toLocaleString();
+                document.getElementById('final-cost').textContent = data.total_cost;
+                document.getElementById('final-time').textContent = data.generation_time;
+            }, 500);
+            break;
+
+        case 'error':
+            showError(data.message);
+            break;
+    }
+
+    // Auto-scroll log
+    statusLog.scrollTop = statusLog.scrollHeight;
+}
+
+function addLogEntry(message, type) {
+    const statusLog = document.getElementById('status-log');
+    const entry = document.createElement('div');
+
+    const colors = {
+        'info': 'text-gray-600',
+        'working': 'text-blue-600',
+        'success': 'text-green-600',
+        'error': 'text-red-600'
+    };
+
+    const icons = {
+        'info': '→',
+        'working': '⟳',
+        'success': '✓',
+        'error': '✗'
+    };
+
+    entry.className = `${colors[type]} flex items-start`;
+    entry.innerHTML = `<span class="mr-2">${icons[type]}</span><span>${message}</span>`;
+    statusLog.appendChild(entry);
+}
+
+function showError(message) {
+    document.getElementById('progress-section').classList.add('hidden');
+    document.getElementById('error-section').classList.remove('hidden');
+    document.getElementById('error-message').textContent = message;
+}
+</script>
+{% endblock %}

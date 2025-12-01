@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}Results - Grantentic{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Generated Proposal</h1>
+        <p class="mt-1 text-gray-600">Review and download your AI-generated grant proposal</p>
+    </div>
+
+    {% if proposal_data %}
+    {% set proposal = proposal_data.proposal %}
+    {% set quality_report = proposal_data.quality_report %}
+    {% set sections = proposal_data.sections %}
+
+    <!-- Summary Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+            <div class="text-sm text-gray-500">Total Words</div>
+            <div class="text-2xl font-bold text-gray-900">{{ proposal.total_word_count|number }}</div>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+            <div class="text-sm text-gray-500">Generation Cost</div>
+            <div class="text-2xl font-bold text-gray-900">${{ "%.2f"|format(proposal.total_cost) }}</div>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+            <div class="text-sm text-gray-500">Generation Time</div>
+            <div class="text-2xl font-bold text-gray-900">{{ "%.1f"|format(proposal.generation_time_seconds) }}s</div>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+            <div class="text-sm text-gray-500">Quality Score</div>
+            {% set suggestions = quality_report.suggestions_count if quality_report else 0 %}
+            {% set score = [0, 100 - suggestions * 5]|max %}
+            <div class="text-2xl font-bold {% if score >= 80 %}text-green-600{% elif score >= 60 %}text-amber-600{% else %}text-red-600{% endif %}">
+                {{ score }}%
+            </div>
+        </div>
+    </div>
+
+    <!-- Download Button -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="text-lg font-semibold text-gray-900">Download Document</h2>
+                <p class="text-sm text-gray-600 mt-1">{{ proposal.grant_type }} Proposal</p>
+            </div>
+            <a
+                href="/download/{{ proposal_data.output_file.split('/')[-1] if proposal_data.output_file else '' }}"
+                class="inline-flex items-center px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-colors"
+            >
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                Download Word Document
+            </a>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <!-- Tab Headers -->
+        <div class="border-b border-gray-200">
+            <nav class="flex -mb-px">
+                <button
+                    onclick="showTab('sections')"
+                    id="tab-sections"
+                    class="tab-button px-6 py-4 text-sm font-medium border-b-2 border-primary-500 text-primary-600"
+                >
+                    Proposal Sections
+                </button>
+                <button
+                    onclick="showTab('quality')"
+                    id="tab-quality"
+                    class="tab-button px-6 py-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                >
+                    Quality Report
+                </button>
+            </nav>
+        </div>
+
+        <!-- Tab Content: Sections -->
+        <div id="content-sections" class="tab-content p-6">
+            <div class="space-y-4">
+                {% set section_list = [
+                    ('Project Pitch', proposal.project_pitch),
+                    ('Technical Objectives', proposal.technical_objectives),
+                    ('Broader Impacts', proposal.broader_impacts),
+                    ('Commercialization Plan', proposal.commercialization_plan),
+                    ('Budget & Justification', proposal.budget_justification),
+                    ('Work Plan & Timeline', proposal.work_plan),
+                    ('Biographical Sketches', proposal.biographical_sketches),
+                    ('Facilities & Equipment', proposal.facilities_equipment)
+                ] %}
+
+                {% for name, section in section_list %}
+                {% if section and section.word_count > 0 %}
+                <div class="border border-gray-200 rounded-lg overflow-hidden">
+                    <button
+                        onclick="toggleSection('section-{{ loop.index }}')"
+                        class="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 transition-colors text-left"
+                    >
+                        <div class="flex items-center">
+                            <svg id="chevron-section-{{ loop.index }}" class="w-5 h-5 text-gray-400 mr-3 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                            <span class="font-medium text-gray-900">{{ name }}</span>
+                        </div>
+                        <span class="text-sm text-gray-500">{{ section.word_count|number }} words</span>
+                    </button>
+                    <div id="section-{{ loop.index }}" class="hidden p-4 border-t border-gray-200">
+                        <div class="prose max-w-none text-gray-700 whitespace-pre-wrap">{{ section.content }}</div>
+                        <div class="mt-4 pt-4 border-t border-gray-200 flex items-center text-sm text-gray-500">
+                            <span>Word count: {{ section.word_count }}</span>
+                            <span class="mx-2">·</span>
+                            <span>Iteration: {{ section.iteration }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Tab Content: Quality -->
+        <div id="content-quality" class="tab-content hidden p-6">
+            {% if quality_report and quality_report.report %}
+            <div class="prose max-w-none">
+                <pre class="whitespace-pre-wrap text-sm text-gray-700 bg-gray-50 p-4 rounded-lg">{{ quality_report.report }}</pre>
+            </div>
+
+            <div class="mt-6">
+                <a
+                    href="data:text/markdown;charset=utf-8,{{ quality_report.report | urlencode }}"
+                    download="quality_report.md"
+                    class="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors"
+                >
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    Download Quality Report
+                </a>
+            </div>
+            {% else %}
+            <p class="text-gray-500">No quality report available.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    {% else %}
+    <!-- No Proposal -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+        <div class="text-6xl mb-4">📄</div>
+        <h2 class="text-xl font-semibold text-gray-900 mb-2">No Proposal Generated</h2>
+        <p class="text-gray-600 mb-6">Generate a proposal to see the results here.</p>
+        <a
+            href="/generate"
+            class="inline-flex items-center px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-colors"
+        >
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+            Generate Proposal
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function showTab(tabName) {
+    // Hide all tab content
+    document.querySelectorAll('.tab-content').forEach(el => {
+        el.classList.add('hidden');
+    });
+
+    // Remove active state from all tabs
+    document.querySelectorAll('.tab-button').forEach(el => {
+        el.classList.remove('border-primary-500', 'text-primary-600');
+        el.classList.add('border-transparent', 'text-gray-500');
+    });
+
+    // Show selected tab content
+    document.getElementById('content-' + tabName).classList.remove('hidden');
+
+    // Activate selected tab
+    const activeTab = document.getElementById('tab-' + tabName);
+    activeTab.classList.remove('border-transparent', 'text-gray-500');
+    activeTab.classList.add('border-primary-500', 'text-primary-600');
+}
+
+function toggleSection(sectionId) {
+    const section = document.getElementById(sectionId);
+    const chevron = document.getElementById('chevron-' + sectionId);
+
+    if (section.classList.contains('hidden')) {
+        section.classList.remove('hidden');
+        chevron.classList.add('rotate-90');
+    } else {
+        section.classList.add('hidden');
+        chevron.classList.remove('rotate-90');
+    }
+}
+</script>
+{% endblock %}

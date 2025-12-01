@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Grantentic{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
+        <p class="mt-1 text-gray-600">Generate professional SBIR Phase I proposals for NSF, DoD, and NASA</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Left Column: Agency Selection -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Agency Selector -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Select Funding Agency</h2>
+
+                <div class="grid grid-cols-3 gap-4">
+                    {% for ag in agencies %}
+                    <a
+                        href="/dashboard?agency={{ ag.code }}"
+                        class="p-4 rounded-lg border-2 transition-all hover:shadow-md {% if agency == ag.code %}border-primary-500 bg-primary-50{% else %}border-gray-200 hover:border-gray-300{% endif %}"
+                    >
+                        <div class="text-3xl mb-2">{{ ag.icon }}</div>
+                        <div class="font-semibold text-gray-900">{{ ag.name }}</div>
+                        <div class="text-xs text-gray-500">{{ ag.full_name }}</div>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Agency Details -->
+            <div id="agency-info" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                {% if agency_info and not agency_info.error %}
+                <div class="flex items-start justify-between">
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-900">{{ agency_info.agency }} {{ agency_info.program }}</h2>
+                        <p class="mt-1 text-gray-600 text-sm">{{ agency_info.description }}</p>
+                    </div>
+                </div>
+
+                <div class="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <div class="text-sm text-gray-500">Funding</div>
+                        <div class="text-xl font-bold text-gray-900">{{ agency_info.funding_amount|currency }}</div>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <div class="text-sm text-gray-500">Duration</div>
+                        <div class="text-xl font-bold text-gray-900">{{ agency_info.duration_months }} months</div>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <div class="text-sm text-gray-500">Sections</div>
+                        <div class="text-xl font-bold text-gray-900">{{ agency_info.sections_count }}</div>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <div class="text-sm text-gray-500">Est. Cost</div>
+                        <div class="text-xl font-bold text-gray-900">$2-5</div>
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <a
+                        href="/generate?agency={{ agency }}"
+                        class="inline-flex items-center px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-colors"
+                    >
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                        Generate {{ agency_info.agency }} Proposal
+                    </a>
+                </div>
+                {% else %}
+                <div class="text-red-600">
+                    Error loading agency: {{ agency_info.error if agency_info else 'Unknown error' }}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Quick Stats -->
+            {% if proposal %}
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Latest Proposal</h2>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-green-50 rounded-lg p-4">
+                        <div class="text-sm text-green-600">Total Words</div>
+                        <div class="text-xl font-bold text-green-700">{{ proposal.proposal.total_word_count|number }}</div>
+                    </div>
+                    <div class="bg-blue-50 rounded-lg p-4">
+                        <div class="text-sm text-blue-600">Generation Cost</div>
+                        <div class="text-xl font-bold text-blue-700">${{ "%.2f"|format(proposal.proposal.total_cost) }}</div>
+                    </div>
+                    <div class="bg-purple-50 rounded-lg p-4">
+                        <div class="text-sm text-purple-600">Generation Time</div>
+                        <div class="text-xl font-bold text-purple-700">{{ "%.1f"|format(proposal.proposal.generation_time_seconds) }}s</div>
+                    </div>
+                    <div class="bg-amber-50 rounded-lg p-4">
+                        <div class="text-sm text-amber-600">Generated</div>
+                        <div class="text-xl font-bold text-amber-700">{{ proposal.generated_at[:10] }}</div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <a href="/results" class="text-primary-600 hover:text-primary-700 font-medium text-sm">
+                        View Results →
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Right Column: Company Info Summary -->
+        <div class="space-y-6">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-semibold text-gray-900">Company Profile</h2>
+                    <a href="/company" class="text-sm text-primary-600 hover:text-primary-700">Edit</a>
+                </div>
+
+                {% if company_data and company_data.company_name %}
+                <div class="space-y-4">
+                    <div>
+                        <div class="text-sm text-gray-500">Company</div>
+                        <div class="font-medium text-gray-900">{{ company_data.company_name }}</div>
+                    </div>
+
+                    {% if company_data.location %}
+                    <div>
+                        <div class="text-sm text-gray-500">Location</div>
+                        <div class="font-medium text-gray-900">{{ company_data.location }}</div>
+                    </div>
+                    {% endif %}
+
+                    {% if company_data.industry %}
+                    <div>
+                        <div class="text-sm text-gray-500">Industry</div>
+                        <div class="font-medium text-gray-900">{{ company_data.industry }}</div>
+                    </div>
+                    {% endif %}
+
+                    {% if company_data.focus_area %}
+                    <div>
+                        <div class="text-sm text-gray-500">Focus Area</div>
+                        <div class="text-sm text-gray-700">{{ company_data.focus_area[:150] }}{% if company_data.focus_area|length > 150 %}...{% endif %}</div>
+                    </div>
+                    {% endif %}
+
+                    {% if company_data.team %}
+                    <div>
+                        <div class="text-sm text-gray-500">Team Size</div>
+                        <div class="font-medium text-gray-900">{{ company_data.team|length }} members</div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div class="text-center py-6">
+                    <div class="text-4xl mb-2">🏢</div>
+                    <p class="text-gray-500 text-sm mb-4">No company profile set up</p>
+                    <a
+                        href="/company"
+                        class="inline-flex items-center px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg transition-colors"
+                    >
+                        Set Up Profile
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
+
+                <div class="space-y-3">
+                    <a
+                        href="/company"
+                        class="flex items-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
+                        <span class="text-xl mr-3">📝</span>
+                        <span class="text-sm font-medium text-gray-700">Edit Company Info</span>
+                    </a>
+                    <a
+                        href="/generate?agency={{ agency }}"
+                        class="flex items-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
+                        <span class="text-xl mr-3">✨</span>
+                        <span class="text-sm font-medium text-gray-700">Generate Proposal</span>
+                    </a>
+                    <a
+                        href="/results"
+                        class="flex items-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
+                        <span class="text-xl mr-3">📊</span>
+                        <span class="text-sm font-medium text-gray-700">View Results</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

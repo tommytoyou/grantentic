@@ -1,0 +1,93 @@
+/* Custom styles for Grantentic */
+
+/* Ensure proper scrolling behavior */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Focus states for accessibility */
+*:focus-visible {
+    outline: 2px solid #0ea5e9;
+    outline-offset: 2px;
+}
+
+/* Loading spinner animation */
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+/* Prose styling for markdown content */
+.prose pre {
+    background-color: #f8fafc;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    overflow-x: auto;
+}
+
+.prose code {
+    background-color: #f1f5f9;
+    padding: 0.125rem 0.25rem;
+    border-radius: 0.25rem;
+    font-size: 0.875em;
+}
+
+/* Custom checkbox styling */
+input[type="checkbox"] {
+    width: 1rem;
+    height: 1rem;
+    border-radius: 0.25rem;
+    border: 1px solid #d1d5db;
+    cursor: pointer;
+}
+
+input[type="checkbox"]:checked {
+    background-color: #0ea5e9;
+    border-color: #0ea5e9;
+}
+
+/* Button hover transitions */
+button, a {
+    transition: all 0.15s ease-in-out;
+}
+
+/* Card hover effects */
+.hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* Status indicators */
+.status-success {
+    color: #16a34a;
+}
+
+.status-warning {
+    color: #d97706;
+}
+
+.status-error {
+    color: #dc2626;
+}
+
+/* Progress bar pulse */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+.animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}

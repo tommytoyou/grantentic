@@ -27,7 +27,8 @@
       "Bash(python -c:*)",
       "mcp__ide__getDiagnostics",
       "Bash(if not exist \"C:\\Users\\tommy\\grantentic\\.streamlit\\static\" mkdir \"C:\\Users\\tommy\\grantentic\\.streamlit\\static\")",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(python -m pip install:*)"
     ],
     "deny": [],
     "ask": []

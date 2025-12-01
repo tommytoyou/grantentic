@@ -6,8 +6,16 @@ rich>=13.0.0
 requests>=2.28.0
 tiktoken
 
-# Web interface
-streamlit>=1.30.0
+# Web interface - FastAPI
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+jinja2>=3.1.0
+python-multipart>=0.0.6
+itsdangerous>=2.1.0
+starlette>=0.35.0
+
+# Legacy Streamlit (optional, can be removed)
+# streamlit>=1.30.0
 
 # Development
 pytest>=7.0.0

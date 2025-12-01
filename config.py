@@ -8,6 +8,11 @@ class Config:
     """Application configuration"""
 
     # ============================================================================
+    # WEB APPLICATION
+    # ============================================================================
+    SECRET_KEY = os.environ.get('SECRET_KEY', 'grantentic-secret-key-change-in-production')
+
+    # ============================================================================
     # AGENCY SELECTION
     # ============================================================================
     # Set your target funding agency here

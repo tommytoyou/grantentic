@@ -1,0 +1,43 @@
+{% if agency_info and not agency_info.error %}
+<div class="flex items-start justify-between">
+    <div>
+        <h2 class="text-lg font-semibold text-gray-900">{{ agency_info.agency }} {{ agency_info.program }}</h2>
+        <p class="mt-1 text-gray-600 text-sm">{{ agency_info.description }}</p>
+    </div>
+</div>
+
+<div class="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="bg-gray-50 rounded-lg p-4">
+        <div class="text-sm text-gray-500">Funding</div>
+        <div class="text-xl font-bold text-gray-900">{{ agency_info.funding_amount|currency }}</div>
+    </div>
+    <div class="bg-gray-50 rounded-lg p-4">
+        <div class="text-sm text-gray-500">Duration</div>
+        <div class="text-xl font-bold text-gray-900">{{ agency_info.duration_months }} months</div>
+    </div>
+    <div class="bg-gray-50 rounded-lg p-4">
+        <div class="text-sm text-gray-500">Sections</div>
+        <div class="text-xl font-bold text-gray-900">{{ agency_info.sections_count }}</div>
+    </div>
+    <div class="bg-gray-50 rounded-lg p-4">
+        <div class="text-sm text-gray-500">Est. Cost</div>
+        <div class="text-xl font-bold text-gray-900">$2-5</div>
+    </div>
+</div>
+
+<div class="mt-6">
+    <a
+        href="/generate?agency={{ agency }}"
+        class="inline-flex items-center px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-colors"
+    >
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+        </svg>
+        Generate {{ agency_info.agency }} Proposal
+    </a>
+</div>
+{% else %}
+<div class="text-red-600">
+    Error loading agency: {{ agency_info.error if agency_info else 'Unknown error' }}
+</div>
+{% endif %}

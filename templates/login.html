@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In - Grantentic{% endblock %}
+
+{% block body %}
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-primary-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full">
+        <!-- Logo and Title -->
+        <div class="text-center mb-8">
+            <div class="text-6xl mb-4">🚀</div>
+            <h1 class="text-3xl font-bold text-gray-900">Grantentic</h1>
+            <p class="mt-2 text-gray-600">AI-Powered Grant Writing System</p>
+        </div>
+
+        <!-- Login Card -->
+        <div class="bg-white rounded-xl shadow-lg p-8">
+            <h2 class="text-xl font-semibold text-gray-900 mb-6">Sign In</h2>
+
+            {% if error %}
+            <div class="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+                {{ error }}
+            </div>
+            {% endif %}
+
+            <form method="POST" action="/login" class="space-y-5">
+                <div>
+                    <label for="username" class="block text-sm font-medium text-gray-700 mb-1">
+                        Username
+                    </label>
+                    <input
+                        type="text"
+                        id="username"
+                        name="username"
+                        required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                        placeholder="Enter your username"
+                    >
+                </div>
+
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
+                        Password
+                    </label>
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                        placeholder="Enter your password"
+                    >
+                </div>
+
+                <button
+                    type="submit"
+                    class="w-full py-3 px-4 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+                >
+                    Sign In
+                </button>
+            </form>
+
+            <div class="mt-6 pt-6 border-t border-gray-200">
+                <p class="text-xs text-gray-500 text-center">
+                    Default credentials: <code class="bg-gray-100 px-1 py-0.5 rounded">admin</code> / <code class="bg-gray-100 px-1 py-0.5 rounded">grantentic2024</code>
+                </p>
+                <p class="text-xs text-gray-400 text-center mt-1">
+                    Please change your password after first login.
+                </p>
+            </div>
+        </div>
+
+        <!-- Features -->
+        <div class="mt-8 grid grid-cols-3 gap-4 text-center">
+            <div class="bg-white/50 rounded-lg p-4">
+                <div class="text-2xl mb-1">🔬</div>
+                <div class="text-xs text-gray-600">NSF SBIR</div>
+            </div>
+            <div class="bg-white/50 rounded-lg p-4">
+                <div class="text-2xl mb-1">🛡️</div>
+                <div class="text-xs text-gray-600">DoD SBIR</div>
+            </div>
+            <div class="bg-white/50 rounded-lg p-4">
+                <div class="text-2xl mb-1">🚀</div>
+                <div class="text-xs text-gray-600">NASA SBIR</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
