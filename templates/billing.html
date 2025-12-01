@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}Billing - Grantentic{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <h1 class="text-3xl font-bold text-gray-900 mb-8">Billing & Subscription</h1>
+
+    <!-- Current Plan -->
+    <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4">Current Plan</h2>
+
+        {% if payment_status.has_paid %}
+        <div class="flex items-center justify-between">
+            <div>
+                {% if payment_status.payment_type == 'one_time' %}
+                <div class="flex items-center">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                        Active
+                    </span>
+                    <span class="ml-3 text-lg font-semibold text-gray-900">SBIR Phase I Package</span>
+                </div>
+                <p class="text-gray-600 mt-2">One-time purchase - Pre-application + Full Application</p>
+                {% if payment_status.expires_at %}
+                <p class="text-sm text-gray-500 mt-1">Revision access expires: {{ payment_status.expires_at[:10] }}</p>
+                {% endif %}
+                {% elif payment_status.payment_type == 'subscription' %}
+                <div class="flex items-center">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
+                        {% if payment_status.subscription_status == 'active' %}bg-green-100 text-green-800
+                        {% elif payment_status.subscription_status == 'past_due' %}bg-yellow-100 text-yellow-800
+                        {% else %}bg-red-100 text-red-800{% endif %}">
+                        {{ payment_status.subscription_status|title }}
+                    </span>
+                    <span class="ml-3 text-lg font-semibold text-gray-900">{{ payment_status.tier|title }} Subscription</span>
+                </div>
+                {% if payment_status.current_period_end %}
+                <p class="text-sm text-gray-500 mt-2">Next billing date: {{ payment_status.current_period_end[:10] }}</p>
+                {% endif %}
+                {% elif payment_status.is_admin %}
+                <div class="flex items-center">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+                        Admin
+                    </span>
+                    <span class="ml-3 text-lg font-semibold text-gray-900">Full Access</span>
+                </div>
+                <p class="text-gray-600 mt-2">Administrator account with unlimited access</p>
+                {% endif %}
+            </div>
+
+            {% if payment_status.stripe_customer_id and not payment_status.is_admin %}
+            <form action="/billing/portal" method="POST">
+                <button type="submit" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 transition-colors">
+                    Manage Billing
+                </button>
+            </form>
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="text-center py-8">
+            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">No Active Plan</h3>
+            <p class="text-gray-600 mb-6">Get started with Grantentic to generate professional SBIR proposals.</p>
+            <a href="/pricing" class="inline-block bg-primary-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-primary-700 transition-colors">
+                View Pricing
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Usage Stats -->
+    <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4">Usage Statistics</h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-gray-50 rounded-lg p-4 text-center">
+                <div class="text-3xl font-bold text-primary-600">{{ payment_status.proposals_generated }}</div>
+                <div class="text-gray-600 text-sm mt-1">Proposals Generated</div>
+            </div>
+
+            <div class="bg-gray-50 rounded-lg p-4 text-center">
+                <div class="text-3xl font-bold text-primary-600">3</div>
+                <div class="text-gray-600 text-sm mt-1">Agencies Available</div>
+            </div>
+
+            <div class="bg-gray-50 rounded-lg p-4 text-center">
+                <div class="text-3xl font-bold text-primary-600">
+                    {% if payment_status.can_generate %}Unlimited{% else %}0{% endif %}
+                </div>
+                <div class="text-gray-600 text-sm mt-1">Remaining Generations</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="bg-white rounded-xl shadow-lg p-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <a href="/dashboard" class="flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                <div class="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center mr-4">
+                    <svg class="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="font-semibold text-gray-900">Go to Dashboard</div>
+                    <div class="text-sm text-gray-500">View your workspace</div>
+                </div>
+            </a>
+
+            {% if payment_status.can_generate %}
+            <a href="/generate" class="flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="font-semibold text-gray-900">Generate Proposal</div>
+                    <div class="text-sm text-gray-500">Create a new SBIR proposal</div>
+                </div>
+            </a>
+            {% else %}
+            <a href="/pricing" class="flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center mr-4">
+                    <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="font-semibold text-gray-900">Upgrade Plan</div>
+                    <div class="text-sm text-gray-500">Get access to generate proposals</div>
+                </div>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

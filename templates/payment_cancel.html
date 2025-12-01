@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Payment Cancelled - Grantentic{% endblock %}
+
+{% block content %}
+<div class="min-h-[60vh] flex items-center justify-center px-4">
+    <div class="max-w-md w-full text-center">
+        <div class="bg-white rounded-2xl shadow-xl p-8">
+            <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </div>
+
+            <h1 class="text-3xl font-bold text-gray-900 mb-4">Payment Cancelled</h1>
+            <p class="text-gray-600 mb-8">
+                Your payment was cancelled. No charges have been made to your account.
+            </p>
+
+            <div class="space-y-4">
+                <a href="/pricing" class="inline-block w-full bg-primary-600 text-white py-4 px-6 rounded-lg font-semibold hover:bg-primary-700 transition-colors">
+                    Return to Pricing
+                </a>
+                <a href="/dashboard" class="inline-block w-full bg-gray-100 text-gray-700 py-4 px-6 rounded-lg font-semibold hover:bg-gray-200 transition-colors">
+                    Go to Dashboard
+                </a>
+            </div>
+
+            <p class="text-gray-500 text-sm mt-6">
+                Questions? Feel free to explore our pricing options or contact us for more information.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

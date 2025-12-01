@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Payment Successful - Grantentic{% endblock %}
+
+{% block content %}
+<div class="min-h-[60vh] flex items-center justify-center px-4">
+    <div class="max-w-md w-full text-center">
+        {% if payment_verified %}
+        <!-- Success State -->
+        <div class="bg-white rounded-2xl shadow-xl p-8">
+            <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg class="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+            </div>
+
+            <h1 class="text-3xl font-bold text-gray-900 mb-4">Payment Successful!</h1>
+            <p class="text-gray-600 mb-8">
+                Thank you for your purchase. You now have full access to Grantentic's AI-powered grant writing system.
+            </p>
+
+            <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-8">
+                <p class="text-green-800 text-sm">
+                    Your account has been activated. You can now generate professional SBIR Phase I proposals.
+                </p>
+            </div>
+
+            <a href="/dashboard" class="inline-block w-full bg-primary-600 text-white py-4 px-6 rounded-lg font-semibold text-lg hover:bg-primary-700 transition-colors">
+                Go to Dashboard
+            </a>
+        </div>
+        {% else %}
+        <!-- Verification Pending/Error State -->
+        <div class="bg-white rounded-2xl shadow-xl p-8">
+            <div class="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg class="w-10 h-10 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+
+            <h1 class="text-3xl font-bold text-gray-900 mb-4">Processing Payment</h1>
+            <p class="text-gray-600 mb-8">
+                We're verifying your payment. This usually takes just a few seconds.
+            </p>
+
+            {% if error_message %}
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-8">
+                <p class="text-red-800 text-sm">{{ error_message }}</p>
+            </div>
+            {% endif %}
+
+            <div class="space-y-4">
+                <a href="/dashboard" class="inline-block w-full bg-primary-600 text-white py-4 px-6 rounded-lg font-semibold hover:bg-primary-700 transition-colors">
+                    Check Dashboard
+                </a>
+                <a href="/pricing" class="inline-block w-full bg-gray-100 text-gray-700 py-4 px-6 rounded-lg font-semibold hover:bg-gray-200 transition-colors">
+                    Return to Pricing
+                </a>
+            </div>
+
+            <p class="text-gray-500 text-sm mt-6">
+                If you continue to experience issues, please contact support.
+            </p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -74,3 +74,42 @@ class CompanyContext(BaseModel):
     funding_needs: Dict[str, Any]
     intellectual_property: Dict[str, Any]
     social_impact: str
+
+
+class PaymentRecord(BaseModel):
+    """Record of a payment transaction"""
+    payment_id: str
+    stripe_payment_intent_id: Optional[str] = None
+    stripe_checkout_session_id: Optional[str] = None
+    amount_cents: int
+    currency: str = "usd"
+    status: str  # 'pending', 'completed', 'failed', 'refunded'
+    tier: str  # 'one_time', 'monthly_basic', 'monthly_pro', 'monthly_enterprise'
+    created_at: datetime = Field(default_factory=datetime.now)
+    completed_at: Optional[datetime] = None
+
+
+class SubscriptionRecord(BaseModel):
+    """Record of a subscription"""
+    subscription_id: str
+    stripe_subscription_id: Optional[str] = None
+    stripe_customer_id: Optional[str] = None
+    tier: str  # 'monthly_basic', 'monthly_pro', 'monthly_enterprise'
+    status: str  # 'active', 'canceled', 'past_due', 'unpaid'
+    current_period_start: Optional[datetime] = None
+    current_period_end: Optional[datetime] = None
+    created_at: datetime = Field(default_factory=datetime.now)
+    canceled_at: Optional[datetime] = None
+
+
+class UserPaymentStatus(BaseModel):
+    """User's payment and subscription status"""
+    has_paid: bool = False
+    payment_type: Optional[str] = None  # 'one_time' or 'subscription'
+    one_time_purchase: Optional[PaymentRecord] = None
+    subscription: Optional[SubscriptionRecord] = None
+    stripe_customer_id: Optional[str] = None
+    # For one-time purchases: expiration for revision access
+    one_time_expires_at: Optional[datetime] = None
+    # Usage tracking
+    proposals_generated: int = 0

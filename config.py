@@ -13,6 +13,69 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY', 'grantentic-secret-key-change-in-production')
 
     # ============================================================================
+    # STRIPE PAYMENT CONFIGURATION
+    # ============================================================================
+    # Stripe API keys (set via environment variables in production)
+    STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY', '')
+    STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY', '')
+    STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET', '')
+
+    # Stripe Price IDs (create these in Stripe Dashboard)
+    # One-time purchase: $800 for SBIR Phase I pre-application + full application
+    STRIPE_PRICE_ONE_TIME = os.environ.get('STRIPE_PRICE_ONE_TIME', '')
+
+    # Monthly subscription tiers (define pricing later)
+    STRIPE_PRICE_MONTHLY_BASIC = os.environ.get('STRIPE_PRICE_MONTHLY_BASIC', '')
+    STRIPE_PRICE_MONTHLY_PRO = os.environ.get('STRIPE_PRICE_MONTHLY_PRO', '')
+    STRIPE_PRICE_MONTHLY_ENTERPRISE = os.environ.get('STRIPE_PRICE_MONTHLY_ENTERPRISE', '')
+
+    # Payment tiers configuration
+    PAYMENT_TIERS = {
+        'one_time': {
+            'name': 'SBIR Phase I Package',
+            'description': 'Pre-application + Full Application',
+            'price': 800,
+            'price_id_env': 'STRIPE_PRICE_ONE_TIME',
+            'type': 'one_time',
+            'features': [
+                'Complete SBIR Phase I pre-application',
+                'Full SBIR Phase I proposal',
+                'All supported agencies (NSF, DoD, NASA)',
+                'Unlimited revisions for 30 days',
+                'Quality assessment reports',
+                'Word document export'
+            ]
+        },
+        'monthly_basic': {
+            'name': 'Basic',
+            'description': 'Monthly Subscription',
+            'price': 0,  # Define later
+            'price_id_env': 'STRIPE_PRICE_MONTHLY_BASIC',
+            'type': 'subscription',
+            'features': ['TBD']
+        },
+        'monthly_pro': {
+            'name': 'Pro',
+            'description': 'Monthly Subscription',
+            'price': 0,  # Define later
+            'price_id_env': 'STRIPE_PRICE_MONTHLY_PRO',
+            'type': 'subscription',
+            'features': ['TBD']
+        },
+        'monthly_enterprise': {
+            'name': 'Enterprise',
+            'description': 'Monthly Subscription',
+            'price': 0,  # Define later
+            'price_id_env': 'STRIPE_PRICE_MONTHLY_ENTERPRISE',
+            'type': 'subscription',
+            'features': ['TBD']
+        }
+    }
+
+    # Base URL for Stripe redirects (set in production)
+    BASE_URL = os.environ.get('BASE_URL', 'http://localhost:8000')
+
+    # ============================================================================
     # AGENCY SELECTION
     # ============================================================================
     # Set your target funding agency here

@@ -4,6 +4,29 @@
 
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Payment Status Banner -->
+    {% if payment_status %}
+    <div class="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center">
+                <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+                <span class="text-green-800 font-medium">
+                    {% if payment_status.is_admin %}
+                        Admin Access - Full Access Enabled
+                    {% elif payment_status.payment_type == 'one_time' %}
+                        SBIR Phase I Package - Active
+                    {% elif payment_status.payment_type == 'subscription' %}
+                        {{ payment_status.tier|title }} Subscription - Active
+                    {% endif %}
+                </span>
+            </div>
+            <a href="/billing" class="text-sm text-green-700 hover:text-green-900">Manage billing</a>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Header -->
     <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>

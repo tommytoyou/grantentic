@@ -20,10 +20,20 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 
+import stripe
+
 from config import Config
-from src.auth import authenticate_user, initialize_admin_account
+from src.auth import (
+    authenticate_user, initialize_admin_account,
+    get_user_payment_status, record_one_time_payment, record_subscription,
+    update_subscription_status, set_stripe_customer_id, get_stripe_customer_id,
+    get_user_by_stripe_customer_id, increment_proposals_generated
+)
 from src.agency_loader import load_agency_requirements
 from src.models import GrantProposal, GrantSection
+
+# Initialize Stripe
+stripe.api_key = Config.STRIPE_SECRET_KEY
 
 
 # Application state
@@ -185,6 +195,13 @@ async def dashboard(request: Request, agency: str = "nsf"):
     if not user:
         return RedirectResponse(url="/login", status_code=302)
 
+    # Check payment status
+    payment_status = get_user_payment_status(user['username'])
+
+    # Redirect unpaid users to pricing page
+    if not payment_status['can_generate']:
+        return RedirectResponse(url="/pricing", status_code=302)
+
     company_data = load_company_data()
     agency_info = get_agency_info(agency)
 
@@ -202,7 +219,8 @@ async def dashboard(request: Request, agency: str = "nsf"):
             {'code': 'dod', 'name': 'DoD', 'icon': '🛡️', 'full_name': 'Department of Defense'},
             {'code': 'nasa', 'name': 'NASA', 'icon': '🚀', 'full_name': 'Space Technology'}
         ],
-        "proposal": proposal
+        "proposal": proposal,
+        "payment_status": payment_status
     })
 
 
@@ -281,6 +299,13 @@ async def generate_page(request: Request, agency: str = "nsf"):
     if not user:
         return RedirectResponse(url="/login", status_code=302)
 
+    # Check payment status
+    payment_status = get_user_payment_status(user['username'])
+
+    # Redirect unpaid users to pricing page
+    if not payment_status['can_generate']:
+        return RedirectResponse(url="/pricing", status_code=302)
+
     agency_info = get_agency_info(agency)
 
     return templates.TemplateResponse("generate.html", {
@@ -297,6 +322,11 @@ async def generate_stream(request: Request, agency: str = "nsf", iterations: int
     user = get_current_user(request)
     if not user:
         raise HTTPException(status_code=401, detail="Not authenticated")
+
+    # Check payment status
+    payment_status = get_user_payment_status(user['username'])
+    if not payment_status['can_generate']:
+        raise HTTPException(status_code=403, detail="Payment required")
 
     async def event_generator():
         try:
@@ -534,6 +564,316 @@ async def get_agency_api(request: Request, agency: str):
         "agency": agency,
         "agency_info": agency_info
     })
+
+
+# ============================================================================
+# PAYMENT ROUTES
+# ============================================================================
+
+@app.get("/pricing", response_class=HTMLResponse)
+async def pricing_page(request: Request):
+    """Pricing/paywall page - shown to unpaid users"""
+    user = get_current_user(request)
+    if not user:
+        return RedirectResponse(url="/login", status_code=302)
+
+    payment_status = get_user_payment_status(user['username'])
+
+    # If user has paid, redirect to dashboard
+    if payment_status['can_generate']:
+        return RedirectResponse(url="/dashboard", status_code=302)
+
+    return templates.TemplateResponse("pricing.html", {
+        "request": request,
+        "user": user,
+        "payment_status": payment_status,
+        "tiers": Config.PAYMENT_TIERS,
+        "stripe_publishable_key": Config.STRIPE_PUBLISHABLE_KEY
+    })
+
+
+@app.post("/checkout/one-time")
+async def create_checkout_one_time(request: Request):
+    """Create Stripe Checkout session for one-time purchase"""
+    user = get_current_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    if not Config.STRIPE_SECRET_KEY:
+        raise HTTPException(status_code=500, detail="Stripe not configured")
+
+    try:
+        # Get or create Stripe customer
+        customer_id = get_stripe_customer_id(user['username'])
+
+        if not customer_id:
+            customer = stripe.Customer.create(
+                metadata={'username': user['username']}
+            )
+            customer_id = customer.id
+            set_stripe_customer_id(user['username'], customer_id)
+
+        # Create checkout session
+        checkout_session = stripe.checkout.Session.create(
+            customer=customer_id,
+            payment_method_types=['card'],
+            line_items=[{
+                'price': Config.STRIPE_PRICE_ONE_TIME,
+                'quantity': 1,
+            }],
+            mode='payment',
+            success_url=f"{Config.BASE_URL}/payment/success?session_id={{CHECKOUT_SESSION_ID}}",
+            cancel_url=f"{Config.BASE_URL}/payment/cancel",
+            metadata={
+                'username': user['username'],
+                'tier': 'one_time'
+            }
+        )
+
+        return RedirectResponse(url=checkout_session.url, status_code=303)
+
+    except stripe.error.StripeError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/checkout/subscription/{tier}")
+async def create_checkout_subscription(request: Request, tier: str):
+    """Create Stripe Checkout session for subscription"""
+    user = get_current_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    if not Config.STRIPE_SECRET_KEY:
+        raise HTTPException(status_code=500, detail="Stripe not configured")
+
+    # Map tier to price ID
+    price_map = {
+        'basic': Config.STRIPE_PRICE_MONTHLY_BASIC,
+        'pro': Config.STRIPE_PRICE_MONTHLY_PRO,
+        'enterprise': Config.STRIPE_PRICE_MONTHLY_ENTERPRISE
+    }
+
+    price_id = price_map.get(tier)
+    if not price_id:
+        raise HTTPException(status_code=400, detail="Invalid subscription tier")
+
+    try:
+        customer_id = get_stripe_customer_id(user['username'])
+
+        if not customer_id:
+            customer = stripe.Customer.create(
+                metadata={'username': user['username']}
+            )
+            customer_id = customer.id
+            set_stripe_customer_id(user['username'], customer_id)
+
+        checkout_session = stripe.checkout.Session.create(
+            customer=customer_id,
+            payment_method_types=['card'],
+            line_items=[{
+                'price': price_id,
+                'quantity': 1,
+            }],
+            mode='subscription',
+            success_url=f"{Config.BASE_URL}/payment/success?session_id={{CHECKOUT_SESSION_ID}}",
+            cancel_url=f"{Config.BASE_URL}/payment/cancel",
+            metadata={
+                'username': user['username'],
+                'tier': f'monthly_{tier}'
+            }
+        )
+
+        return RedirectResponse(url=checkout_session.url, status_code=303)
+
+    except stripe.error.StripeError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.get("/payment/success", response_class=HTMLResponse)
+async def payment_success(request: Request, session_id: str = None):
+    """Payment success page"""
+    user = get_current_user(request)
+    if not user:
+        return RedirectResponse(url="/login", status_code=302)
+
+    payment_verified = False
+    error_message = None
+
+    if session_id and Config.STRIPE_SECRET_KEY:
+        try:
+            session = stripe.checkout.Session.retrieve(session_id)
+
+            if session.payment_status == 'paid':
+                payment_verified = True
+
+                # Record the payment
+                if session.mode == 'payment':
+                    # One-time payment
+                    record_one_time_payment(
+                        username=user['username'],
+                        payment_id=session.id,
+                        stripe_checkout_session_id=session.id,
+                        stripe_payment_intent_id=session.payment_intent,
+                        amount_cents=session.amount_total,
+                        tier='one_time'
+                    )
+                elif session.mode == 'subscription':
+                    # Subscription
+                    subscription = stripe.Subscription.retrieve(session.subscription)
+                    record_subscription(
+                        username=user['username'],
+                        stripe_subscription_id=subscription.id,
+                        stripe_customer_id=session.customer,
+                        tier=session.metadata.get('tier', 'monthly_basic'),
+                        status='active',
+                        current_period_start=datetime.fromtimestamp(subscription.current_period_start).isoformat(),
+                        current_period_end=datetime.fromtimestamp(subscription.current_period_end).isoformat()
+                    )
+
+        except stripe.error.StripeError as e:
+            error_message = str(e)
+
+    return templates.TemplateResponse("payment_success.html", {
+        "request": request,
+        "user": user,
+        "payment_verified": payment_verified,
+        "error_message": error_message
+    })
+
+
+@app.get("/payment/cancel", response_class=HTMLResponse)
+async def payment_cancel(request: Request):
+    """Payment cancelled page"""
+    user = get_current_user(request)
+    if not user:
+        return RedirectResponse(url="/login", status_code=302)
+
+    return templates.TemplateResponse("payment_cancel.html", {
+        "request": request,
+        "user": user
+    })
+
+
+@app.post("/webhook/stripe")
+async def stripe_webhook(request: Request):
+    """Handle Stripe webhooks"""
+    payload = await request.body()
+    sig_header = request.headers.get('stripe-signature')
+
+    if not Config.STRIPE_WEBHOOK_SECRET:
+        raise HTTPException(status_code=500, detail="Webhook secret not configured")
+
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, Config.STRIPE_WEBHOOK_SECRET
+        )
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid payload")
+    except stripe.error.SignatureVerificationError:
+        raise HTTPException(status_code=400, detail="Invalid signature")
+
+    # Handle different event types
+    event_type = event['type']
+    data = event['data']['object']
+
+    if event_type == 'checkout.session.completed':
+        # Payment successful
+        session = data
+        username = session.get('metadata', {}).get('username')
+        tier = session.get('metadata', {}).get('tier', 'one_time')
+
+        if username:
+            if session.get('mode') == 'payment':
+                record_one_time_payment(
+                    username=username,
+                    payment_id=session['id'],
+                    stripe_checkout_session_id=session['id'],
+                    stripe_payment_intent_id=session.get('payment_intent', ''),
+                    amount_cents=session.get('amount_total', 0),
+                    tier=tier
+                )
+            elif session.get('mode') == 'subscription':
+                subscription = stripe.Subscription.retrieve(session['subscription'])
+                record_subscription(
+                    username=username,
+                    stripe_subscription_id=subscription.id,
+                    stripe_customer_id=session['customer'],
+                    tier=tier,
+                    status='active',
+                    current_period_start=datetime.fromtimestamp(subscription.current_period_start).isoformat(),
+                    current_period_end=datetime.fromtimestamp(subscription.current_period_end).isoformat()
+                )
+
+    elif event_type == 'customer.subscription.updated':
+        subscription = data
+        customer_id = subscription.get('customer')
+        username = get_user_by_stripe_customer_id(customer_id)
+
+        if username:
+            status = subscription.get('status')
+            if status in ['active', 'past_due', 'canceled', 'unpaid']:
+                update_subscription_status(username, status)
+
+    elif event_type == 'customer.subscription.deleted':
+        subscription = data
+        customer_id = subscription.get('customer')
+        username = get_user_by_stripe_customer_id(customer_id)
+
+        if username:
+            update_subscription_status(
+                username,
+                'canceled',
+                canceled_at=datetime.now().isoformat()
+            )
+
+    elif event_type == 'invoice.payment_failed':
+        invoice = data
+        customer_id = invoice.get('customer')
+        username = get_user_by_stripe_customer_id(customer_id)
+
+        if username:
+            update_subscription_status(username, 'past_due')
+
+    return {"status": "success"}
+
+
+@app.get("/billing", response_class=HTMLResponse)
+async def billing_page(request: Request):
+    """Billing management page"""
+    user = get_current_user(request)
+    if not user:
+        return RedirectResponse(url="/login", status_code=302)
+
+    payment_status = get_user_payment_status(user['username'])
+
+    return templates.TemplateResponse("billing.html", {
+        "request": request,
+        "user": user,
+        "payment_status": payment_status,
+        "tiers": Config.PAYMENT_TIERS
+    })
+
+
+@app.post("/billing/portal")
+async def billing_portal(request: Request):
+    """Redirect to Stripe Customer Portal"""
+    user = get_current_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    customer_id = get_stripe_customer_id(user['username'])
+    if not customer_id:
+        return RedirectResponse(url="/pricing", status_code=302)
+
+    try:
+        portal_session = stripe.billing_portal.Session.create(
+            customer=customer_id,
+            return_url=f"{Config.BASE_URL}/billing"
+        )
+        return RedirectResponse(url=portal_session.url, status_code=303)
+
+    except stripe.error.StripeError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 # Health check
