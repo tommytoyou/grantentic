@@ -44,9 +44,11 @@
                     {% for ag in agencies %}
                     <a
                         href="/dashboard?agency={{ ag.code }}"
-                        class="p-4 rounded-lg border-2 transition-all hover:shadow-md {% if agency == ag.code %}border-primary-500 bg-primary-50{% else %}border-gray-200 hover:border-gray-300{% endif %}"
+                        class="p-4 rounded-lg border-2 transition-all hover:shadow-md text-center {% if agency == ag.code %}border-primary-500 bg-primary-50{% else %}border-gray-200 hover:border-gray-300{% endif %}"
                     >
-                        <div class="text-3xl mb-2">{{ ag.icon }}</div>
+                        <div class="flex justify-center mb-2">
+                            <img src="/static/images/{{ ag.code|upper }}_Logo.png" alt="{{ ag.name }} Logo" class="h-16 object-contain">
+                        </div>
                         <div class="font-semibold text-gray-900">{{ ag.name }}</div>
                         <div class="text-xs text-gray-500">{{ ag.full_name }}</div>
                     </a>

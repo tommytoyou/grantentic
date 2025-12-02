@@ -1,35 +1,7 @@
 {
   "permissions": {
     "allow": [
-      "Bash(python3 -m py_compile:*)",
-      "Bash(python3:*)",
-      "Bash(test:*)",
-      "Bash(cat:*)",
-      "Bash(python healthcheck.py:*)",
-      "Bash(streamlit run:*)",
-      "Bash(pip install:*)",
-      "Bash(pkill:*)",
-      "Bash(time python:*)",
-      "Bash(curl:*)",
-      "Bash(for i in 1 2 3 4 5)",
-      "Bash(do echo \"Request $i:\")",
-      "Bash(time curl:*)",
-      "Bash(done)",
-      "Bash(python -m streamlit:*)",
-      "Bash(where:*)",
-      "Bash(py -m streamlit:*)",
-      "Bash(cd:*)",
-      "Bash(git add:*)",
-      "Bash(git commit:*)",
-      "Bash(git push)",
-      "Bash(py:*)",
-      "Bash(find:*)",
-      "Bash(python -c:*)",
-      "mcp__ide__getDiagnostics",
-      "Bash(if not exist \"C:\\Users\\tommy\\grantentic\\.streamlit\\static\" mkdir \"C:\\Users\\tommy\\grantentic\\.streamlit\\static\")",
-      "Bash(mkdir:*)",
-      "Bash(python -m pip install:*)",
-      "Bash(python -m py_compile:*)"
+      "Bash(node -e:*)"
     ],
     "deny": [],
     "ask": []
