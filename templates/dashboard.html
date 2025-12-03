@@ -96,29 +96,30 @@
                         </a>
 
                         <!-- Phase I Option -->
-                        <div
-                            class="block p-6 rounded-xl border-2 border-gray-200 bg-gray-50 opacity-75 cursor-not-allowed"
+                        <a
+                            href="/generate?agency={{ agency }}&type=phase1"
+                            class="block p-6 rounded-xl border-2 border-gray-200 hover:border-primary-500 hover:bg-primary-50 transition-all group"
                         >
                             <div class="flex items-center mb-3">
-                                <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-3">
-                                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mr-3">
+                                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                     </svg>
                                 </div>
                                 <div>
-                                    <h3 class="font-semibold text-gray-500">Phase I SBIR</h3>
-                                    <span class="text-xs text-amber-600 font-medium">Requires Pre-Pitch Acceptance</span>
+                                    <h3 class="font-semibold text-gray-900 group-hover:text-primary-700">Phase I SBIR</h3>
+                                    <span class="text-xs text-green-600 font-medium">Full Proposal</span>
                                 </div>
                             </div>
-                            <p class="text-sm text-gray-500 mb-4">
+                            <p class="text-sm text-gray-600 mb-4">
                                 Full Phase I proposal with detailed technical approach, commercialization plan,
-                                and budget. Available after your Pre-Pitch is accepted by NSF.
+                                and budget.
                             </p>
-                            <div class="flex items-center text-sm text-gray-400">
+                            <div class="flex items-center text-sm text-gray-500">
                                 <span class="mr-4">~15-20 pages</span>
                                 <span>Est. cost: $3-5</span>
                             </div>
-                        </div>
+                        </a>
                     </div>
                     {% else %}
                     <!-- DoD/NASA: Show existing flow (coming soon message) -->
