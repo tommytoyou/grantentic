@@ -67,7 +67,30 @@
 </head>
 <body class="bg-gray-50 min-h-screen">
     {% block body %}
-    <!-- Navigation -->
+    <!-- Navigation for non-logged-in users -->
+    {% if not user %}
+    <nav class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/" class="flex items-center space-x-2">
+                        <span class="text-xl font-bold text-gray-900">Grantentic</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/pricing" class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md">
+                        Pricing
+                    </a>
+                    <a href="/login" class="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-md transition-colors">
+                        Sign In
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+
+    <!-- Navigation for logged-in users -->
     {% if user %}
     <nav class="bg-white shadow-sm border-b border-gray-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
