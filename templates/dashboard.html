@@ -56,46 +56,105 @@
                 </div>
             </div>
 
-            <!-- Agency Details -->
+            <!-- Agency Details / Proposal Type Selection -->
             <div id="agency-info" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                 {% if agency_info and not agency_info.error %}
-                <div class="flex items-start justify-between">
-                    <div>
-                        <h2 class="text-lg font-semibold text-gray-900">{{ agency_info.agency }} {{ agency_info.program }}</h2>
-                        <p class="mt-1 text-gray-600 text-sm">{{ agency_info.description }}</p>
+                    {% if agency == 'nsf' %}
+                    <!-- NSF: Show Pre-Pitch / Phase I selection -->
+                    <div class="flex items-start justify-between mb-6">
+                        <div>
+                            <h2 class="text-lg font-semibold text-gray-900">{{ agency_info.agency }} SBIR Program</h2>
+                            <p class="mt-1 text-gray-600 text-sm">Select your proposal type to continue</p>
+                        </div>
                     </div>
-                </div>
 
-                <div class="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div class="bg-gray-50 rounded-lg p-4">
-                        <div class="text-sm text-gray-500">Funding</div>
-                        <div class="text-xl font-bold text-gray-900">{{ agency_info.funding_amount|currency }}</div>
-                    </div>
-                    <div class="bg-gray-50 rounded-lg p-4">
-                        <div class="text-sm text-gray-500">Duration</div>
-                        <div class="text-xl font-bold text-gray-900">{{ agency_info.duration_months }} months</div>
-                    </div>
-                    <div class="bg-gray-50 rounded-lg p-4">
-                        <div class="text-sm text-gray-500">Sections</div>
-                        <div class="text-xl font-bold text-gray-900">{{ agency_info.sections_count }}</div>
-                    </div>
-                    <div class="bg-gray-50 rounded-lg p-4">
-                        <div class="text-sm text-gray-500">Est. Cost</div>
-                        <div class="text-xl font-bold text-gray-900">$2-5</div>
-                    </div>
-                </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Pre-Pitch Option -->
+                        <a
+                            href="/generate?agency={{ agency }}&type=pre-pitch"
+                            class="block p-6 rounded-xl border-2 border-gray-200 hover:border-primary-500 hover:bg-primary-50 transition-all group"
+                        >
+                            <div class="flex items-center mb-3">
+                                <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
+                                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-900 group-hover:text-primary-700">Pre-Pitch</h3>
+                                    <span class="text-xs text-green-600 font-medium">Required First Step</span>
+                                </div>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-4">
+                                A shorter preliminary submission to gauge NSF interest before the full proposal.
+                                Fewer requirements, faster turnaround.
+                            </p>
+                            <div class="flex items-center text-sm text-gray-500">
+                                <span class="mr-4">~2-3 pages</span>
+                                <span>Est. cost: $1-2</span>
+                            </div>
+                        </a>
 
-                <div class="mt-6">
-                    <a
-                        href="/generate?agency={{ agency }}"
-                        class="inline-flex items-center px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-colors"
-                    >
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                        </svg>
-                        Generate {{ agency_info.agency }} Proposal
-                    </a>
-                </div>
+                        <!-- Phase I Option -->
+                        <div
+                            class="block p-6 rounded-xl border-2 border-gray-200 bg-gray-50 opacity-75 cursor-not-allowed"
+                        >
+                            <div class="flex items-center mb-3">
+                                <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-3">
+                                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-500">Phase I SBIR</h3>
+                                    <span class="text-xs text-amber-600 font-medium">Requires Pre-Pitch Acceptance</span>
+                                </div>
+                            </div>
+                            <p class="text-sm text-gray-500 mb-4">
+                                Full Phase I proposal with detailed technical approach, commercialization plan,
+                                and budget. Available after your Pre-Pitch is accepted by NSF.
+                            </p>
+                            <div class="flex items-center text-sm text-gray-400">
+                                <span class="mr-4">~15-20 pages</span>
+                                <span>Est. cost: $3-5</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <!-- DoD/NASA: Show existing flow (coming soon message) -->
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <h2 class="text-lg font-semibold text-gray-900">{{ agency_info.agency }} {{ agency_info.program }}</h2>
+                            <p class="mt-1 text-gray-600 text-sm">{{ agency_info.description }}</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <div class="text-sm text-gray-500">Funding</div>
+                            <div class="text-xl font-bold text-gray-900">{{ agency_info.funding_amount|currency }}</div>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <div class="text-sm text-gray-500">Duration</div>
+                            <div class="text-xl font-bold text-gray-900">{{ agency_info.duration_months }} months</div>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <div class="text-sm text-gray-500">Sections</div>
+                            <div class="text-xl font-bold text-gray-900">{{ agency_info.sections_count }}</div>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <div class="text-sm text-gray-500">Est. Cost</div>
+                            <div class="text-xl font-bold text-gray-900">$2-5</div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                        <p class="text-sm text-amber-800">
+                            <strong>Coming soon:</strong> {{ agency_info.agency }} proposal generation will be available shortly.
+                            Currently, only NSF proposals are supported.
+                        </p>
+                    </div>
+                    {% endif %}
                 {% else %}
                 <div class="text-red-600">
                     Error loading agency: {{ agency_info.error if agency_info else 'Unknown error' }}
@@ -204,13 +263,6 @@
                     >
                         <span class="text-xl mr-3">📝</span>
                         <span class="text-sm font-medium text-gray-700">Edit Company Info</span>
-                    </a>
-                    <a
-                        href="/generate?agency={{ agency }}"
-                        class="flex items-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
-                    >
-                        <span class="text-xl mr-3">✨</span>
-                        <span class="text-sm font-medium text-gray-700">Generate Proposal</span>
                     </a>
                     <a
                         href="/results"
