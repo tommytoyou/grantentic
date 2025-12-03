@@ -8,82 +8,192 @@
     <div class="text-center mb-12">
         <h1 class="text-4xl font-bold text-gray-900 mb-4">Choose Your Plan</h1>
         <p class="text-xl text-gray-600 max-w-2xl mx-auto">
-            Get AI-powered grant writing for SBIR Phase I proposals. Generate professional proposals for NSF, DoD, and NASA.
+            Get AI-powered grant writing for SBIR Pre-Pitches and Phase I proposals. Generate professional proposals for NSF, DoD, and NASA.
         </p>
     </div>
 
     <!-- Pricing Cards -->
-    <div class="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
         <!-- One-Time Purchase -->
         <div class="bg-white rounded-2xl shadow-xl border-2 border-primary-500 overflow-hidden">
             <div class="bg-primary-500 text-white py-2 text-center text-sm font-semibold">
-                RECOMMENDED
+                BEST VALUE
             </div>
-            <div class="p-8">
-                <h3 class="text-2xl font-bold text-gray-900 mb-2">{{ tiers.one_time.name }}</h3>
-                <p class="text-gray-600 mb-6">{{ tiers.one_time.description }}</p>
+            <div class="p-6">
+                <h3 class="text-xl font-bold text-gray-900 mb-2">One-Time</h3>
+                <p class="text-gray-600 text-sm mb-4">Get started immediately</p>
 
-                <div class="flex items-baseline mb-6">
-                    <span class="text-5xl font-bold text-gray-900">${{ tiers.one_time.price }}</span>
+                <div class="flex items-baseline mb-4">
+                    <span class="text-4xl font-bold text-gray-900">$800</span>
                     <span class="text-gray-500 ml-2">one-time</span>
                 </div>
 
-                <ul class="space-y-4 mb-8">
-                    {% for feature in tiers.one_time.features %}
+                <ul class="space-y-3 mb-6">
                     <li class="flex items-start">
-                        <svg class="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                         </svg>
-                        <span class="text-gray-700">{{ feature }}</span>
+                        <span class="text-sm text-gray-700">Up to 3 Pre-Pitches</span>
                     </li>
-                    {% endfor %}
+                    <li class="flex items-start">
+                        <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        <span class="text-sm text-gray-700">1 Phase I submission</span>
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        <span class="text-sm text-gray-700">NSF, DoD, NASA support</span>
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        <span class="text-sm text-gray-700">30-day revision access</span>
+                    </li>
                 </ul>
 
                 <form action="/checkout/one-time" method="POST">
-                    <button type="submit" class="w-full bg-primary-600 text-white py-4 px-6 rounded-lg font-semibold text-lg hover:bg-primary-700 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+                    <button type="submit" class="w-full bg-primary-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-primary-700 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
                         Get Started
                     </button>
                 </form>
             </div>
         </div>
 
-        <!-- Monthly Subscription -->
+        <!-- Basic Subscription -->
         <div class="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
             <div class="bg-gray-100 text-gray-600 py-2 text-center text-sm font-semibold">
                 COMING SOON
             </div>
-            <div class="p-8 opacity-60">
-                <h3 class="text-2xl font-bold text-gray-900 mb-2">Monthly Subscription</h3>
-                <p class="text-gray-600 mb-6">Flexible monthly plans for ongoing needs</p>
+            <div class="p-6 opacity-70">
+                <h3 class="text-xl font-bold text-gray-900 mb-2">Basic</h3>
+                <p class="text-gray-600 text-sm mb-4">For light users</p>
 
-                <div class="flex items-baseline mb-6">
-                    <span class="text-5xl font-bold text-gray-400">TBD</span>
-                    <span class="text-gray-400 ml-2">/month</span>
+                <div class="flex items-baseline mb-4">
+                    <span class="text-4xl font-bold text-gray-900">$199</span>
+                    <span class="text-gray-500 ml-2">/month</span>
                 </div>
 
-                <ul class="space-y-4 mb-8">
+                <ul class="space-y-3 mb-6">
                     <li class="flex items-start">
-                        <svg class="w-5 h-5 text-gray-400 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <svg class="w-5 h-5 text-gray-400 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                         </svg>
-                        <span class="text-gray-500">Multiple proposals per month</span>
+                        <span class="text-sm text-gray-600">1 Pre-Pitch/month</span>
                     </li>
                     <li class="flex items-start">
-                        <svg class="w-5 h-5 text-gray-400 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <svg class="w-5 h-5 text-gray-400 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                         </svg>
-                        <span class="text-gray-500">Priority support</span>
+                        <span class="text-sm text-gray-600">Email support</span>
                     </li>
                     <li class="flex items-start">
-                        <svg class="w-5 h-5 text-gray-400 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <svg class="w-5 h-5 text-gray-400 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                         </svg>
-                        <span class="text-gray-500">Advanced features</span>
+                        <span class="text-sm text-gray-600">All agency templates</span>
                     </li>
                 </ul>
 
-                <button disabled class="w-full bg-gray-200 text-gray-500 py-4 px-6 rounded-lg font-semibold text-lg cursor-not-allowed">
-                    Coming Soon
+                <button disabled class="w-full bg-gray-200 text-gray-500 py-3 px-4 rounded-lg font-semibold cursor-not-allowed">
+                    Join Waitlist
+                </button>
+            </div>
+        </div>
+
+        <!-- Standard Subscription -->
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+            <div class="bg-gray-100 text-gray-600 py-2 text-center text-sm font-semibold">
+                COMING SOON
+            </div>
+            <div class="p-6 opacity-70">
+                <h3 class="text-xl font-bold text-gray-900 mb-2">Standard</h3>
+                <p class="text-gray-600 text-sm mb-4">For regular applicants</p>
+
+                <div class="flex items-baseline mb-4">
+                    <span class="text-4xl font-bold text-gray-900">$399</span>
+                    <span class="text-gray-500 ml-2">/month</span>
+                </div>
+
+                <ul class="space-y-3 mb-6">
+                    <li class="flex items-start">
+                        <svg class="w-5 h-5 text-gray-400 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        <span class="text-sm text-gray-600">2 Pre-Pitches/month</span>
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="w-5 h-5 text-gray-400 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        <span class="text-sm text-gray-600">1 Phase I/quarter</span>
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="w-5 h-5 text-gray-400 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        <span class="text-sm text-gray-600">Priority email support</span>
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="w-5 h-5 text-gray-400 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        <span class="text-sm text-gray-600">All agency templates</span>
+                    </li>
+                </ul>
+
+                <button disabled class="w-full bg-gray-200 text-gray-500 py-3 px-4 rounded-lg font-semibold cursor-not-allowed">
+                    Join Waitlist
+                </button>
+            </div>
+        </div>
+
+        <!-- Pro Subscription -->
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+            <div class="bg-gray-100 text-gray-600 py-2 text-center text-sm font-semibold">
+                COMING SOON
+            </div>
+            <div class="p-6 opacity-70">
+                <h3 class="text-xl font-bold text-gray-900 mb-2">Pro</h3>
+                <p class="text-gray-600 text-sm mb-4">For power users</p>
+
+                <div class="flex items-baseline mb-4">
+                    <span class="text-4xl font-bold text-gray-900">$699</span>
+                    <span class="text-gray-500 ml-2">/month</span>
+                </div>
+
+                <ul class="space-y-3 mb-6">
+                    <li class="flex items-start">
+                        <svg class="w-5 h-5 text-gray-400 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        <span class="text-sm text-gray-600">Unlimited Pre-Pitches</span>
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="w-5 h-5 text-gray-400 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        <span class="text-sm text-gray-600">2 Phase I/month</span>
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="w-5 h-5 text-gray-400 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        <span class="text-sm text-gray-600">Priority support</span>
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="w-5 h-5 text-gray-400 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        <span class="text-sm text-gray-600">All agency templates</span>
+                    </li>
+                </ul>
+
+                <button disabled class="w-full bg-gray-200 text-gray-500 py-3 px-4 rounded-lg font-semibold cursor-not-allowed">
+                    Join Waitlist
                 </button>
             </div>
         </div>
@@ -96,12 +206,17 @@
         <div class="space-y-6">
             <div class="bg-white rounded-lg shadow p-6">
                 <h3 class="font-semibold text-gray-900 mb-2">What do I get with the one-time purchase?</h3>
-                <p class="text-gray-600">You get access to generate complete SBIR Phase I proposals for any of our supported agencies (NSF, DoD, NASA). This includes the pre-application and full application, with unlimited revisions for 30 days.</p>
+                <p class="text-gray-600">You get access to generate up to 3 Pre-Pitches and 1 complete SBIR Phase I proposal for any of our supported agencies (NSF, DoD, NASA). This includes unlimited revisions for 30 days.</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="font-semibold text-gray-900 mb-2">What is a Pre-Pitch?</h3>
+                <p class="text-gray-600">A Pre-Pitch is a shorter preliminary document (like NSF's Project Pitch) that agencies use to screen applicants before inviting them to submit a full Phase I proposal. It's typically 1-2 pages and helps you get early feedback on your idea.</p>
             </div>
 
             <div class="bg-white rounded-lg shadow p-6">
                 <h3 class="font-semibold text-gray-900 mb-2">How long does it take to generate a proposal?</h3>
-                <p class="text-gray-600">A complete proposal typically generates in 5-10 minutes, depending on the agency and the complexity of your company's information.</p>
+                <p class="text-gray-600">A Pre-Pitch typically generates in 2-3 minutes. A complete Phase I proposal takes 5-10 minutes, depending on the agency and the complexity of your company's information.</p>
             </div>
 
             <div class="bg-white rounded-lg shadow p-6">
@@ -112,6 +227,11 @@
             <div class="bg-white rounded-lg shadow p-6">
                 <h3 class="font-semibold text-gray-900 mb-2">What agencies are supported?</h3>
                 <p class="text-gray-600">We currently support NSF, DoD, and NASA SBIR Phase I proposals. Each agency has specific requirements that our AI is trained to follow.</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="font-semibold text-gray-900 mb-2">When will subscriptions be available?</h3>
+                <p class="text-gray-600">We're working on launching subscription plans soon. Join the waitlist to be notified when they become available and receive early-bird pricing.</p>
             </div>
         </div>
     </div>

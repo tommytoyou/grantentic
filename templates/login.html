@@ -4,77 +4,188 @@
 
 {% block body %}
 <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-primary-100 py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-md w-full">
+    <div class="max-w-4xl w-full">
         <!-- Logo and Title -->
         <div class="text-center mb-8">
             <h1 class="text-3xl font-bold text-gray-900">Grantentic</h1>
             <p class="mt-2 text-gray-600">AI-Powered Grant Writing System</p>
         </div>
 
-        <!-- Login Card -->
-        <div class="bg-white rounded-xl shadow-lg p-8">
-            <h2 class="text-xl font-semibold text-gray-900 mb-6">Sign In</h2>
+        <div class="grid md:grid-cols-2 gap-8">
+            <!-- Eligibility Checklist Card -->
+            <div class="bg-white rounded-xl shadow-lg p-8">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Check Your Eligibility</h2>
+                <p class="text-sm text-gray-600 mb-6">Before creating an account, verify that your company meets SBIR eligibility requirements.</p>
 
-            {% if error %}
-            <div class="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
-                {{ error }}
+                <form id="eligibility-form" class="space-y-4">
+                    <div class="space-y-3">
+                        <label class="flex items-start space-x-3 cursor-pointer">
+                            <input type="checkbox" id="elig-1" class="eligibility-check mt-1 h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500">
+                            <span class="text-sm text-gray-700">Is your company a small business (fewer than 500 employees) located in the United States?</span>
+                        </label>
+
+                        <label class="flex items-start space-x-3 cursor-pointer">
+                            <input type="checkbox" id="elig-2" class="eligibility-check mt-1 h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500">
+                            <span class="text-sm text-gray-700">Is at least 50% of your company's equity owned by U.S. citizens or permanent residents?</span>
+                        </label>
+
+                        <label class="flex items-start space-x-3 cursor-pointer">
+                            <input type="checkbox" id="elig-3" class="eligibility-check mt-1 h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500">
+                            <span class="text-sm text-gray-700">Will all funded work (including consultants and contractors) take place in the United States?</span>
+                        </label>
+
+                        <label class="flex items-start space-x-3 cursor-pointer">
+                            <input type="checkbox" id="elig-4" class="eligibility-check mt-1 h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500">
+                            <span class="text-sm text-gray-700">Is your principal investigator (tech lead) legally employed at least 20 hours/week by your company?</span>
+                        </label>
+
+                        <label class="flex items-start space-x-3 cursor-pointer">
+                            <input type="checkbox" id="elig-5" class="eligibility-check mt-1 h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500">
+                            <span class="text-sm text-gray-700">Can your principal investigator commit to at least 173 hours of work per 6 months of project duration?</span>
+                        </label>
+                    </div>
+
+                    <div class="pt-4 border-t border-gray-200">
+                        <p class="text-xs text-gray-500 mb-3">
+                            <strong>Note:</strong> NSF does not fund companies majority-owned by multiple venture capital firms, private equity firms, or hedge funds.
+                        </p>
+                        <a href="https://www.sbir.gov/sites/default/files/elig_size_compliance_guide_0.pdf"
+                           target="_blank"
+                           class="text-xs text-primary-600 hover:text-primary-700 underline">
+                            For detailed information, see the Eligibility Guide
+                        </a>
+                    </div>
+
+                    <button type="button"
+                            id="check-eligibility-btn"
+                            class="w-full py-3 px-4 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+                        Check Eligibility
+                    </button>
+                </form>
+
+                <!-- Eligibility Result Messages -->
+                <div id="eligibility-success" class="hidden mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <div class="flex items-center mb-2">
+                        <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        <span class="font-medium text-green-700">You appear to be eligible!</span>
+                    </div>
+                    <p class="text-sm text-green-600 mb-3">Your company meets the basic SBIR eligibility requirements.</p>
+                    <a href="/create-profile"
+                       class="inline-block w-full text-center py-2 px-4 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors">
+                        Create Your Profile
+                    </a>
+                </div>
+
+                <div id="eligibility-fail" class="hidden mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                    <div class="flex items-center mb-2">
+                        <svg class="w-5 h-5 text-amber-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                        </svg>
+                        <span class="font-medium text-amber-700">Eligibility Requirements Not Met</span>
+                    </div>
+                    <p class="text-sm text-amber-600">Based on your responses, your company may not meet all SBIR eligibility requirements. Please review the <a href="https://www.sbir.gov/sites/default/files/elig_size_compliance_guide_0.pdf" target="_blank" class="underline">Eligibility Guide</a> for more details or consult with your legal counsel.</p>
+                </div>
             </div>
-            {% endif %}
 
-            <form method="POST" action="/login" class="space-y-5">
-                <div>
-                    <label for="username" class="block text-sm font-medium text-gray-700 mb-1">
-                        Username
-                    </label>
-                    <input
-                        type="text"
-                        id="username"
-                        name="username"
-                        required
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
-                        placeholder="Enter your username"
-                    >
+            <!-- Login Card -->
+            <div class="bg-white rounded-xl shadow-lg p-8">
+                <h2 class="text-xl font-semibold text-gray-900 mb-6">Sign In</h2>
+
+                {% if error %}
+                <div class="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+                    {{ error }}
                 </div>
+                {% endif %}
 
-                <div>
-                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
-                        Password
-                    </label>
-                    <input
-                        type="password"
-                        id="password"
-                        name="password"
-                        required
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
-                        placeholder="Enter your password"
+                <form method="POST" action="/login" class="space-y-5">
+                    <div>
+                        <label for="username" class="block text-sm font-medium text-gray-700 mb-1">
+                            Username
+                        </label>
+                        <input
+                            type="text"
+                            id="username"
+                            name="username"
+                            required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                            placeholder="Enter your username"
+                        >
+                    </div>
+
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
+                            Password
+                        </label>
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                            placeholder="Enter your password"
+                        >
+                    </div>
+
+                    <button
+                        type="submit"
+                        class="w-full py-3 px-4 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
                     >
+                        Sign In
+                    </button>
+                </form>
+
+                <div class="mt-6 text-center">
+                    <p class="text-sm text-gray-600">
+                        Don't have an account? Complete the eligibility check to get started.
+                    </p>
                 </div>
-
-                <button
-                    type="submit"
-                    class="w-full py-3 px-4 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
-                >
-                    Sign In
-                </button>
-            </form>
-
+            </div>
         </div>
 
         <!-- Features -->
         <div class="mt-8 grid grid-cols-3 gap-4 text-center">
             <div class="bg-white/50 rounded-lg p-4">
-                <div class="text-2xl mb-1">🔬</div>
+                <div class="text-2xl mb-1">
+                    <img src="/static/images/nsf-logo.png" alt="NSF" class="h-8 w-8 mx-auto object-contain">
+                </div>
                 <div class="text-xs text-gray-600">NSF SBIR</div>
             </div>
             <div class="bg-white/50 rounded-lg p-4">
-                <div class="text-2xl mb-1">🛡️</div>
+                <div class="text-2xl mb-1">
+                    <img src="/static/images/dod-logo.png" alt="DoD" class="h-8 w-8 mx-auto object-contain">
+                </div>
                 <div class="text-xs text-gray-600">DoD SBIR</div>
             </div>
             <div class="bg-white/50 rounded-lg p-4">
-                <div class="text-2xl mb-1">🚀</div>
+                <div class="text-2xl mb-1">
+                    <img src="/static/images/nasa-logo.png" alt="NASA" class="h-8 w-8 mx-auto object-contain">
+                </div>
                 <div class="text-xs text-gray-600">NASA SBIR</div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const checkBtn = document.getElementById('check-eligibility-btn');
+    const successMsg = document.getElementById('eligibility-success');
+    const failMsg = document.getElementById('eligibility-fail');
+    const checkboxes = document.querySelectorAll('.eligibility-check');
+
+    checkBtn.addEventListener('click', function() {
+        const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+
+        if (allChecked) {
+            successMsg.classList.remove('hidden');
+            failMsg.classList.add('hidden');
+        } else {
+            failMsg.classList.remove('hidden');
+            successMsg.classList.add('hidden');
+        }
+    });
+});
+</script>
 {% endblock %}

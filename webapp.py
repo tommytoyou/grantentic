@@ -24,7 +24,7 @@ import stripe
 
 from config import Config
 from src.auth import (
-    authenticate_user, initialize_admin_account,
+    authenticate_user, initialize_admin_account, create_user, user_exists,
     get_user_payment_status, record_one_time_payment, record_subscription,
     update_subscription_status, set_stripe_customer_id, get_stripe_customer_id,
     get_user_by_stripe_customer_id, increment_proposals_generated
@@ -186,6 +186,86 @@ async def logout(request: Request):
     """Handle logout"""
     request.session.clear()
     return RedirectResponse(url="/login", status_code=302)
+
+
+@app.get("/create-profile", response_class=HTMLResponse)
+async def create_profile_page(request: Request, error: str = None):
+    """Profile creation page for new users"""
+    user = get_current_user(request)
+    if user:
+        return RedirectResponse(url="/dashboard", status_code=302)
+
+    return templates.TemplateResponse("create_profile.html", {
+        "request": request,
+        "error": error
+    })
+
+
+@app.post("/create-profile")
+async def create_profile(
+    request: Request,
+    company_name: str = Form(...),
+    email: str = Form(...),
+    phone: str = Form(""),
+    industry: str = Form(...),
+    username: str = Form(...),
+    password: str = Form(...),
+    password_confirm: str = Form(...)
+):
+    """Handle profile creation"""
+    # Validate passwords match
+    if password != password_confirm:
+        return RedirectResponse(
+            url="/create-profile?error=Passwords+do+not+match",
+            status_code=302
+        )
+
+    # Validate password length
+    if len(password) < 8:
+        return RedirectResponse(
+            url="/create-profile?error=Password+must+be+at+least+8+characters",
+            status_code=302
+        )
+
+    # Check if username already exists
+    if user_exists(username):
+        return RedirectResponse(
+            url="/create-profile?error=Username+already+exists",
+            status_code=302
+        )
+
+    # Create the user account
+    if not create_user(username, password):
+        return RedirectResponse(
+            url="/create-profile?error=Error+creating+account",
+            status_code=302
+        )
+
+    # Save company data for this user
+    company_data = {
+        'company_name': company_name,
+        'contact_email': email,
+        'contact_phone': phone,
+        'industry': industry,
+        'founded': '',
+        'location': '',
+        'focus_area': '',
+        'mission': '',
+        'problem_statement': '',
+        'solution': '',
+        'team': []
+    }
+    save_company_data(company_data)
+
+    # Log the user in
+    request.session["user"] = {
+        'username': username,
+        'role': 'user',
+        'created_at': datetime.now().isoformat()
+    }
+
+    # Redirect to pricing page
+    return RedirectResponse(url="/pricing", status_code=302)
 
 
 @app.get("/dashboard", response_class=HTMLResponse)
@@ -574,8 +654,16 @@ async def get_agency_api(request: Request, agency: str):
 async def pricing_page(request: Request):
     """Pricing/paywall page - shown to unpaid users"""
     user = get_current_user(request)
+
+    # Allow unauthenticated users to view pricing (for new users)
     if not user:
-        return RedirectResponse(url="/login", status_code=302)
+        return templates.TemplateResponse("pricing.html", {
+            "request": request,
+            "user": None,
+            "payment_status": {'can_generate': False},
+            "tiers": Config.PAYMENT_TIERS,
+            "stripe_publishable_key": Config.STRIPE_PUBLISHABLE_KEY
+        })
 
     payment_status = get_user_payment_status(user['username'])
 
@@ -649,8 +737,8 @@ async def create_checkout_subscription(request: Request, tier: str):
     # Map tier to price ID
     price_map = {
         'basic': Config.STRIPE_PRICE_MONTHLY_BASIC,
-        'pro': Config.STRIPE_PRICE_MONTHLY_PRO,
-        'enterprise': Config.STRIPE_PRICE_MONTHLY_ENTERPRISE
+        'standard': Config.STRIPE_PRICE_MONTHLY_STANDARD,
+        'pro': Config.STRIPE_PRICE_MONTHLY_PRO
     }
 
     price_id = price_map.get(tier)

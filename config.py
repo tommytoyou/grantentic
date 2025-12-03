@@ -24,51 +24,66 @@ class Config:
     # One-time purchase: $800 for SBIR Phase I pre-application + full application
     STRIPE_PRICE_ONE_TIME = os.environ.get('STRIPE_PRICE_ONE_TIME', '')
 
-    # Monthly subscription tiers (define pricing later)
+    # Monthly subscription tiers
     STRIPE_PRICE_MONTHLY_BASIC = os.environ.get('STRIPE_PRICE_MONTHLY_BASIC', '')
+    STRIPE_PRICE_MONTHLY_STANDARD = os.environ.get('STRIPE_PRICE_MONTHLY_STANDARD', '')
     STRIPE_PRICE_MONTHLY_PRO = os.environ.get('STRIPE_PRICE_MONTHLY_PRO', '')
-    STRIPE_PRICE_MONTHLY_ENTERPRISE = os.environ.get('STRIPE_PRICE_MONTHLY_ENTERPRISE', '')
 
     # Payment tiers configuration
     PAYMENT_TIERS = {
         'one_time': {
-            'name': 'SBIR Phase I Package',
-            'description': 'Pre-application + Full Application',
+            'name': 'One-Time',
+            'description': 'Get started immediately',
             'price': 800,
             'price_id_env': 'STRIPE_PRICE_ONE_TIME',
             'type': 'one_time',
             'features': [
-                'Complete SBIR Phase I pre-application',
-                'Full SBIR Phase I proposal',
-                'All supported agencies (NSF, DoD, NASA)',
-                'Unlimited revisions for 30 days',
-                'Quality assessment reports',
-                'Word document export'
+                'Up to 3 Pre-Pitches',
+                '1 Phase I submission',
+                'NSF, DoD, NASA support',
+                '30-day revision access'
             ]
         },
         'monthly_basic': {
             'name': 'Basic',
-            'description': 'Monthly Subscription',
-            'price': 0,  # Define later
+            'description': 'For light users',
+            'price': 199,
             'price_id_env': 'STRIPE_PRICE_MONTHLY_BASIC',
             'type': 'subscription',
-            'features': ['TBD']
+            'coming_soon': True,
+            'features': [
+                '1 Pre-Pitch/month',
+                'Email support',
+                'All agency templates'
+            ]
+        },
+        'monthly_standard': {
+            'name': 'Standard',
+            'description': 'For regular applicants',
+            'price': 399,
+            'price_id_env': 'STRIPE_PRICE_MONTHLY_STANDARD',
+            'type': 'subscription',
+            'coming_soon': True,
+            'features': [
+                '2 Pre-Pitches/month',
+                '1 Phase I/quarter',
+                'Priority email support',
+                'All agency templates'
+            ]
         },
         'monthly_pro': {
             'name': 'Pro',
-            'description': 'Monthly Subscription',
-            'price': 0,  # Define later
+            'description': 'For power users',
+            'price': 699,
             'price_id_env': 'STRIPE_PRICE_MONTHLY_PRO',
             'type': 'subscription',
-            'features': ['TBD']
-        },
-        'monthly_enterprise': {
-            'name': 'Enterprise',
-            'description': 'Monthly Subscription',
-            'price': 0,  # Define later
-            'price_id_env': 'STRIPE_PRICE_MONTHLY_ENTERPRISE',
-            'type': 'subscription',
-            'features': ['TBD']
+            'coming_soon': True,
+            'features': [
+                'Unlimited Pre-Pitches',
+                '2 Phase I/month',
+                'Priority support',
+                'All agency templates'
+            ]
         }
     }
 
