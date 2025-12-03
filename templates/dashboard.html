@@ -47,7 +47,7 @@
                         class="p-4 rounded-lg border-2 transition-all hover:shadow-md text-center {% if agency == ag.code %}border-primary-500 bg-primary-50{% else %}border-gray-200 hover:border-gray-300{% endif %}"
                     >
                         <div class="flex justify-center mb-2">
-                            <img src="/static/images/{{ ag.code|upper }}_Logo.png" alt="{{ ag.name }} Logo" class="h-16 object-contain">
+                            <img src="/static/images/{{ ag.code|upper }}_Logo{% if ag.code == 'nasa' %}.webp{% else %}.png{% endif %}" alt="{{ ag.name }} Logo" class="h-16 object-contain">
                         </div>
                         <div class="font-semibold text-gray-900">{{ ag.name }}</div>
                         <div class="text-xs text-gray-500">{{ ag.full_name }}</div>
