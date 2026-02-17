@@ -148,6 +148,12 @@ def get_agency_info(agency: str) -> Dict[str, Any]:
 
 # Routes
 
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    """Serve favicon from root path for browser compatibility"""
+    return FileResponse("static/favicon.ico", media_type="image/x-icon")
+
+
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
     """Home page - redirect to login or dashboard"""
