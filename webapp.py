@@ -6,6 +6,7 @@ AI-Powered Grant Writing System for NSF, DoD, and NASA SBIR Phase I proposals
 Full HTML control with FastAPI + Jinja2 + HTMX
 """
 
+import os
 import json
 import time
 import asyncio
@@ -151,7 +152,8 @@ def get_agency_info(agency: str) -> Dict[str, Any]:
 @app.get("/favicon.ico", include_in_schema=False)
 async def favicon():
     """Serve favicon from root path for browser compatibility"""
-    return FileResponse("static/favicon.svg", media_type="image/svg+xml")
+    favicon_path = os.path.join(os.path.dirname(__file__), "static", "favicon.svg")
+    return FileResponse(favicon_path, media_type="image/svg+xml")
 
 
 @app.get("/", response_class=HTMLResponse)
