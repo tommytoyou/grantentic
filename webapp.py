@@ -7,12 +7,19 @@ Full HTML control with FastAPI + Jinja2 + HTMX
 """
 
 import json
+import logging
 import time
 import asyncio
 from pathlib import Path
 from datetime import datetime
 from typing import Optional, Dict, Any
 from contextlib import asynccontextmanager
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+)
+log = logging.getLogger("grantentic")
 
 from fastapi import FastAPI, Request, Form, Depends, HTTPException, Response
 from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse, FileResponse
@@ -155,9 +162,15 @@ async def login(request: Request):
     password = form.get("password", "")
     user = authenticate_user(username, password)
     if not user:
+        log.info("login: auth FAILED for username=%r", username)
         return templates.TemplateResponse(request, "login.html", {
             "error": "Invalid username or password"
         })
+    log.info(
+        "login: auth OK for username=%r user_id=%r (type=%s) is_admin=%r",
+        user["username"], user.get("id"), type(user.get("id")).__name__,
+        user.get("is_admin"),
+    )
     request.session["username"] = user["username"]
     request.session["user_id"] = str(user["id"])
     request.session["is_admin"] = user.get("is_admin", False)
@@ -318,10 +331,18 @@ async def save_company(
 ):
     """Save company information"""
     user = get_current_user(request)
+    session_user_id = request.session.get("user_id")
+    log.info(
+        "company_save: session_keys=%s user=%r session_user_id=%r",
+        list(request.session.keys()), user, session_user_id,
+    )
+
     if not user:
+        log.warning("company_save: no user in session, redirecting to /login")
         return RedirectResponse(url="/login", status_code=302)
 
     user_id = require_user(request)
+    log.info("company_save: resolved user_id=%r type=%s", user_id, type(user_id).__name__)
 
     try:
         team_data = json.loads(team_json)
@@ -345,14 +366,16 @@ async def save_company(
 
     try:
         save_company_context(user_id, existing)
+        log.info("company_save: upsert completed for user_id=%r", user_id)
         return templates.TemplateResponse(request, "partials/company_saved.html", {
             "success": True,
             "message": "Company information saved successfully!"
         })
-    except Exception:
+    except Exception as exc:
+        log.exception("company_save: upsert FAILED for user_id=%r: %s", user_id, exc)
         return templates.TemplateResponse(request, "partials/company_saved.html", {
             "success": False,
-            "message": "Error saving company information"
+            "message": f"Error saving company information: {exc}"
         })
 
 

@@ -1,7 +1,10 @@
 import os
+import logging
 from supabase import create_client, Client
 from typing import Optional
 import json
+
+log = logging.getLogger("grantentic.database")
 
 def get_supabase() -> Client:
     """
@@ -54,10 +57,21 @@ def get_company_context(user_id: str) -> Optional[dict]:
 
 def save_company_context(user_id: str, context: dict) -> None:
     sb = get_supabase()
-    sb.table("company_contexts").upsert({
+    payload = {
         "user_id": user_id,
-        "context_json": json.dumps(context)
-    }, on_conflict="user_id").execute()
+        "context_json": json.dumps(context),
+    }
+    log.info(
+        "save_company_context: upserting user_id=%r keys=%s json_len=%d",
+        user_id, sorted(context.keys()), len(payload["context_json"]),
+    )
+    result = sb.table("company_contexts").upsert(
+        payload, on_conflict="user_id"
+    ).execute()
+    log.info(
+        "save_company_context: upsert returned data=%r count=%r",
+        result.data, getattr(result, "count", None),
+    )
 
 def save_proposal(user_id: str, proposal_type: str, sections: dict, status: str = "draft") -> dict:
     sb = get_supabase()
