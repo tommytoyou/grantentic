@@ -142,8 +142,7 @@ async def login_page(request: Request, error: str = None):
     if user:
         return RedirectResponse(url="/dashboard", status_code=302)
 
-    return templates.TemplateResponse("login.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "login.html", {
         "error": error
     })
 
@@ -156,8 +155,7 @@ async def login(request: Request):
     password = form.get("password", "")
     user = authenticate_user(username, password)
     if not user:
-        return templates.TemplateResponse("login.html", {
-            "request": request,
+        return templates.TemplateResponse(request, "login.html", {
             "error": "Invalid username or password"
         })
     request.session["username"] = user["username"]
@@ -181,8 +179,7 @@ async def create_profile_page(request: Request, error: str = None):
     if user:
         return RedirectResponse(url="/dashboard", status_code=302)
 
-    return templates.TemplateResponse("create_profile.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "create_profile.html", {
         "error": error
     })
 
@@ -276,8 +273,7 @@ async def dashboard(request: Request, agency: str = "nsf"):
     # Get proposal if exists
     proposal = app_state.proposals.get(user['username'])
 
-    return templates.TemplateResponse("dashboard.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "dashboard.html", {
         "user": user,
         "company_data": company_data,
         "agency": agency,
@@ -301,8 +297,7 @@ async def company_page(request: Request):
     user_id = require_user(request)
     context = get_company_context(user_id) or {}
 
-    return templates.TemplateResponse("company.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "company.html", {
         "user": user,
         "company_data": context
     })
@@ -350,14 +345,12 @@ async def save_company(
 
     try:
         save_company_context(user_id, existing)
-        return templates.TemplateResponse("partials/company_saved.html", {
-            "request": request,
+        return templates.TemplateResponse(request, "partials/company_saved.html", {
             "success": True,
             "message": "Company information saved successfully!"
         })
     except Exception:
-        return templates.TemplateResponse("partials/company_saved.html", {
-            "request": request,
+        return templates.TemplateResponse(request, "partials/company_saved.html", {
             "success": False,
             "message": "Error saving company information"
         })
@@ -372,8 +365,7 @@ async def generate_page(request: Request, agency: str = "nsf"):
 
     agency_info = get_agency_info(agency)
 
-    return templates.TemplateResponse("generate.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "generate.html", {
         "user": user,
         "agency": agency,
         "agency_info": agency_info
@@ -580,8 +572,7 @@ async def results_page(request: Request):
 
     proposal_data = app_state.proposals.get(user['username'])
 
-    return templates.TemplateResponse("results.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "results.html", {
         "user": user,
         "proposal_data": proposal_data
     })
@@ -618,8 +609,7 @@ async def get_agency_api(request: Request, agency: str):
 
     agency_info = get_agency_info(agency)
 
-    return templates.TemplateResponse("partials/agency_info.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "partials/agency_info.html", {
         "agency": agency,
         "agency_info": agency_info
     })
@@ -634,8 +624,7 @@ async def pricing_page(request: Request):
     """Pricing/paywall page"""
     user = get_current_user(request)
 
-    return templates.TemplateResponse("pricing.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "pricing.html", {
         "user": user,
         "payment_status": {'can_generate': False},
         "tiers": Config.PAYMENT_TIERS,
@@ -745,8 +734,7 @@ async def payment_success(request: Request, session_id: str = None):
         except stripe.error.StripeError as e:
             error_message = str(e)
 
-    return templates.TemplateResponse("payment_success.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "payment_success.html", {
         "user": user,
         "payment_verified": payment_verified,
         "error_message": error_message
@@ -760,8 +748,7 @@ async def payment_cancel(request: Request):
     if not user:
         return RedirectResponse(url="/login", status_code=302)
 
-    return templates.TemplateResponse("payment_cancel.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "payment_cancel.html", {
         "user": user
     })
 
@@ -795,8 +782,7 @@ async def billing_page(request: Request):
     if not user:
         return RedirectResponse(url="/login", status_code=302)
 
-    return templates.TemplateResponse("billing.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "billing.html", {
         "user": user,
         "payment_status": {'can_generate': False},
         "tiers": Config.PAYMENT_TIERS
@@ -818,7 +804,7 @@ async def proposals_list(request: Request):
     user_id = require_user(request)
     user = get_current_user(request)
     proposals = get_proposals_for_user(user_id)
-    return templates.TemplateResponse("proposals.html", {"request": request, "user": user, "proposals": proposals})
+    return templates.TemplateResponse(request, "proposals.html", {"user": user, "proposals": proposals})
 
 
 @app.get("/proposals/{proposal_id}")
@@ -828,7 +814,7 @@ async def proposal_detail(request: Request, proposal_id: str):
     proposal = get_proposal(proposal_id, user_id)
     if not proposal:
         raise HTTPException(status_code=404, detail="Proposal not found")
-    return templates.TemplateResponse("proposal_detail.html", {"request": request, "user": user, "proposal": proposal})
+    return templates.TemplateResponse(request, "proposal_detail.html", {"user": user, "proposal": proposal})
 
 
 # Health check
