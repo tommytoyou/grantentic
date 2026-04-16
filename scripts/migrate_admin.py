@@ -7,7 +7,7 @@ current password. Safe to re-run: checks if the user already exists in
 Supabase and skips insertion if so.
 
 Usage:
-    SUPABASE_URL=... SUPABASE_ANON_KEY=... python scripts/migrate_admin.py
+    SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... python scripts/migrate_admin.py
 """
 
 import json

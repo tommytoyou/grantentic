@@ -4,10 +4,21 @@ from typing import Optional
 import json
 
 def get_supabase() -> Client:
+    """
+    Return a Supabase client authenticated with the service_role key.
+
+    The app handles its own authentication (see src/auth.py), so every database
+    call is made server-side on behalf of an already-authenticated user. We use
+    service_role (which bypasses RLS) because the application layer — not
+    Supabase Auth — decides which user_id a query is scoped to. The anon key
+    would require a Supabase-Auth JWT (auth.uid()), which we do not issue.
+    """
     url = os.environ.get("SUPABASE_URL")
-    key = os.environ.get("SUPABASE_ANON_KEY")
+    key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
     if not url or not key:
-        raise RuntimeError("SUPABASE_URL and SUPABASE_ANON_KEY must be set in environment")
+        raise RuntimeError(
+            "SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set in environment"
+        )
     return create_client(url, key)
 
 def get_user_by_username(username: str) -> Optional[dict]:

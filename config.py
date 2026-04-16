@@ -15,8 +15,15 @@ class Config:
     # ============================================================================
     # SUPABASE DATABASE
     # ============================================================================
+    # The app authenticates users itself (SHA-256 + salt in src/auth.py) and
+    # makes every database call from the server, so we use the service_role key
+    # for all queries. service_role bypasses RLS, which is correct here because
+    # the app — not Supabase Auth — gates which rows each user can access.
+    # The anon key is kept only for clients that might talk to Supabase directly
+    # from the browser in the future.
     SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
     SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "")
+    SUPABASE_SERVICE_ROLE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
 
     # ============================================================================
     # STRIPE PAYMENT CONFIGURATION
