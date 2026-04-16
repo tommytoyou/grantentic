@@ -1,13 +1,17 @@
 import hashlib
+import hmac
 import secrets
 from typing import Optional
 from src.database import get_user_by_username, create_user
 
 def hash_password(password: str, salt: str) -> str:
-    return hashlib.sha256((salt + password).encode()).hexdigest()
+    # Order is password + salt to match the hashes produced by the legacy
+    # flat-file auth module (see data/users.json prior to the Supabase
+    # migration). Changing the order would invalidate every migrated hash.
+    return hashlib.sha256((password + salt).encode()).hexdigest()
 
 def verify_password(password: str, salt: str, hashed: str) -> bool:
-    return hash_password(password, salt) == hashed
+    return hmac.compare_digest(hash_password(password, salt), hashed)
 
 def authenticate_user(username: str, password: str) -> Optional[dict]:
     user = get_user_by_username(username)
