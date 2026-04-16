@@ -12,8 +12,9 @@ def get_supabase() -> Client:
 
 def get_user_by_username(username: str) -> Optional[dict]:
     sb = get_supabase()
-    result = sb.table("users").select("*").eq("username", username).maybe_single().execute()
-    return result.data
+    result = sb.table("users").select("*").eq("username", username).limit(1).execute()
+    rows = result.data or []
+    return rows[0] if rows else None
 
 def create_user(username: str, hashed_password: str, salt: str, is_admin: bool = False) -> dict:
     sb = get_supabase()
@@ -33,9 +34,10 @@ def update_user_plan(user_id: str, plan: str, submissions_used: int = 0) -> None
 
 def get_company_context(user_id: str) -> Optional[dict]:
     sb = get_supabase()
-    result = sb.table("company_contexts").select("context_json").eq("user_id", user_id).maybe_single().execute()
-    if result.data:
-        raw = result.data.get("context_json")
+    result = sb.table("company_contexts").select("context_json").eq("user_id", user_id).limit(1).execute()
+    rows = result.data or []
+    if rows:
+        raw = rows[0].get("context_json")
         return json.loads(raw) if isinstance(raw, str) else raw
     return None
 
@@ -67,11 +69,13 @@ def get_proposals_for_user(user_id: str) -> list[dict]:
 
 def get_proposal(proposal_id: str, user_id: str) -> Optional[dict]:
     sb = get_supabase()
-    result = sb.table("proposals").select("*").eq("id", proposal_id).eq("user_id", user_id).maybe_single().execute()
-    if result.data:
-        raw = result.data.get("sections_json")
-        result.data["sections"] = json.loads(raw) if isinstance(raw, str) else raw
-        return result.data
+    result = sb.table("proposals").select("*").eq("id", proposal_id).eq("user_id", user_id).limit(1).execute()
+    rows = result.data or []
+    if rows:
+        row = rows[0]
+        raw = row.get("sections_json")
+        row["sections"] = json.loads(raw) if isinstance(raw, str) else raw
+        return row
     return None
 
 def update_proposal_status(proposal_id: str, user_id: str, status: str) -> None:
