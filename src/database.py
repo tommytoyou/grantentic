@@ -1,0 +1,79 @@
+import os
+from supabase import create_client, Client
+from typing import Optional
+import json
+
+def get_supabase() -> Client:
+    url = os.environ.get("SUPABASE_URL")
+    key = os.environ.get("SUPABASE_ANON_KEY")
+    if not url or not key:
+        raise RuntimeError("SUPABASE_URL and SUPABASE_ANON_KEY must be set in environment")
+    return create_client(url, key)
+
+def get_user_by_username(username: str) -> Optional[dict]:
+    sb = get_supabase()
+    result = sb.table("users").select("*").eq("username", username).maybe_single().execute()
+    return result.data
+
+def create_user(username: str, hashed_password: str, salt: str, is_admin: bool = False) -> dict:
+    sb = get_supabase()
+    result = sb.table("users").insert({
+        "username": username,
+        "hashed_password": hashed_password,
+        "salt": salt,
+        "is_admin": is_admin,
+        "plan": "free",
+        "submissions_used": 0
+    }).execute()
+    return result.data[0]
+
+def update_user_plan(user_id: str, plan: str, submissions_used: int = 0) -> None:
+    sb = get_supabase()
+    sb.table("users").update({"plan": plan, "submissions_used": submissions_used}).eq("id", user_id).execute()
+
+def get_company_context(user_id: str) -> Optional[dict]:
+    sb = get_supabase()
+    result = sb.table("company_contexts").select("context_json").eq("user_id", user_id).maybe_single().execute()
+    if result.data:
+        raw = result.data.get("context_json")
+        return json.loads(raw) if isinstance(raw, str) else raw
+    return None
+
+def save_company_context(user_id: str, context: dict) -> None:
+    sb = get_supabase()
+    sb.table("company_contexts").upsert({
+        "user_id": user_id,
+        "context_json": json.dumps(context)
+    }, on_conflict="user_id").execute()
+
+def save_proposal(user_id: str, proposal_type: str, sections: dict, status: str = "draft") -> dict:
+    sb = get_supabase()
+    result = sb.table("proposals").insert({
+        "user_id": user_id,
+        "proposal_type": proposal_type,
+        "sections_json": json.dumps(sections),
+        "status": status
+    }).execute()
+    return result.data[0]
+
+def get_proposals_for_user(user_id: str) -> list[dict]:
+    sb = get_supabase()
+    result = sb.table("proposals").select("*").eq("user_id", user_id).order("created_at", desc=True).execute()
+    proposals = result.data or []
+    for p in proposals:
+        raw = p.get("sections_json")
+        p["sections"] = json.loads(raw) if isinstance(raw, str) else raw
+    return proposals
+
+def get_proposal(proposal_id: str, user_id: str) -> Optional[dict]:
+    sb = get_supabase()
+    result = sb.table("proposals").select("*").eq("id", proposal_id).eq("user_id", user_id).maybe_single().execute()
+    if result.data:
+        raw = result.data.get("sections_json")
+        result.data["sections"] = json.loads(raw) if isinstance(raw, str) else raw
+        return result.data
+    return None
+
+def update_proposal_status(proposal_id: str, user_id: str, status: str) -> None:
+    sb = get_supabase()
+    sb.table("proposals").update({"status": status}).eq("id", proposal_id).eq("user_id", user_id).execute()

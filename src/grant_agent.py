@@ -790,10 +790,24 @@ class GrantAgent:
         self.model = Config.MODEL
         self.agency_loader = agency_loader
 
-        # Load company context
-        with open("data/company_context.json", "r") as f:
-            data = json.load(f)
-            self.company_context = CompanyContext(**data)
+        # Load company context from file or accept as parameter
+        company_context_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "company_context.json")
+        if os.path.exists(company_context_path):
+            with open(company_context_path, "r") as f:
+                data = json.load(f)
+                self.company_context = CompanyContext(**data)
+        else:
+            self.company_context = CompanyContext(
+                company_name="",
+                founded="",
+                location="",
+                industry="",
+                focus_area="",
+                mission="",
+                problem_statement="",
+                solution="",
+                team=[]
+            )
 
         # Generate agency-specific requirements text
         self.agency_requirements = self.agency_loader.generate_requirements_text()

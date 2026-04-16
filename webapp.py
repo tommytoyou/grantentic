@@ -23,11 +23,14 @@ from starlette.middleware.sessions import SessionMiddleware
 import stripe
 
 from config import Config
-from src.auth import (
-    authenticate_user, initialize_admin_account, create_user, user_exists,
-    get_user_payment_status, record_one_time_payment, record_subscription,
-    update_subscription_status, set_stripe_customer_id, get_stripe_customer_id,
-    get_user_by_stripe_customer_id, increment_proposals_generated
+from src.auth import authenticate_user, register_user
+from src.database import (
+    get_user_by_username,
+    get_company_context,
+    save_company_context,
+    save_proposal,
+    get_proposals_for_user,
+    get_proposal,
 )
 from src.agency_loader import load_agency_requirements
 from src.models import GrantProposal, GrantSection
@@ -48,7 +51,6 @@ app_state = AppState()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan - initialize on startup"""
-    initialize_admin_account()
     yield
 
 
@@ -97,35 +99,11 @@ def require_auth(request: Request) -> Dict[str, Any]:
     return user
 
 
-# Helper functions
-def load_company_data() -> Dict[str, Any]:
-    """Load company data from JSON file"""
-    try:
-        with open('data/company_context.json', 'r') as f:
-            return json.load(f)
-    except Exception:
-        return {
-            'company_name': '',
-            'founded': '',
-            'location': '',
-            'industry': '',
-            'focus_area': '',
-            'mission': '',
-            'problem_statement': '',
-            'solution': '',
-            'team': []
-        }
-
-
-def save_company_data(data: Dict[str, Any]) -> bool:
-    """Save company data to JSON file"""
-    try:
-        Path('data').mkdir(exist_ok=True)
-        with open('data/company_context.json', 'w') as f:
-            json.dump(data, f, indent=2)
-        return True
-    except Exception:
-        return False
+def require_user(request: Request) -> str:
+    user_id = request.session.get("user_id")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    return user_id
 
 
 def get_agency_info(agency: str) -> Dict[str, Any]:
@@ -171,14 +149,22 @@ async def login_page(request: Request, error: str = None):
 
 
 @app.post("/login")
-async def login(request: Request, username: str = Form(...), password: str = Form(...)):
+async def login(request: Request):
     """Handle login"""
+    form = await request.form()
+    username = form.get("username", "").strip()
+    password = form.get("password", "")
     user = authenticate_user(username, password)
-    if user:
-        request.session["user"] = user
-        return RedirectResponse(url="/dashboard", status_code=302)
-
-    return RedirectResponse(url="/login?error=Invalid+username+or+password", status_code=302)
+    if not user:
+        return templates.TemplateResponse("login.html", {
+            "request": request,
+            "error": "Invalid username or password"
+        })
+    request.session["username"] = user["username"]
+    request.session["user_id"] = str(user["id"])
+    request.session["is_admin"] = user.get("is_admin", False)
+    request.session["user"] = {"username": user["username"], "role": "admin" if user.get("is_admin") else "user"}
+    return RedirectResponse(url="/dashboard", status_code=303)
 
 
 @app.get("/logout")
@@ -228,18 +214,22 @@ async def create_profile(
         )
 
     # Check if username already exists
-    if user_exists(username):
+    if get_user_by_username(username):
         return RedirectResponse(
             url="/create-profile?error=Username+already+exists",
             status_code=302
         )
 
     # Create the user account
-    if not create_user(username, password):
+    try:
+        user = register_user(username, password)
+    except Exception:
         return RedirectResponse(
             url="/create-profile?error=Error+creating+account",
             status_code=302
         )
+
+    user_id = str(user["id"])
 
     # Save company data for this user
     company_data = {
@@ -255,7 +245,7 @@ async def create_profile(
         'solution': '',
         'team': []
     }
-    save_company_data(company_data)
+    save_company_context(user_id, company_data)
 
     # Log the user in
     request.session["user"] = {
@@ -263,6 +253,9 @@ async def create_profile(
         'role': 'user',
         'created_at': datetime.now().isoformat()
     }
+    request.session["username"] = username
+    request.session["user_id"] = user_id
+    request.session["is_admin"] = False
 
     # Redirect to pricing page
     return RedirectResponse(url="/pricing", status_code=302)
@@ -275,14 +268,9 @@ async def dashboard(request: Request, agency: str = "nsf"):
     if not user:
         return RedirectResponse(url="/login", status_code=302)
 
-    # Check payment status
-    payment_status = get_user_payment_status(user['username'])
-
-    # Redirect unpaid users to pricing page
-    if not payment_status['can_generate']:
-        return RedirectResponse(url="/pricing", status_code=302)
-
-    company_data = load_company_data()
+    user_id = request.session.get("user_id")
+    company_data = get_company_context(user_id) if user_id else {}
+    company_data = company_data or {}
     agency_info = get_agency_info(agency)
 
     # Get proposal if exists
@@ -299,8 +287,7 @@ async def dashboard(request: Request, agency: str = "nsf"):
             {'code': 'dod', 'name': 'DoD', 'icon': '🛡️', 'full_name': 'Department of Defense'},
             {'code': 'nasa', 'name': 'NASA', 'icon': '🚀', 'full_name': 'Space Technology'}
         ],
-        "proposal": proposal,
-        "payment_status": payment_status
+        "proposal": proposal
     })
 
 
@@ -311,12 +298,13 @@ async def company_page(request: Request):
     if not user:
         return RedirectResponse(url="/login", status_code=302)
 
-    company_data = load_company_data()
+    user_id = require_user(request)
+    context = get_company_context(user_id) or {}
 
     return templates.TemplateResponse("company.html", {
         "request": request,
         "user": user,
-        "company_data": company_data
+        "company_data": context
     })
 
 
@@ -338,13 +326,15 @@ async def save_company(
     if not user:
         return RedirectResponse(url="/login", status_code=302)
 
+    user_id = require_user(request)
+
     try:
         team_data = json.loads(team_json)
     except json.JSONDecodeError:
         team_data = []
 
     # Load existing data to preserve other fields
-    existing = load_company_data()
+    existing = get_company_context(user_id) or {}
 
     existing.update({
         'company_name': company_name,
@@ -358,13 +348,14 @@ async def save_company(
         'team': team_data
     })
 
-    if save_company_data(existing):
+    try:
+        save_company_context(user_id, existing)
         return templates.TemplateResponse("partials/company_saved.html", {
             "request": request,
             "success": True,
             "message": "Company information saved successfully!"
         })
-    else:
+    except Exception:
         return templates.TemplateResponse("partials/company_saved.html", {
             "request": request,
             "success": False,
@@ -378,13 +369,6 @@ async def generate_page(request: Request, agency: str = "nsf"):
     user = get_current_user(request)
     if not user:
         return RedirectResponse(url="/login", status_code=302)
-
-    # Check payment status
-    payment_status = get_user_payment_status(user['username'])
-
-    # Redirect unpaid users to pricing page
-    if not payment_status['can_generate']:
-        return RedirectResponse(url="/pricing", status_code=302)
 
     agency_info = get_agency_info(agency)
 
@@ -402,11 +386,6 @@ async def generate_stream(request: Request, agency: str = "nsf", iterations: int
     user = get_current_user(request)
     if not user:
         raise HTTPException(status_code=401, detail="Not authenticated")
-
-    # Check payment status
-    payment_status = get_user_payment_status(user['username'])
-    if not payment_status['can_generate']:
-        raise HTTPException(status_code=403, detail="Payment required")
 
     async def event_generator():
         try:
@@ -652,29 +631,13 @@ async def get_agency_api(request: Request, agency: str):
 
 @app.get("/pricing", response_class=HTMLResponse)
 async def pricing_page(request: Request):
-    """Pricing/paywall page - shown to unpaid users"""
+    """Pricing/paywall page"""
     user = get_current_user(request)
-
-    # Allow unauthenticated users to view pricing (for new users)
-    if not user:
-        return templates.TemplateResponse("pricing.html", {
-            "request": request,
-            "user": None,
-            "payment_status": {'can_generate': False},
-            "tiers": Config.PAYMENT_TIERS,
-            "stripe_publishable_key": Config.STRIPE_PUBLISHABLE_KEY
-        })
-
-    payment_status = get_user_payment_status(user['username'])
-
-    # If user has paid, redirect to dashboard
-    if payment_status['can_generate']:
-        return RedirectResponse(url="/dashboard", status_code=302)
 
     return templates.TemplateResponse("pricing.html", {
         "request": request,
         "user": user,
-        "payment_status": payment_status,
+        "payment_status": {'can_generate': False},
         "tiers": Config.PAYMENT_TIERS,
         "stripe_publishable_key": Config.STRIPE_PUBLISHABLE_KEY
     })
@@ -691,19 +654,12 @@ async def create_checkout_one_time(request: Request):
         raise HTTPException(status_code=500, detail="Stripe not configured")
 
     try:
-        # Get or create Stripe customer
-        customer_id = get_stripe_customer_id(user['username'])
+        customer = stripe.Customer.create(
+            metadata={'username': user['username']}
+        )
 
-        if not customer_id:
-            customer = stripe.Customer.create(
-                metadata={'username': user['username']}
-            )
-            customer_id = customer.id
-            set_stripe_customer_id(user['username'], customer_id)
-
-        # Create checkout session
         checkout_session = stripe.checkout.Session.create(
-            customer=customer_id,
+            customer=customer.id,
             payment_method_types=['card'],
             line_items=[{
                 'price': Config.STRIPE_PRICE_ONE_TIME,
@@ -734,7 +690,6 @@ async def create_checkout_subscription(request: Request, tier: str):
     if not Config.STRIPE_SECRET_KEY:
         raise HTTPException(status_code=500, detail="Stripe not configured")
 
-    # Map tier to price ID
     price_map = {
         'basic': Config.STRIPE_PRICE_MONTHLY_BASIC,
         'standard': Config.STRIPE_PRICE_MONTHLY_STANDARD,
@@ -746,17 +701,12 @@ async def create_checkout_subscription(request: Request, tier: str):
         raise HTTPException(status_code=400, detail="Invalid subscription tier")
 
     try:
-        customer_id = get_stripe_customer_id(user['username'])
-
-        if not customer_id:
-            customer = stripe.Customer.create(
-                metadata={'username': user['username']}
-            )
-            customer_id = customer.id
-            set_stripe_customer_id(user['username'], customer_id)
+        customer = stripe.Customer.create(
+            metadata={'username': user['username']}
+        )
 
         checkout_session = stripe.checkout.Session.create(
-            customer=customer_id,
+            customer=customer.id,
             payment_method_types=['card'],
             line_items=[{
                 'price': price_id,
@@ -790,34 +740,8 @@ async def payment_success(request: Request, session_id: str = None):
     if session_id and Config.STRIPE_SECRET_KEY:
         try:
             session = stripe.checkout.Session.retrieve(session_id)
-
             if session.payment_status == 'paid':
                 payment_verified = True
-
-                # Record the payment
-                if session.mode == 'payment':
-                    # One-time payment
-                    record_one_time_payment(
-                        username=user['username'],
-                        payment_id=session.id,
-                        stripe_checkout_session_id=session.id,
-                        stripe_payment_intent_id=session.payment_intent,
-                        amount_cents=session.amount_total,
-                        tier='one_time'
-                    )
-                elif session.mode == 'subscription':
-                    # Subscription
-                    subscription = stripe.Subscription.retrieve(session.subscription)
-                    record_subscription(
-                        username=user['username'],
-                        stripe_subscription_id=subscription.id,
-                        stripe_customer_id=session.customer,
-                        tier=session.metadata.get('tier', 'monthly_basic'),
-                        status='active',
-                        current_period_start=datetime.fromtimestamp(subscription.current_period_start).isoformat(),
-                        current_period_end=datetime.fromtimestamp(subscription.current_period_end).isoformat()
-                    )
-
         except stripe.error.StripeError as e:
             error_message = str(e)
 
@@ -860,68 +784,7 @@ async def stripe_webhook(request: Request):
     except stripe.error.SignatureVerificationError:
         raise HTTPException(status_code=400, detail="Invalid signature")
 
-    # Handle different event types
-    event_type = event['type']
-    data = event['data']['object']
-
-    if event_type == 'checkout.session.completed':
-        # Payment successful
-        session = data
-        username = session.get('metadata', {}).get('username')
-        tier = session.get('metadata', {}).get('tier', 'one_time')
-
-        if username:
-            if session.get('mode') == 'payment':
-                record_one_time_payment(
-                    username=username,
-                    payment_id=session['id'],
-                    stripe_checkout_session_id=session['id'],
-                    stripe_payment_intent_id=session.get('payment_intent', ''),
-                    amount_cents=session.get('amount_total', 0),
-                    tier=tier
-                )
-            elif session.get('mode') == 'subscription':
-                subscription = stripe.Subscription.retrieve(session['subscription'])
-                record_subscription(
-                    username=username,
-                    stripe_subscription_id=subscription.id,
-                    stripe_customer_id=session['customer'],
-                    tier=tier,
-                    status='active',
-                    current_period_start=datetime.fromtimestamp(subscription.current_period_start).isoformat(),
-                    current_period_end=datetime.fromtimestamp(subscription.current_period_end).isoformat()
-                )
-
-    elif event_type == 'customer.subscription.updated':
-        subscription = data
-        customer_id = subscription.get('customer')
-        username = get_user_by_stripe_customer_id(customer_id)
-
-        if username:
-            status = subscription.get('status')
-            if status in ['active', 'past_due', 'canceled', 'unpaid']:
-                update_subscription_status(username, status)
-
-    elif event_type == 'customer.subscription.deleted':
-        subscription = data
-        customer_id = subscription.get('customer')
-        username = get_user_by_stripe_customer_id(customer_id)
-
-        if username:
-            update_subscription_status(
-                username,
-                'canceled',
-                canceled_at=datetime.now().isoformat()
-            )
-
-    elif event_type == 'invoice.payment_failed':
-        invoice = data
-        customer_id = invoice.get('customer')
-        username = get_user_by_stripe_customer_id(customer_id)
-
-        if username:
-            update_subscription_status(username, 'past_due')
-
+    # TODO: handle webhook events with Supabase-backed payment records
     return {"status": "success"}
 
 
@@ -932,12 +795,10 @@ async def billing_page(request: Request):
     if not user:
         return RedirectResponse(url="/login", status_code=302)
 
-    payment_status = get_user_payment_status(user['username'])
-
     return templates.TemplateResponse("billing.html", {
         "request": request,
         "user": user,
-        "payment_status": payment_status,
+        "payment_status": {'can_generate': False},
         "tiers": Config.PAYMENT_TIERS
     })
 
@@ -949,19 +810,25 @@ async def billing_portal(request: Request):
     if not user:
         raise HTTPException(status_code=401, detail="Not authenticated")
 
-    customer_id = get_stripe_customer_id(user['username'])
-    if not customer_id:
-        return RedirectResponse(url="/pricing", status_code=302)
+    return RedirectResponse(url="/pricing", status_code=302)
 
-    try:
-        portal_session = stripe.billing_portal.Session.create(
-            customer=customer_id,
-            return_url=f"{Config.BASE_URL}/billing"
-        )
-        return RedirectResponse(url=portal_session.url, status_code=303)
 
-    except stripe.error.StripeError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+@app.get("/proposals")
+async def proposals_list(request: Request):
+    user_id = require_user(request)
+    user = get_current_user(request)
+    proposals = get_proposals_for_user(user_id)
+    return templates.TemplateResponse("proposals.html", {"request": request, "user": user, "proposals": proposals})
+
+
+@app.get("/proposals/{proposal_id}")
+async def proposal_detail(request: Request, proposal_id: str):
+    user_id = require_user(request)
+    user = get_current_user(request)
+    proposal = get_proposal(proposal_id, user_id)
+    if not proposal:
+        raise HTTPException(status_code=404, detail="Proposal not found")
+    return templates.TemplateResponse("proposal_detail.html", {"request": request, "user": user, "proposal": proposal})
 
 
 # Health check

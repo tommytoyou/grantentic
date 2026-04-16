@@ -13,6 +13,12 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY', 'grantentic-secret-key-change-in-production')
 
     # ============================================================================
+    # SUPABASE DATABASE
+    # ============================================================================
+    SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
+    SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "")
+
+    # ============================================================================
     # STRIPE PAYMENT CONFIGURATION
     # ============================================================================
     # Stripe API keys (set via environment variables in production)
