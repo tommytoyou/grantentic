@@ -902,6 +902,36 @@ async def proposal_detail(request: Request, proposal_id: str):
     return templates.TemplateResponse(request, "proposal_detail.html", {"user": user, "proposal": proposal})
 
 
+# SEO
+@app.get("/robots.txt")
+async def robots_txt():
+    content = (
+        "User-agent: *\n"
+        "Disallow: /dashboard\n"
+        "Disallow: /company\n"
+        "Disallow: /generate\n"
+        "Disallow: /results\n"
+        "Disallow: /proposals\n"
+        "Allow: /\n"
+        "Allow: /login\n"
+        "Allow: /register\n"
+    )
+    return Response(content=content, media_type="text/plain")
+
+
+@app.get("/sitemap.xml")
+async def sitemap_xml():
+    content = (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        '  <url><loc>https://www.grantentic.us/</loc></url>\n'
+        '  <url><loc>https://www.grantentic.us/login</loc></url>\n'
+        '  <url><loc>https://www.grantentic.us/register</loc></url>\n'
+        '</urlset>\n'
+    )
+    return Response(content=content, media_type="application/xml")
+
+
 # Health check
 @app.get("/health")
 async def health():
