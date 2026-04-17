@@ -30,7 +30,7 @@ def get_user_by_username(username: str) -> Optional[dict]:
     rows = result.data or []
     return rows[0] if rows else None
 
-def create_user(username: str, hashed_password: str, salt: str, is_admin: bool = False) -> dict:
+def create_user(username: str, hashed_password: str, salt: str, is_admin: bool = False, email: str = "") -> dict:
     sb = get_supabase()
     result = sb.table("users").insert({
         "username": username,
@@ -38,7 +38,8 @@ def create_user(username: str, hashed_password: str, salt: str, is_admin: bool =
         "salt": salt,
         "is_admin": is_admin,
         "plan": "free",
-        "submissions_used": 0
+        "submissions_used": 0,
+        "email": email,
     }).execute()
     return result.data[0]
 

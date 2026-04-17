@@ -143,14 +143,15 @@ async def home(request: Request):
 
 
 @app.get("/login", response_class=HTMLResponse)
-async def login_page(request: Request, error: str = None):
+async def login_page(request: Request, error: str = None, success: str = None):
     """Login page"""
     user = get_current_user(request)
     if user:
         return RedirectResponse(url="/dashboard", status_code=302)
 
     return templates.TemplateResponse(request, "login.html", {
-        "error": error
+        "error": error,
+        "success": success,
     })
 
 
@@ -183,6 +184,58 @@ async def logout(request: Request):
     """Handle logout"""
     request.session.clear()
     return RedirectResponse(url="/login", status_code=302)
+
+
+@app.get("/register", response_class=HTMLResponse)
+async def register_page(request: Request):
+    """Registration page"""
+    user = get_current_user(request)
+    if user:
+        return RedirectResponse(url="/dashboard", status_code=302)
+    return templates.TemplateResponse(request, "register.html", {
+        "error": None, "username": "", "email": ""
+    })
+
+
+@app.post("/register")
+async def register(request: Request):
+    """Handle registration"""
+    form = await request.form()
+    username = form.get("username", "").strip()
+    email = form.get("email", "").strip()
+    password = form.get("password", "")
+    password_confirm = form.get("password_confirm", "")
+
+    # Validation
+    error = None
+    if len(username) < 3:
+        error = "Username must be at least 3 characters."
+    elif "@" not in email:
+        error = "Please enter a valid email address."
+    elif len(password) < 8:
+        error = "Password must be at least 8 characters."
+    elif password != password_confirm:
+        error = "Passwords do not match."
+
+    if error:
+        return templates.TemplateResponse(request, "register.html", {
+            "error": error, "username": username, "email": email
+        })
+
+    try:
+        register_user(username, password, email=email)
+    except ValueError as exc:
+        return templates.TemplateResponse(request, "register.html", {
+            "error": str(exc), "username": username, "email": email
+        })
+    except Exception as exc:
+        log.exception("register: failed for username=%r: %s", username, exc)
+        return templates.TemplateResponse(request, "register.html", {
+            "error": "An error occurred creating your account. Please try again.",
+            "username": username, "email": email,
+        })
+
+    return RedirectResponse(url="/login?success=Account+created.+Please+sign+in.", status_code=303)
 
 
 @app.get("/create-profile", response_class=HTMLResponse)

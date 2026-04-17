@@ -21,10 +21,10 @@ def authenticate_user(username: str, password: str) -> Optional[dict]:
         return user
     return None
 
-def register_user(username: str, password: str, is_admin: bool = False) -> dict:
+def register_user(username: str, password: str, email: str = "", is_admin: bool = False) -> dict:
     existing = get_user_by_username(username)
     if existing:
         raise ValueError(f"Username '{username}' is already taken.")
     salt = secrets.token_hex(16)
     hashed = hash_password(password, salt)
-    return create_user(username, hashed, salt, is_admin)
+    return create_user(username, hashed, salt, is_admin, email=email)
