@@ -497,8 +497,10 @@ async def generate_stream(request: Request, agency: str = "nsf", iterations: int
                 section_count += 1
                 progress = int((section_count / total_sections) * 100)
 
-                # Format target length
-                if section_req.min_pages == section_req.max_pages:
+                # Format target length — use character limit if defined
+                if section_req.max_chars > 0:
+                    target_length = f"{section_req.max_chars:,} characters"
+                elif section_req.min_pages == section_req.max_pages:
                     target_length = f"{section_req.min_pages} pages"
                 else:
                     target_length = f"{section_req.min_pages}-{section_req.max_pages} pages"
@@ -566,7 +568,12 @@ def create_proposal_from_sections(company_name: str, sections: dict, agency_load
     """Create proposal from sections"""
     # Section mapping
     section_map = {
-        # NSF sections
+        # NSF Project Pitch sections (4 sections)
+        "Technology Innovation": "project_pitch",
+        "Technical Objectives and Challenges": "technical_objectives",
+        "Market Opportunity": "commercialization_plan",
+        "Company and Team": "biographical_sketches",
+        # NSF Full Proposal sections (legacy, kept for future use)
         "Project Pitch": "project_pitch",
         "Technical Objectives": "technical_objectives",
         "Broader Impacts": "broader_impacts",

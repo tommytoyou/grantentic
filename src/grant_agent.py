@@ -451,325 +451,120 @@ Your revision must demonstrate scientific rigor worthy of NASA's expert review p
 
 # Section-specific guidance for each section type
 SECTION_EXPERT_GUIDANCE = {
-    "Project Pitch": '''
-## PROJECT PITCH: YOUR 30-SECOND ELEVATOR PITCH
-This is the most important section. Reviewers read this first and form their initial impression.
+    # =========================================================================
+    # NSF SBIR PROJECT PITCH — 4 sections with strict character limits
+    # =========================================================================
+    "Technology Innovation": '''
+## TECHNOLOGY INNOVATION (3,500 characters max)
+This is the core of the pitch. Reviewers decide here whether the idea is genuinely new.
 
-**STRUCTURE THAT WINS:**
-1. **Opening Hook (2-3 sentences)**: State the problem with quantified impact
-   - BAD: "Current methods are inefficient"
-   - GOOD: "The $4.2B [industry] loses $340M annually to [specific problem], with no adequate solution"
+**STRUCTURE:**
+1. **Problem statement (2-3 sentences):** What specific technical problem exists and why current
+   solutions are inadequate. Use evidence from the company context — do NOT invent numbers.
+2. **Your innovation (2-3 sentences):** What is technically new about your approach. Not "better"
+   or "novel" — state the specific mechanism, method, or architecture that is different.
+3. **Underlying principle (1-2 sentences):** The scientific or engineering basis for why this works.
+4. **Current TRL and evidence (1-2 sentences):** Where you are today with preliminary results.
 
-2. **Your Solution (2-3 sentences)**: What you're proposing and why it's different
-   - BAD: "We propose a novel approach"
-   - GOOD: "Our [specific technology] is the first to [specific innovation], enabling [quantified benefit]"
-
-3. **Innovation (2-3 sentences)**: What's technically new
-   - Focus on the scientific/technical breakthrough, not just the product
-
-4. **Market Opportunity (2-3 sentences)**: Why this matters commercially
-   - Include specific market size and growth rate
-   - Name at least one potential customer type
-
-5. **Phase I Objectives (3-4 bullet points)**: What you'll prove in Phase I
-   - Each objective must be measurable
-   - Scope must be achievable with the funding amount
-
-6. **Team Credibility (1-2 sentences)**: Why you can do this
-   - Highlight most relevant experience
-
-**REVIEWER PSYCHOLOGY:**
-- They decide in the first 2 paragraphs if this is worth reading carefully
-- They're looking for: Clear problem → Novel solution → Credible team → Achievable scope
-- They're screening for: Vagueness, hype, scope creep, missing expertise
+**HARD RULES:**
+- NEVER fabricate performance numbers, benchmarks, or test results
+- NEVER exceed 3,500 characters (the submission system will truncate)
+- Use only facts from the company context provided
+- If no preliminary data exists, say "preliminary design complete" not "tests show 94% accuracy"
 ''',
 
+    "Technical Objectives and Challenges": '''
+## TECHNICAL OBJECTIVES AND CHALLENGES (3,500 characters max)
+Define exactly what Phase I will prove and what makes it hard.
+
+**STRUCTURE:**
+1. **Objective 1:** One sentence stating the goal + measurable success criterion
+   - Key challenge: what makes this non-trivial
+   - Approach: 1-2 sentences on methodology
+2. **Objective 2:** Same structure
+3. **(Optional) Objective 3:** Same structure
+4. **Go/No-Go:** What result would cause you to stop or pivot
+
+**HARD RULES:**
+- Maximum 3-4 objectives — narrow and deep, not broad
+- Every objective must have a MEASURABLE success criterion (number, threshold, or binary test)
+- Scope must fit $275K / 6 months — this is feasibility, not product development
+- NEVER fabricate benchmarks or datasets
+- NEVER exceed 3,500 characters
+''',
+
+    "Market Opportunity": '''
+## MARKET OPPORTUNITY (1,750 characters max)
+Prove there is a real market using bottom-up evidence.
+
+**STRUCTURE:**
+1. **Target segment (1-2 sentences):** Name specific customer types and estimate segment size
+   using bottom-up math (number of customers x average spend), not top-down analyst reports.
+2. **Competition (1-2 sentences):** Name 1-2 real alternatives and state your specific advantage.
+   "No competitors" is a red flag — there is always an alternative, even if it is manual processes.
+3. **Business model (1 sentence):** How you make money — SaaS, license, hardware sale, etc.
+
+**HARD RULES:**
+- NEVER use "The global market is $X billion (Gartner)" — reviewers reject top-down sizing
+- NEVER claim no competitors exist
+- NEVER fabricate customer counts, revenue projections, or LOIs
+- Use only market data from the company context provided
+- NEVER exceed 1,750 characters
+''',
+
+    "Company and Team": '''
+## COMPANY AND TEAM (1,750 characters max)
+Prove this team can execute this specific project.
+
+**STRUCTURE:**
+1. **Company (1-2 sentences):** Name, location, year founded, core capability.
+2. **PI (2-3 sentences):** Name, highest degree, most relevant experience, % effort (must be >50%).
+3. **Key personnel (1-2 sentences each):** Name, role, specific qualification relevant to THIS project.
+4. **Partnerships (1 sentence, if applicable):** Any critical advisors or institutional partners.
+
+**HARD RULES:**
+- NEVER fabricate degrees, publications, prior grants, or years of experience
+- Use ONLY team information from the company context provided
+- If team data is sparse, keep it brief — do NOT invent credentials
+- NEVER exceed 1,750 characters
+''',
+
+    # =========================================================================
+    # Full Proposal sections — kept for future Phase I Full Proposal support
+    # =========================================================================
     "Technical Objectives": '''
 ## TECHNICAL OBJECTIVES: PROVING FEASIBILITY
-This is where you demonstrate scientific rigor and technical competence.
-
-**STRUCTURE THAT WINS:**
-1. **Technical Innovation Deep Dive**
-   - What specifically is new about your approach?
-   - How does it compare quantitatively to alternatives?
-   - What's the underlying scientific principle?
-
-2. **Current Technology Readiness**
-   - State your current TRL with evidence
-   - What preliminary work have you done?
-   - What specific gaps remain?
-
-3. **Phase I Research Plan**
-   - Objective 1: [Specific, measurable goal]
-     - Task 1.1, 1.2, 1.3...
-     - Success criteria: [quantified metrics]
-   - Objective 2: [Specific, measurable goal]
-     - Tasks and success criteria
-   - (Continue for each objective)
-
-4. **Technical Risk Analysis**
-   | Risk | Probability | Impact | Mitigation |
-   |------|-------------|--------|------------|
-   - Be honest about risks - reviewers know they exist
-
-5. **Phase II Vision**
-   - What will Phase I success enable?
-   - Brief overview of Phase II scope
-
-**CRITICAL MISTAKES TO AVOID:**
-- Objectives that can't be measured
-- Tasks that obviously require more than the budget allows
-- Missing risk discussion (looks naive)
-- Academic focus without practical application
-- Jargon that obscures rather than clarifies
+Detailed technical approach for the full Phase I proposal (not the Project Pitch).
 ''',
 
     "Broader Impacts": '''
 ## BROADER IMPACTS: BEYOND COMMERCIAL SUCCESS
 NSF cares deeply about societal benefit. This section cannot be generic.
-
-**STRUCTURE THAT WINS:**
-1. **Societal Problem Being Addressed**
-   - Quantify the societal impact of the problem
-   - Who is affected and how?
-
-2. **Direct Societal Benefits**
-   - "This technology will [specific benefit] for [specific population]"
-   - Quantify where possible: "Reduce X by Y% for Z people"
-
-3. **Broadening Participation**
-   - Specific plans for including underrepresented groups
-   - Internship programs, HBCU partnerships, etc.
-   - Don't just list demographics - describe actual programs
-
-4. **Educational Impacts**
-   - Curriculum integration opportunities
-   - Training programs that will be developed
-   - Knowledge dissemination plans
-
-5. **Environmental Sustainability**
-   - Environmental benefits of the technology
-   - Sustainability considerations in development
-
-6. **Scientific Knowledge Advancement**
-   - How does this advance the field?
-   - Publications, datasets, or tools that will be shared
-
-**WHAT REVIEWERS HATE:**
-- "This will benefit society" without specifics
-- Listing commercial benefits as broader impacts
-- Generic diversity statements without action plans
-- Afterthought treatment of this section
 ''',
 
     "Commercialization Plan": '''
 ## COMMERCIALIZATION PLAN: PROVING MARKET VIABILITY
 Reviewers want to see you understand business, not just technology.
-
-**STRUCTURE THAT WINS:**
-1. **Market Analysis (Bottom-Up, Not Top-Down)**
-   - BAD: "The global market is $50B (Gartner)"
-   - GOOD: "Our target segment is [X] customers spending [Y]/year on [Z], totaling $[specific]M"
-
-2. **Target Customers**
-   - Name specific customer types
-   - Describe their pain points
-   - Explain why they'll pay for your solution
-   - BEST: Include evidence of customer conversations or LOIs
-
-3. **Competitive Analysis (Honest)**
-   - Name actual competitors
-   - Your specific advantages (not just "better" or "novel")
-   - Barriers to entry you're creating
-   - BAD: "No direct competitors exist"
-
-4. **Business Model**
-   - How will you make money?
-   - Pricing strategy and rationale
-   - Customer acquisition approach
-   - Unit economics (if available)
-
-5. **Go-to-Market Strategy**
-   - Phase I: Customer discovery/validation activities
-   - Phase II: Beta/pilot deployments
-   - Post-SBIR: Scale and growth plan
-
-6. **IP Strategy**
-   - Patents filed or planned
-   - Trade secrets
-   - Freedom to operate considerations
-
-7. **Team Commercial Capability**
-   - Who on the team has commercial experience?
-   - Advisory board members with relevant expertise
-
-**WHAT KILLS COMMERCIALIZATION SCORES:**
-- Only top-down market sizing
-- "We will figure out the market in Phase II"
-- No evidence of customer engagement
-- Unrealistic pricing or adoption assumptions
-- Missing competitive analysis
 ''',
 
     "Budget and Budget Justification": '''
 ## BUDGET: SHOWING FISCAL RESPONSIBILITY
 Reviewers check if your budget matches your technical plan.
-
-**STRUCTURE THAT WINS:**
-1. **Personnel (typically 60-70% of budget)**
-   - Name, role, % effort, hourly/annual rate
-   - Justify why each person is needed
-   - PI must show significant commitment (NSF: >50%, DoD: >20%)
-
-2. **Fringe Benefits**
-   - Use your organization's approved rate
-   - Typically 25-40% of salaries
-
-3. **Equipment**
-   - Items >$5,000
-   - Justify why purchase vs. rental
-   - Quote sources if possible
-
-4. **Materials and Supplies**
-   - Itemize major categories
-   - Justify quantities and costs
-
-5. **Travel**
-   - Customer discovery trips
-   - Conference attendance
-   - Program review meetings
-   - Itemize: destination, purpose, cost
-
-6. **Consultants/Subcontractors**
-   - Name and justify each
-   - Show how they fill team gaps
-   - Must not exceed 33% (small business majority rule)
-
-7. **Indirect Costs**
-   - Use negotiated rate or de minimis (10%)
-   - Explain basis for rate
-
-**BUDGET RED FLAGS:**
-- Budget doesn't align with technical tasks
-- PI effort is too low
-- Large unexplained categories
-- Equipment that should be existing infrastructure
-- Subcontracts that exceed limits
 ''',
 
     "Work Plan and Timeline": '''
 ## WORK PLAN: PROVING EXECUTABILITY
 This proves you've thought through the actual execution.
-
-**STRUCTURE THAT WINS:**
-1. **Gantt Chart or Visual Timeline**
-   - Show all tasks across the project duration
-   - Indicate dependencies
-   - Mark major milestones
-
-2. **Month-by-Month Breakdown**
-   - Month 1: [Specific activities]
-   - Month 2: [Specific activities]
-   - Continue for full duration...
-
-3. **Milestones with Exit Criteria**
-   | Milestone | Month | Deliverable | Success Criteria |
-   |-----------|-------|-------------|------------------|
-   - Make criteria measurable
-
-4. **Go/No-Go Decision Points**
-   - Identify critical decision points
-   - What would cause a pivot or stop?
-   - This shows mature project thinking
-
-5. **Resource Allocation**
-   - Which team members on which tasks?
-   - How does effort align with budget?
-
-6. **Risk-Adjusted Schedule**
-   - Buffer for high-risk tasks
-   - Alternative paths if primary approach hits obstacles
-
-**TIMELINE MISTAKES:**
-- Unrealistic task compression
-- No slack for unexpected issues
-- Missing dependencies
-- Milestones without measurable criteria
-- Tasks that don't connect to objectives
 ''',
 
     "Key Personnel Biographical Sketches": '''
 ## BIOGRAPHICAL SKETCHES: PROVING TEAM CAPABILITY
 Reviewers need to believe your team can execute.
-
-**STRUCTURE FOR EACH PERSON (2 pages max each):**
-1. **Name, Title, Role in Project**
-
-2. **Professional Preparation**
-   - Degrees, institutions, years
-   - Relevant certifications
-
-3. **Appointments**
-   - Current position
-   - Relevant prior positions
-
-4. **Products (Publications, Patents)**
-   - 5 most relevant publications
-   - Patents related to this work
-   - Other relevant products
-
-5. **Synergistic Activities**
-   - Related projects and leadership
-   - Broader impacts activities
-   - Relevant service
-
-6. **Role and Commitment to This Project**
-   - Specific responsibilities
-   - % effort commitment
-   - Why this person is essential
-
-**BIO STRATEGIES:**
-- Lead with most relevant experience
-- Emphasize prior SBIR/STTR success
-- Show connections to the technical area
-- For gaps, show how consultants/advisors fill them
-- Demonstrate commercialization experience where possible
 ''',
 
     "Facilities, Equipment, and Other Resources": '''
 ## FACILITIES & EQUIPMENT: PROVING INFRASTRUCTURE
 Reviewers want to know you can actually do the work.
-
-**STRUCTURE THAT WINS:**
-1. **Laboratory/Development Facilities**
-   - Physical location and size
-   - Key capabilities
-   - Relevant certifications (ISO, etc.)
-
-2. **Equipment**
-   - Major equipment available for this project
-   - Key capabilities and specifications
-   - Age and condition
-
-3. **Computational Resources**
-   - Computing infrastructure
-   - Software licenses
-   - Cloud resources
-
-4. **Partner Facilities**
-   - University partnerships
-   - National lab access
-   - Customer facilities for testing
-
-5. **Collaborative Arrangements**
-   - Letters of commitment from partners
-   - Shared facilities agreements
-
-**WHAT REVIEWERS LOOK FOR:**
-- Evidence you can do the work without major equipment purchases
-- Access to specialized facilities if needed
-- Partnerships that strengthen capability
-- Appropriate environment for the work type
 '''
 }
 
@@ -826,13 +621,15 @@ class GrantAgent:
 
     def _get_section_guidance(self, section_name: str) -> str:
         """Get expert guidance for a specific section type"""
-        # Map section names to guidance keys
+        # Map section names to guidance keys — try exact match first
+        if section_name in SECTION_EXPERT_GUIDANCE:
+            return SECTION_EXPERT_GUIDANCE[section_name]
+
+        # Fall back to fuzzy mapping for multi-agency section names
         section_mapping = {
-            "Project Pitch": "Project Pitch",
-            "Technical Abstract": "Project Pitch",  # Similar structure
-            "Technical Objectives": "Technical Objectives",
-            "Phase I Technical Objectives": "Technical Objectives",
-            "Innovation and Technical Approach": "Technical Objectives",
+            "Technical Abstract": "Technology Innovation",
+            "Phase I Technical Objectives": "Technical Objectives and Challenges",
+            "Innovation and Technical Approach": "Technical Objectives and Challenges",
             "Broader Impacts": "Broader Impacts",
             "Anticipated Benefits": "Broader Impacts",
             "Commercialization Plan": "Commercialization Plan",
@@ -851,7 +648,7 @@ class GrantAgent:
             "Company Capabilities and Experience": "Facilities, Equipment, and Other Resources",
         }
 
-        guidance_key = section_mapping.get(section_name, None)
+        guidance_key = section_mapping.get(section_name)
         if guidance_key:
             return SECTION_EXPERT_GUIDANCE.get(guidance_key, "")
         return ""
@@ -881,6 +678,13 @@ class GrantAgent:
         funding_amount = self.agency_loader.get_funding_amount()
         duration_months = self.agency_loader.get_duration_months()
 
+        # Check for character limit on this section
+        char_limit = 0
+        for _key, sec in self.agency_loader.get_sections().items():
+            if sec.name == section_name:
+                char_limit = sec.max_chars
+                break
+
         # Get expert system prompt for this agency
         system_prompt = self._get_expert_system_prompt("generate")
 
@@ -889,12 +693,28 @@ class GrantAgent:
 
         company_json = self.company_context.model_dump_json(indent=2)
 
+        # Build length constraint
+        if char_limit > 0:
+            length_instruction = (
+                f"- HARD CHARACTER LIMIT: {char_limit:,} characters maximum (including spaces)\n"
+                f"- Count your characters carefully. Content that exceeds {char_limit:,} characters will be truncated.\n"
+                f"- Target approximately {char_limit - 200:,} to {char_limit:,} characters to use the space fully without going over."
+            )
+        else:
+            length_instruction = f"- Target length: {target_length}"
+
         user_prompt = f"""Generate the "{section_name}" section for a {agency_info.agency} {agency_info.program} grant proposal.
 
 ## SECTION REQUIREMENTS
-- Target length: {target_length}
+{length_instruction}
 - Funding: ${funding_amount:,} over {duration_months} months
 - This is Phase I: Focus on FEASIBILITY DEMONSTRATION
+
+## CRITICAL RULES
+- Do NOT fabricate technical claims, performance numbers, hypotheses, or test results
+- Do NOT invent team credentials, publications, or prior grants
+- Use ONLY information from the company context provided below
+- If data is missing, state what exists rather than inventing what doesn't
 
 ## SECTION-SPECIFIC EXPERT GUIDANCE
 {section_guidance}
@@ -907,14 +727,13 @@ class GrantAgent:
 
 ## YOUR TASK
 Write this section to score "Excellent" by:
-1. Opening with a compelling hook that captures reviewer attention
-2. Using specific, quantified claims with evidence
+1. Opening with the most compelling point — reviewers decide quickly
+2. Using specific, evidence-based claims from the company context
 3. Structuring content for easy scanning by busy reviewers
-4. Addressing all evaluation criteria explicitly
-5. Avoiding all fatal flaws listed in your instructions
-6. Maintaining appropriate scope for Phase I funding
+4. Maintaining appropriate scope for Phase I feasibility
+5. Staying strictly within the character/length limit
 
-Generate the complete {section_name} section now. Write in a professional, compelling style that demonstrates expertise while remaining accessible to reviewers:"""
+Generate the complete {section_name} section now. Write in a professional, compelling style. Output ONLY the section text — no headers, labels, or meta-commentary:"""
 
         with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}")) as progress:
             task = progress.add_task(f"Calling Claude for {section_name}...", total=None)
@@ -923,13 +742,25 @@ Generate the complete {section_name} section now. Write in a professional, compe
         # Track cost
         self.cost_tracker.record_usage(section_name, "generate", input_tokens, output_tokens, self.model)
 
+        # Enforce character limit — hard truncate at sentence boundary if exceeded
+        if char_limit > 0 and len(content) > char_limit:
+            truncated = content[:char_limit]
+            last_period = truncated.rfind('.')
+            if last_period > char_limit * 0.8:
+                content = truncated[:last_period + 1]
+            else:
+                content = truncated
+            console.print(f"[yellow]⚠ Truncated to {len(content)} chars (limit: {char_limit})[/yellow]")
+
         word_count = len(content.split())
-        console.print(f"[green]✓ Generated {word_count} words[/green]")
+        char_count = len(content)
+        console.print(f"[green]✓ Generated {word_count} words, {char_count} chars[/green]")
 
         return GrantSection(
             name=section_name,
             content=content,
             word_count=word_count,
+            char_count=char_count,
             iteration=0
         )
 

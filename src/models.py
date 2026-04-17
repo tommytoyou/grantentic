@@ -8,6 +8,7 @@ class GrantSection(BaseModel):
     name: str
     content: str
     word_count: int
+    char_count: int = 0
     iteration: int = 0
     critique: Optional[str] = None
     refinement_notes: Optional[str] = None

@@ -15,10 +15,11 @@ class SectionRequirements(BaseModel):
     """Requirements for a single proposal section"""
     name: str
     required: bool
-    min_pages: float
-    max_pages: float
-    min_words: int
-    max_words: int
+    min_pages: float = 0
+    max_pages: float = 0
+    min_words: int = 0
+    max_words: int = 0
+    max_chars: int = 0  # Hard character limit (0 = no char limit, use word limit)
     order: int
     guidelines: str
     required_keywords: list[str]

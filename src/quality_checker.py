@@ -25,27 +25,30 @@ class QualityChecker:
             self.funding_amount = self.agency_loader.get_funding_amount()
             self.duration_months = self.agency_loader.get_duration_months()
             self.agency_name = self.agency_loader.requirements.agency
+            # Build character limit map: section_key -> max_chars
+            self.char_limits = {}
+            for key, sec in self.agency_loader.get_sections().items():
+                if sec.max_chars > 0:
+                    self.char_limits[key] = sec.max_chars
         else:
-            # Default to NSF requirements for backward compatibility
+            # Default to NSF Project Pitch requirements
             self.page_limits = {
-                "project_pitch": (1, 2, 400, 800),
-                "technical_objectives": (5, 6, 2000, 2400),
-                "broader_impacts": (1, 2, 400, 800),
-                "commercialization_plan": (2, 3, 800, 1200),
-                "budget_justification": (2, 3, 800, 1200),
-                "work_plan": (2, 3, 800, 1200),
-                "biographical_sketches": (2, 8, 800, 3200),
-                "facilities_equipment": (1, 2, 400, 800)
+                "technology_innovation": (0, 0, 0, 0),
+                "technical_objectives": (0, 0, 0, 0),
+                "market_opportunity": (0, 0, 0, 0),
+                "company_and_team": (0, 0, 0, 0),
             }
             self.required_keywords = {
-                "Project Pitch": ["innovation", "problem", "solution", "market", "Phase I"],
-                "Technical Objectives": ["methodology", "risk", "milestone", "feasibility", "TRL"],
-                "Broader Impacts": ["societal", "impact", "benefit", "broader"],
-                "Commercialization Plan": ["market", "customer", "revenue", "competitive", "commercialization"],
-                "Budget and Budget Justification": ["personnel", "equipment", "overhead", "justification"],
-                "Work Plan and Timeline": ["month", "milestone", "timeline", "deliverable"],
-                "Key Personnel Biographical Sketches": ["education", "experience", "PhD", "publications"],
-                "Facilities, Equipment, and Other Resources": ["facilities", "equipment", "resources"]
+                "Technology Innovation": ["innovation", "technology", "problem", "solution", "TRL"],
+                "Technical Objectives and Challenges": ["objective", "feasibility", "challenge", "methodology", "milestone"],
+                "Market Opportunity": ["market", "customer", "competitive"],
+                "Company and Team": ["team", "experience", "PI"],
+            }
+            self.char_limits = {
+                "technology_innovation": 3500,
+                "technical_objectives": 3500,
+                "market_opportunity": 1750,
+                "company_and_team": 1750,
             }
             self.funding_amount = 275000
             self.duration_months = 6
@@ -80,48 +83,67 @@ class QualityChecker:
         return trimmed_section, True
 
     def check_page_limits(self, proposal: GrantProposal) -> Dict:
-        """Check and auto-trim sections exceeding page limits"""
+        """Check sections against word limits and/or character limits"""
         results = {}
         trimmed_sections = {}
 
         for section_key, (min_pages, max_pages, min_words, max_words) in self.page_limits.items():
-            section = getattr(proposal, section_key)
-            count = section.word_count
+            section = getattr(proposal, section_key, None)
+            if section is None:
+                continue
+
+            char_limit = self.char_limits.get(section_key, 0)
+            char_count = len(section.content)
+            word_count = section.word_count
 
             status = "✓ Good"
             passed = True
             trimmed = False
 
-            if count < min_words:
-                status = f"⚠️  Too short ({count}/{min_words} words)"
-                passed = False
-                self.suggestions.append(
-                    f"**{section.name}**: Add {min_words - count} more words to meet minimum {min_pages}-page requirement. "
-                    f"Consider expanding on key points, adding examples, or providing more detail."
-                )
-            elif count > max_words:
-                # Auto-trim
-                trimmed_section, was_trimmed = self.auto_trim_section(section, max_words)
-                if was_trimmed:
-                    trimmed_sections[section_key] = trimmed_section
-                    trimmed = True
-                    status = f"✂️  Auto-trimmed ({count} → {trimmed_section.word_count} words)"
-                    passed = True
+            # Character limit check takes priority when defined
+            if char_limit > 0:
+                if char_count > char_limit:
+                    status = f"❌ OVER LIMIT: {char_count:,}/{char_limit:,} chars (+{char_count - char_limit:,})"
+                    passed = False
                     self.suggestions.append(
-                        f"**{section.name}**: Section was auto-trimmed from {count} to {trimmed_section.word_count} words. "
-                        f"Review to ensure critical content wasn't removed."
+                        f"**{section.name}**: EXCEEDS character limit — {char_count:,} chars "
+                        f"vs {char_limit:,} max. Remove {char_count - char_limit:,} characters. "
+                        f"The NSF submission system will truncate or reject content over the limit."
                     )
                 else:
-                    status = f"✓ Within limit"
-                    passed = True
+                    remaining = char_limit - char_count
+                    status = f"✓ {char_count:,}/{char_limit:,} chars ({remaining:,} remaining)"
 
-            results[section.name] = {
-                "count": count,
-                "range": f"{min_words}-{max_words} words ({min_pages}-{max_pages} pages)",
-                "status": status,
-                "passed": passed,
-                "trimmed": trimmed
-            }
+                results[section.name] = {
+                    "count": char_count,
+                    "range": f"0-{char_limit:,} chars",
+                    "status": status,
+                    "passed": passed,
+                    "trimmed": trimmed
+                }
+            elif max_words > 0:
+                # Fall back to word limit check
+                if word_count < min_words:
+                    status = f"⚠️  Too short ({word_count}/{min_words} words)"
+                    passed = False
+                    self.suggestions.append(
+                        f"**{section.name}**: Add {min_words - word_count} more words to meet minimum requirement."
+                    )
+                elif word_count > max_words:
+                    trimmed_section, was_trimmed = self.auto_trim_section(section, max_words)
+                    if was_trimmed:
+                        trimmed_sections[section_key] = trimmed_section
+                        trimmed = True
+                        status = f"✂️  Auto-trimmed ({word_count} → {trimmed_section.word_count} words)"
+                        passed = True
+
+                results[section.name] = {
+                    "count": word_count,
+                    "range": f"{min_words}-{max_words} words ({min_pages}-{max_pages} pages)",
+                    "status": status,
+                    "passed": passed,
+                    "trimmed": trimmed
+                }
 
         return results, trimmed_sections
 
@@ -130,6 +152,12 @@ class QualityChecker:
         results = {}
 
         section_map = {
+            # NSF Project Pitch
+            "Technology Innovation": "project_pitch",
+            "Technical Objectives and Challenges": "technical_objectives",
+            "Market Opportunity": "commercialization_plan",
+            "Company and Team": "biographical_sketches",
+            # Full Proposal (used when those sections exist)
             "Project Pitch": "project_pitch",
             "Technical Objectives": "technical_objectives",
             "Broader Impacts": "broader_impacts",

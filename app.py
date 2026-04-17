@@ -160,9 +160,14 @@ def create_proposal_from_sections(company_name: str, sections: dict, agency_load
     GrantProposal = imports['GrantProposal']
     GrantSection = imports['GrantSection']
 
-    # Section mapping (same as main.py)
+    # Section mapping
     section_map = {
-        # NSF sections
+        # NSF Project Pitch sections (4 sections)
+        "Technology Innovation": "project_pitch",
+        "Technical Objectives and Challenges": "technical_objectives",
+        "Market Opportunity": "commercialization_plan",
+        "Company and Team": "biographical_sketches",
+        # NSF Full Proposal sections (legacy)
         "Project Pitch": "project_pitch",
         "Technical Objectives": "technical_objectives",
         "Broader Impacts": "broader_impacts",
