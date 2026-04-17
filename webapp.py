@@ -449,11 +449,13 @@ async def generate_page(request: Request, agency: str = "nsf"):
 
 
 @app.get("/generate/stream")
-async def generate_stream(request: Request, agency: str = "nsf", iterations: int = 1):
+async def generate_stream(request: Request, agency: str = "nsf", iterations: int = 1, tier: str = "pro"):
     """SSE endpoint for proposal generation with real-time updates"""
     user = get_current_user(request)
     if not user:
         raise HTTPException(status_code=401, detail="Not authenticated")
+
+    log.info("generate_stream: user=%r agency=%s tier=%s iterations=%d", user.get("username"), agency, tier, iterations)
 
     async def event_generator():
         try:

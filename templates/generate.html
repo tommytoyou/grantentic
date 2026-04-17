@@ -42,47 +42,103 @@
     </div>
     {% endif %}
 
-    <!-- Settings Card -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-        <h2 class="text-lg font-semibold text-gray-900 mb-4">Generation Settings</h2>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-                <label for="iterations" class="block text-sm font-medium text-gray-700 mb-1">
-                    Critique-Refine Iterations
-                </label>
-                <select
-                    id="iterations"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                >
-                    <option value="0">0 - Fast, lower quality</option>
-                    <option value="1" selected>1 - Balanced (recommended)</option>
-                    <option value="2">2 - Higher quality, slower</option>
-                    <option value="3">3 - Maximum quality</option>
-                </select>
-                <p class="mt-1 text-xs text-gray-500">More iterations = better quality but higher cost</p>
+    <!-- Tier Selection -->
+    <div class="mb-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">Choose Your Tier</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Starter -->
+            <div id="tier-card-starter" onclick="selectTier('starter')"
+                 class="tier-card cursor-pointer bg-white rounded-xl shadow-sm border-2 border-gray-200 p-6 transition-all hover:border-primary-300 hover:shadow-md">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-lg font-semibold text-gray-900">Starter</h3>
+                    <span class="text-2xl font-bold text-gray-900">$149</span>
+                </div>
+                <p class="text-sm text-gray-500 mb-4">Fast generation for early-stage ideas</p>
+                <ul class="space-y-2 text-sm text-gray-700">
+                    <li class="flex items-start">
+                        <svg class="w-4 h-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                        AI-generated Project Pitch
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="w-4 h-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                        All 4 sections within character limits
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="w-4 h-4 text-gray-300 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+                        <span class="text-gray-400">No critique-refine iterations</span>
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="w-4 h-4 text-gray-300 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+                        <span class="text-gray-400">No expert review</span>
+                    </li>
+                </ul>
             </div>
-        </div>
-    </div>
 
-    <!-- Warning Card -->
-    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
-        <div class="flex items-start">
-            <svg class="w-5 h-5 text-amber-500 mt-0.5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-            </svg>
-            <div>
-                <h3 class="text-sm font-medium text-amber-800">Before you generate</h3>
-                <p class="mt-1 text-sm text-amber-700">
-                    Proposal generation takes 2-5 minutes and costs approximately $2-5 in API fees.
-                    Make sure your company information is complete and accurate.
-                </p>
+            <!-- Pro (default) -->
+            <div id="tier-card-pro" onclick="selectTier('pro')"
+                 class="tier-card cursor-pointer bg-white rounded-xl shadow-sm border-2 border-primary-500 ring-2 ring-primary-100 p-6 transition-all hover:shadow-md relative">
+                <div class="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <span class="bg-primary-600 text-white text-xs font-semibold px-3 py-1 rounded-full">Recommended</span>
+                </div>
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-lg font-semibold text-gray-900">Pro</h3>
+                    <span class="text-2xl font-bold text-gray-900">$449</span>
+                </div>
+                <p class="text-sm text-gray-500 mb-4">Thorough generation for serious submissions</p>
+                <ul class="space-y-2 text-sm text-gray-700">
+                    <li class="flex items-start">
+                        <svg class="w-4 h-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                        AI-generated Project Pitch
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="w-4 h-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                        All 4 sections within character limits
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="w-4 h-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                        2 critique-refine iterations
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="w-4 h-4 text-gray-300 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+                        <span class="text-gray-400">No expert review</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Done-With-You -->
+            <div id="tier-card-done_with_you" onclick="selectTier('done_with_you')"
+                 class="tier-card cursor-pointer bg-white rounded-xl shadow-sm border-2 border-gray-200 p-6 transition-all hover:border-primary-300 hover:shadow-md">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-lg font-semibold text-gray-900">Done-With-You</h3>
+                    <span class="text-2xl font-bold text-gray-900">$1,200</span>
+                </div>
+                <p class="text-sm text-gray-500 mb-4">Comprehensive generation with expert review</p>
+                <ul class="space-y-2 text-sm text-gray-700">
+                    <li class="flex items-start">
+                        <svg class="w-4 h-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                        AI-generated Project Pitch
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="w-4 h-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                        All 4 sections within character limits
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="w-4 h-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                        2 critique-refine iterations
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="w-4 h-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                        Flagged for expert review
+                    </li>
+                </ul>
             </div>
         </div>
     </div>
 
     <!-- Generate Button -->
     <div id="generate-section">
+        <input type="hidden" id="selected-tier" value="pro">
+        <input type="hidden" id="selected-iterations" value="2">
         <button
             id="start-generate"
             onclick="startGeneration()"
@@ -91,7 +147,7 @@
             <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
             </svg>
-            Generate {{ agency_info.agency if agency_info else agency|upper }} Proposal
+            <span id="generate-btn-text">Generate Pro Proposal</span>
         </button>
     </div>
 
@@ -189,16 +245,39 @@
 
 {% block extra_scripts %}
 <script>
+const TIER_CONFIG = {
+    starter:       { iterations: 0, label: 'Starter' },
+    pro:           { iterations: 2, label: 'Pro' },
+    done_with_you: { iterations: 2, label: 'Done-With-You' }
+};
+
+function selectTier(tier) {
+    const cfg = TIER_CONFIG[tier];
+    document.getElementById('selected-tier').value = tier;
+    document.getElementById('selected-iterations').value = cfg.iterations;
+    document.getElementById('generate-btn-text').textContent = `Generate ${cfg.label} Proposal`;
+
+    // Update card borders
+    document.querySelectorAll('.tier-card').forEach(card => {
+        card.classList.remove('border-primary-500', 'ring-2', 'ring-primary-100');
+        card.classList.add('border-gray-200');
+    });
+    const selected = document.getElementById(`tier-card-${tier}`);
+    selected.classList.remove('border-gray-200');
+    selected.classList.add('border-primary-500', 'ring-2', 'ring-primary-100');
+}
+
 function startGeneration() {
     const agency = '{{ agency }}';
-    const iterations = document.getElementById('iterations').value;
+    const tier = document.getElementById('selected-tier').value;
+    const iterations = document.getElementById('selected-iterations').value;
 
     // Hide generate button, show progress
     document.getElementById('generate-section').classList.add('hidden');
     document.getElementById('progress-section').classList.remove('hidden');
 
     // Connect to SSE endpoint
-    const eventSource = new EventSource(`/generate/stream?agency=${agency}&iterations=${iterations}`);
+    const eventSource = new EventSource(`/generate/stream?agency=${agency}&iterations=${iterations}&tier=${tier}`);
 
     eventSource.onmessage = function(event) {
         const data = JSON.parse(event.data);
