@@ -47,74 +47,193 @@ def generate_blueprint_content(intake: dict, agency: str) -> str:
         agency_name = agency.upper()
         program = "SBIR Phase I"
 
+    # Agency-specific emphasis instructions
+    agency_emphasis = {
+        "nsf": (
+            "This is an NSF proposal. NSF weights Intellectual Merit at 50% of the score. "
+            "The Problem section is the single most important section — it must establish "
+            "scientific significance, not just commercial need. Emphasize what new knowledge "
+            "this research will create, why existing scientific understanding is insufficient, "
+            "and what testable hypothesis the applicant is proposing. Broader Impacts (societal "
+            "benefit beyond commercial value) also matters — weave it into guidance where relevant."
+        ),
+        "dod": (
+            "This is a DoD proposal. DoD weights Technical Merit at 40% and Military Relevance "
+            "at 30%. The Technical Approach must show a clear TRL advancement plan with specific "
+            "performance targets. Military Relevance must connect to a named capability gap, "
+            "program, or mission — generic statements like 'helps the warfighter' score poorly. "
+            "Transition potential (how this reaches operational use) is critical. Use DoD "
+            "terminology: TRL, SWaP-C, CONOPS, PEO, Phase III transition."
+        ),
+        "nasa": (
+            "This is a NASA proposal. NASA weights Technical Merit and NASA Mission Alignment "
+            "equally at 35% each. The technical approach must advance state-of-the-art with "
+            "quantified improvement. Mission alignment must reference specific NASA Technology "
+            "Taxonomy areas, named missions or programs, and NASA centers. Space environment "
+            "constraints (radiation, thermal, vacuum) should be addressed if applicable. "
+            "Dual-use applications (NASA + commercial space + terrestrial) strengthen the "
+            "commercialization section."
+        ),
+    }
+
     system_prompt = f"""You are an expert SBIR grant consultant who has helped 200+ companies
 secure Phase I funding. You produce personalized, actionable section-by-section guidance
 for {agency_name} {program} proposals.
 
-CRITICAL RULES:
-- Every recommendation must be specific to the company's technology — no generic advice
-- Do NOT fabricate technical claims, numbers, or performance data
-- Reference what the reviewer is looking for in each section
-- Keep guidance concrete: "Write about X" not "Consider mentioning something"
-- Use the company's own language from their intake form
-- When the applicant has provided specific competitors, prior work, or team details, weave
-  those directly into the guidance rather than using generic placeholders"""
+## AGENCY EMPHASIS
+{agency_emphasis.get(agency.lower(), agency_emphasis["nsf"])}
 
-    # Build the optional fields block
-    optional_parts = []
-    if intake.get("market_size"):
-        optional_parts.append(f"- Target Market & Size: {intake['market_size']}")
-    if intake.get("team_members"):
-        optional_parts.append(f"- Other Key Team Members: {intake['team_members']}")
-    if intake.get("prior_work"):
-        optional_parts.append(f"- Prior Grants/Publications/Patents: {intake['prior_work']}")
-    if intake.get("solicitation"):
-        optional_parts.append(f"- Specific Solicitation/Topic: {intake['solicitation']}")
-    optional_block = "\n".join(optional_parts) if optional_parts else "(none provided)"
+## CRITICAL RULES
 
-    user_prompt = f"""Create a personalized SBIR Blueprint for this company applying to {agency_name} {program}.
+### What you MUST do:
+- Make every recommendation specific to THIS company's technology, problem, and team
+- Use the applicant's own words and data from their intake — quote them, reference their
+  specific competitors by name, cite their PI's actual credentials
+- When the applicant provided optional fields (market size, team members, prior work,
+  solicitation number), incorporate them directly into the relevant section guidance
+- When optional fields are empty, skip them entirely — do not mention them or leave
+  placeholder text like "[if available]"
+- Structure output in exactly 4 sections matching the agency's section format
 
-## COMPANY INTAKE — SECTION 1: THE PROBLEM
+### What you must NEVER do:
+- Fabricate technical claims, performance numbers, test results, or statistics
+- Invent team credentials, publications, patents, or prior grants
+- Add information the applicant did not provide — if their intake is thin on a point,
+  tell them what they need to add, do not make it up for them
+- Give generic grant writing advice — every sentence must be specific to this company
+
+### Red flag detection:
+Before producing the Blueprint, analyze the applicant's problem statement for these
+top rejection patterns. If you detect any, include a "WARNING" callout at the top of
+the Blueprint explaining the risk and how to fix it:
+- Systems integration without a testable hypothesis (building a platform vs. proving
+  a scientific/technical question)
+- Incremental improvement without genuine novelty (making something faster/cheaper
+  without a new technical approach)
+- Product development scope rather than feasibility demonstration (building a product
+  vs. answering "can this work?")
+- Missing quantification of the problem (no numbers showing severity or scale)"""
+
+    # ── Build intake sections, including optional fields only when present ──
+
+    # Section 1: always present (all required)
+    s1_block = f"""## APPLICANT INTAKE — SECTION 1: THE PROBLEM
 - Company Name: {intake.get('company_name', '')}
 - Problem Being Solved: {intake.get('problem', '')}
 - Who Suffers and How Severely: {intake.get('who_suffers', '')}
-- Why Current Solutions Fail: {intake.get('why_current_fail', '')}
+- Why Current Solutions Fail: {intake.get('why_current_fail', '')}"""
 
-## COMPANY INTAKE — SECTION 2: TECHNICAL APPROACH
+    # Section 2: always present (all required)
+    dev_stage_labels = {
+        "idea": "Idea stage (no implementation yet)",
+        "proof_of_concept": "Proof of Concept completed",
+        "prototype": "Working Prototype built",
+        "lab_tested": "Lab Tested with results",
+        "field_tested": "Field Tested in real environment",
+    }
+    dev_stage_display = dev_stage_labels.get(
+        intake.get("dev_stage", ""), intake.get("dev_stage", "")
+    )
+    s2_block = f"""## APPLICANT INTAKE — SECTION 2: TECHNICAL APPROACH
 - Technical Approach / Innovation: {intake.get('technology', '')}
-- Current Development Stage: {intake.get('dev_stage', '')}
-- Phase I Deliverable: {intake.get('phase1_output', '')}
+- Current Development Stage: {dev_stage_display}
+- What Phase I Will Produce or Demonstrate: {intake.get('phase1_output', '')}"""
 
-## COMPANY INTAKE — SECTION 3: COMPETITIVE LANDSCAPE
-- Competitors and Their Limitations: {intake.get('competitors', '')}
-- Key Technical Differentiator: {intake.get('differentiator', '')}
+    # Section 3: competitors and differentiator are required, market_size is optional
+    s3_lines = [
+        "## APPLICANT INTAKE — SECTION 3: COMPETITIVE LANDSCAPE",
+        f"- Named Competitors and Their Limitations: {intake.get('competitors', '')}",
+        f"- Key Technical Differentiator: {intake.get('differentiator', '')}",
+    ]
+    if intake.get("market_size"):
+        s3_lines.append(f"- Target Market and Estimated Size: {intake['market_size']}")
+    s3_block = "\n".join(s3_lines)
 
-## COMPANY INTAKE — SECTION 4: TEAM
-- Principal Investigator: {intake.get('pi_background', '')}
+    # Section 4: PI is required, rest optional
+    s4_lines = [
+        "## APPLICANT INTAKE — SECTION 4: TEAM",
+        f"- Principal Investigator: {intake.get('pi_background', '')}",
+    ]
+    if intake.get("team_members"):
+        s4_lines.append(f"- Other Key Team Members: {intake['team_members']}")
+    if intake.get("prior_work"):
+        s4_lines.append(f"- Prior Grants, Publications, or Patents: {intake['prior_work']}")
+    if intake.get("solicitation"):
+        s4_lines.append(f"- Target Solicitation / Topic Number: {intake['solicitation']}")
+    s4_block = "\n".join(s4_lines)
 
-## OPTIONAL DETAILS
-{optional_block}
+    # ── Solicitation-specific instruction (only if provided) ──
+    solicitation_instruction = ""
+    if intake.get("solicitation"):
+        solicitation_instruction = f"""
+## SOLICITATION ALIGNMENT
+The applicant is targeting solicitation/topic: {intake['solicitation']}
+In EVERY section of the Blueprint, explain how to align language and framing with this
+specific topic area. Reference the solicitation number explicitly in your recommended
+opening sentences and key points. If you recognize the topic area, note which keywords
+and evaluation emphases are associated with it."""
+
+    user_prompt = f"""Create a personalized SBIR Blueprint for {intake.get('company_name', 'this company')} applying to {agency_name} {program}.
+
+{s1_block}
+
+{s2_block}
+
+{s3_block}
+
+{s4_block}
+{solicitation_instruction}
 
 ## AGENCY SECTION REQUIREMENTS
 {sections_text}
 
-## YOUR TASK
-For EACH section required by {agency_name}, produce:
+## OUTPUT FORMAT
 
-1. **Section Title** and character/word limit
-2. **What the reviewer wants to see** — specific to this agency
-3. **Your recommended approach** — personalized to this company's specific technology, problem, and team
-4. **Opening sentence suggestion** — a strong first sentence using the applicant's own problem statement and quantified impact
-5. **Key points to include** — 3-5 bullet points drawn directly from their intake answers
-6. **What to avoid** — common mistakes for this section, specific to their situation
+Produce the Blueprint in this exact structure:
 
-Also include:
-- A one-paragraph "Elevator Pitch" summary the company can use verbatim, built from their problem statement, differentiator, and team credentials
-- 2-3 suggested measurable Phase I objectives derived from their stated Phase I deliverable and development stage
-- Competitive positioning advice using the specific competitors they named and their stated differentiator
-- If a solicitation number was provided, note how to align the proposal language with that topic area
+### WARNINGS (only if red flags detected)
+If the problem statement shows signs of systems integration, incremental development,
+missing hypothesis, or product-development scope, lead with a clearly labeled WARNING
+explaining the specific risk and concrete steps to fix it. If no red flags, skip this
+section entirely.
 
-Format with clear markdown headers for each section. Be specific and actionable."""
+### ELEVATOR PITCH
+Write a one-paragraph pitch (4-6 sentences) this company can use verbatim. Build it
+from their problem statement, who suffers, their differentiator, and their PI's
+credentials. Do not add claims they did not make.
+
+### SECTION 1: [Agency-specific section name]
+- **Character/word limit:** [from agency requirements]
+- **What the {agency_name} reviewer wants:** 2-3 sentences on what scores "Excellent"
+- **Your recommended approach:** A specific paragraph telling this company exactly what
+  to write, referencing their problem statement, their data on who suffers, and why
+  current solutions fail — using their words
+- **Suggested opening sentence:** One strong first sentence built from their intake data
+- **Key points to hit:** 3-5 bullets drawn directly from their intake answers
+- **What to avoid:** 1-2 specific pitfalls relevant to their situation
+
+### SECTION 2: [Agency-specific section name]
+Same structure. Reference their technical approach, development stage, and Phase I
+deliverable. Frame Phase I objectives around their stated output.
+
+### SECTION 3: [Agency-specific section name]
+Same structure. Name the specific competitors they listed. Position their differentiator
+against those competitors' stated limitations.{' Include their market size data.' if intake.get('market_size') else ''}
+
+### SECTION 4: [Agency-specific section name]
+Same structure. Use the PI's actual name and background.{' Reference their other team members by name and role.' if intake.get('team_members') else ''}{' Cite their specific prior grants, publications, or patents.' if intake.get('prior_work') else ''}
+
+### SUGGESTED PHASE I OBJECTIVES
+2-3 measurable objectives derived from their stated Phase I deliverable
+("{intake.get('phase1_output', '')}") and their current development stage
+({dev_stage_display}). Each objective must have a quantifiable success criterion.
+
+### COMPETITIVE POSITIONING STRATEGY
+Using the specific competitors they named ({intake.get('competitors', '')[:200]}...)
+and their stated differentiator, provide 3-4 sentences of positioning advice they
+can weave throughout the proposal.
+
+Be specific. Be actionable. Every sentence must reference this company's actual situation."""
 
     client = anthropic.Anthropic(
         api_key=os.environ.get("AI_INTEGRATIONS_ANTHROPIC_API_KEY") or os.environ.get("ANTHROPIC_API_KEY"),
