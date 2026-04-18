@@ -38,6 +38,11 @@ class Config:
     STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY', '')
     STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET', '')
 
+    # Blueprint product
+    STRIPE_PRICE_BLUEPRINT = os.environ.get('STRIPE_PRICE_BLUEPRINT', '')          # $29
+    STRIPE_PRICE_BLUEPRINT_STUDENT = os.environ.get('STRIPE_PRICE_BLUEPRINT_STUDENT', '')  # $19
+    BLUEPRINT_LAUNCH_DATE = os.environ.get('BLUEPRINT_LAUNCH_DATE', '2026-05-15T00:00:00Z')
+
     # Stripe Price IDs (create these in Stripe Dashboard)
     # One-time purchase: $800 for SBIR Phase I pre-application + full application
     STRIPE_PRICE_ONE_TIME = os.environ.get('STRIPE_PRICE_ONE_TIME', '')

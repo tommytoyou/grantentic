@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+
+{% block title %}SBIR Blueprint - Grantentic{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">SBIR Blueprint</h1>
+            <p class="mt-2 text-gray-600 max-w-2xl mx-auto">
+                Get a personalized, section-by-section strategy for your SBIR Phase I proposal
+                in minutes. Includes an AI Prompt Pack to draft each section.
+            </p>
+        </div>
+
+        <!-- Countdown Timer -->
+        <div id="countdown-banner" class="mb-8 bg-white rounded-xl shadow-sm border border-amber-200 p-4 text-center">
+            <p class="text-sm text-amber-800 font-medium">
+                Launch pricing: <span class="line-through text-gray-400">$49</span>
+                <span class="text-2xl font-bold text-gray-900 mx-2">$29</span>
+                <span class="text-amber-700">ends in</span>
+            </p>
+            <div id="countdown" class="flex justify-center space-x-4 mt-2 text-lg font-mono font-bold text-gray-900">
+                <span><span id="cd-days">--</span><small class="text-xs text-gray-500 ml-1">days</small></span>
+                <span>:</span>
+                <span><span id="cd-hours">--</span><small class="text-xs text-gray-500 ml-1">hrs</small></span>
+                <span>:</span>
+                <span><span id="cd-mins">--</span><small class="text-xs text-gray-500 ml-1">min</small></span>
+                <span>:</span>
+                <span><span id="cd-secs">--</span><small class="text-xs text-gray-500 ml-1">sec</small></span>
+            </div>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-8">
+            <!-- Intake Form (2 cols) -->
+            <div class="md:col-span-2">
+                <div class="bg-white rounded-xl shadow-lg p-8">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-6">Tell us about your company</h2>
+
+                    {% if error %}
+                    <div class="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+                        {{ error }}
+                    </div>
+                    {% endif %}
+
+                    <form id="blueprint-form" method="POST" action="/blueprint/checkout" class="space-y-5">
+                        <div>
+                            <label for="company_name" class="block text-sm font-medium text-gray-700 mb-1">
+                                Company Name
+                            </label>
+                            <input type="text" id="company_name" name="company_name" required
+                                   value="{{ form_data.company_name or '' }}"
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                   placeholder="Acme Robotics Inc.">
+                        </div>
+
+                        <div>
+                            <label for="technology" class="block text-sm font-medium text-gray-700 mb-1">
+                                Technology Description
+                            </label>
+                            <textarea id="technology" name="technology" required rows="3"
+                                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                      placeholder="Describe your technology in 2-3 sentences...">{{ form_data.technology or '' }}</textarea>
+                        </div>
+
+                        <div>
+                            <label for="problem" class="block text-sm font-medium text-gray-700 mb-1">
+                                Problem Being Solved
+                            </label>
+                            <textarea id="problem" name="problem" required rows="2"
+                                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                      placeholder="What specific problem does your technology address?">{{ form_data.problem or '' }}</textarea>
+                        </div>
+
+                        <div>
+                            <label for="agency" class="block text-sm font-medium text-gray-700 mb-1">
+                                Target Agency
+                            </label>
+                            <select id="agency" name="agency" required
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                                <option value="nsf" {% if form_data.agency == 'nsf' %}selected{% endif %}>NSF - National Science Foundation</option>
+                                <option value="dod" {% if form_data.agency == 'dod' %}selected{% endif %}>DoD - Department of Defense</option>
+                                <option value="nasa" {% if form_data.agency == 'nasa' %}selected{% endif %}>NASA - Space Technology</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="differentiator" class="block text-sm font-medium text-gray-700 mb-1">
+                                Innovation Differentiator
+                            </label>
+                            <textarea id="differentiator" name="differentiator" required rows="2"
+                                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                      placeholder="What makes your approach fundamentally different from alternatives?">{{ form_data.differentiator or '' }}</textarea>
+                        </div>
+
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
+                                Email (for delivery)
+                            </label>
+                            <input type="email" id="email" name="email" required
+                                   value="{{ form_data.email or '' }}"
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                   placeholder="you@company.com">
+                        </div>
+
+                        <input type="hidden" id="tier" name="tier" value="standard">
+
+                        <!-- Standard Purchase -->
+                        <button type="submit" onclick="document.getElementById('tier').value='standard'"
+                                class="w-full py-4 px-6 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl transition-colors">
+                            Get My Blueprint — $29
+                        </button>
+
+                        <!-- Student Tier -->
+                        <div id="student-section" class="border-t border-gray-200 pt-4 mt-2">
+                            <p class="text-sm text-gray-500 mb-2 text-center">Are you a student?</p>
+                            <div id="sheerid-placeholder" class="text-center">
+                                <button type="button" onclick="verifyStudent()"
+                                        class="text-sm text-primary-600 hover:text-primary-700 font-medium underline">
+                                    Verify student status for $19 pricing
+                                </button>
+                            </div>
+                            <div id="student-verified" class="hidden">
+                                <div class="flex items-center justify-center mb-2 text-green-600 text-sm">
+                                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                                    Student status verified
+                                </div>
+                                <button type="submit" onclick="document.getElementById('tier').value='student'"
+                                        class="w-full py-3 px-6 bg-green-600 hover:bg-green-700 text-white font-medium rounded-xl transition-colors">
+                                    Get My Blueprint — $19 Student Price
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- What's Included (1 col) -->
+            <div>
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">What you get</h3>
+                    <ul class="space-y-3 text-sm text-gray-700">
+                        <li class="flex items-start">
+                            <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                            <span><strong>Personalized Blueprint PDF</strong> — section-by-section strategy tailored to your technology and target agency</span>
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                            <span><strong>SBIR Prompt Pack PDF</strong> — ready-to-use AI prompts for drafting each section in Claude or ChatGPT</span>
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                            <span><strong>Reviewer insights</strong> — what each section's reviewer is specifically looking for</span>
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                            <span><strong>Opening sentences</strong> — suggested first lines for each section</span>
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                            <span><strong>$29 credit</strong> toward full Grantentic proposal generation</span>
+                        </li>
+                    </ul>
+
+                    <div class="mt-6 p-4 bg-primary-50 rounded-lg">
+                        <p class="text-xs text-primary-800">
+                            Delivered to your email within minutes of purchase. Works for NSF, DoD, and NASA SBIR Phase I.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-6 text-center">
+            <a href="/privacy" class="text-xs text-gray-500 hover:text-primary-600">Privacy Policy</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Countdown timer
+const launchDate = new Date('{{ launch_date }}').getTime();
+
+function updateCountdown() {
+    const now = Date.now();
+    const diff = launchDate - now;
+
+    if (diff <= 0) {
+        document.getElementById('countdown-banner').innerHTML =
+            '<p class="text-sm text-gray-600">Launch pricing has ended. Current price: <span class="text-2xl font-bold text-gray-900">$49</span></p>';
+        return;
+    }
+
+    const days = Math.floor(diff / 86400000);
+    const hours = Math.floor((diff % 86400000) / 3600000);
+    const mins = Math.floor((diff % 3600000) / 60000);
+    const secs = Math.floor((diff % 60000) / 1000);
+
+    document.getElementById('cd-days').textContent = String(days).padStart(2, '0');
+    document.getElementById('cd-hours').textContent = String(hours).padStart(2, '0');
+    document.getElementById('cd-mins').textContent = String(mins).padStart(2, '0');
+    document.getElementById('cd-secs').textContent = String(secs).padStart(2, '0');
+}
+
+updateCountdown();
+setInterval(updateCountdown, 1000);
+
+// SheerID student verification placeholder
+function verifyStudent() {
+    // TODO: Replace with actual SheerID verification widget
+    // SheerID JS SDK: https://developer.sheerid.com/
+    // After SheerID calls back with success, show the student button:
+    document.getElementById('sheerid-placeholder').classList.add('hidden');
+    document.getElementById('student-verified').classList.remove('hidden');
+}
+</script>
+{% endblock %}

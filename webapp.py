@@ -1039,6 +1039,157 @@ async def privacy_page(request: Request):
     return templates.TemplateResponse(request, "privacy.html", {"user": user})
 
 
+# ============================================================================
+# BLUEPRINT PRODUCT
+# ============================================================================
+
+@app.get("/blueprint", response_class=HTMLResponse)
+async def blueprint_page(request: Request):
+    """SBIR Blueprint intake form"""
+    return templates.TemplateResponse(request, "blueprint.html", {
+        "user": get_current_user(request),
+        "error": None,
+        "form_data": {},
+        "launch_date": Config.BLUEPRINT_LAUNCH_DATE,
+    })
+
+
+@app.post("/blueprint/checkout")
+async def blueprint_checkout(request: Request):
+    """Validate intake form and redirect to Stripe checkout"""
+    form = await request.form()
+    company_name = form.get("company_name", "").strip()
+    technology = form.get("technology", "").strip()
+    problem = form.get("problem", "").strip()
+    agency = form.get("agency", "nsf").strip()
+    differentiator = form.get("differentiator", "").strip()
+    email = form.get("email", "").strip()
+    tier = form.get("tier", "standard")
+
+    form_data = {
+        "company_name": company_name,
+        "technology": technology,
+        "problem": problem,
+        "agency": agency,
+        "differentiator": differentiator,
+        "email": email,
+    }
+
+    # Validate
+    if not all([company_name, technology, problem, differentiator, email]):
+        return templates.TemplateResponse(request, "blueprint.html", {
+            "user": get_current_user(request),
+            "error": "All fields are required.",
+            "form_data": form_data,
+            "launch_date": Config.BLUEPRINT_LAUNCH_DATE,
+        })
+
+    if "@" not in email:
+        return templates.TemplateResponse(request, "blueprint.html", {
+            "user": get_current_user(request),
+            "error": "Please enter a valid email address.",
+            "form_data": form_data,
+            "launch_date": Config.BLUEPRINT_LAUNCH_DATE,
+        })
+
+    # Store form data in session for retrieval after payment
+    request.session["blueprint_data"] = form_data
+
+    # Select Stripe price
+    if tier == "student":
+        price_id = Config.STRIPE_PRICE_BLUEPRINT_STUDENT
+    else:
+        price_id = Config.STRIPE_PRICE_BLUEPRINT
+
+    if not price_id or not Config.STRIPE_SECRET_KEY:
+        # No Stripe configured — skip payment, go straight to generation (dev mode)
+        log.warning("blueprint_checkout: no Stripe price configured, skipping payment")
+        return RedirectResponse(url="/blueprint/deliver", status_code=303)
+
+    try:
+        checkout_session = stripe.checkout.Session.create(
+            payment_method_types=["card"],
+            line_items=[{"price": price_id, "quantity": 1}],
+            mode="payment",
+            customer_email=email,
+            success_url=f"{Config.BASE_URL}/blueprint/deliver?session_id={{CHECKOUT_SESSION_ID}}",
+            cancel_url=f"{Config.BASE_URL}/blueprint",
+            metadata={
+                "product": "blueprint",
+                "company_name": company_name[:500],
+                "agency": agency,
+                "tier": tier,
+            },
+        )
+        return RedirectResponse(url=checkout_session.url, status_code=303)
+    except stripe.error.StripeError as e:
+        log.exception("blueprint_checkout: Stripe error: %s", e)
+        return templates.TemplateResponse(request, "blueprint.html", {
+            "user": get_current_user(request),
+            "error": f"Payment error: {e}",
+            "form_data": form_data,
+            "launch_date": Config.BLUEPRINT_LAUNCH_DATE,
+        })
+
+
+@app.get("/blueprint/deliver", response_class=HTMLResponse)
+async def blueprint_deliver(request: Request, session_id: str = None):
+    """After payment: generate Blueprint, email PDFs, show confirmation"""
+    # Verify payment if session_id is provided
+    if session_id and Config.STRIPE_SECRET_KEY:
+        try:
+            session = stripe.checkout.Session.retrieve(session_id)
+            if session.payment_status != "paid":
+                return RedirectResponse(url="/blueprint", status_code=302)
+        except stripe.error.StripeError:
+            return RedirectResponse(url="/blueprint", status_code=302)
+
+    # Retrieve form data from session
+    bp_data = request.session.get("blueprint_data")
+    if not bp_data:
+        return RedirectResponse(url="/blueprint", status_code=302)
+
+    company_name = bp_data["company_name"]
+    technology = bp_data["technology"]
+    problem = bp_data["problem"]
+    agency = bp_data["agency"]
+    differentiator = bp_data["differentiator"]
+    email = bp_data["email"]
+
+    # Generate the Blueprint via Claude
+    from src.blueprint import (
+        generate_blueprint_content,
+        create_blueprint_pdf,
+        create_prompt_pack_pdf,
+        send_blueprint_email,
+    )
+
+    try:
+        log.info("blueprint_deliver: generating for company=%r agency=%s", company_name, agency)
+        content = generate_blueprint_content(company_name, technology, problem, agency, differentiator)
+        blueprint_pdf = create_blueprint_pdf(company_name, agency, content)
+        prompt_pack_pdf = create_prompt_pack_pdf(agency)
+        send_blueprint_email(email, company_name, agency, blueprint_pdf, prompt_pack_pdf)
+    except Exception as exc:
+        log.exception("blueprint_deliver: generation failed: %s", exc)
+        return templates.TemplateResponse(request, "blueprint.html", {
+            "user": get_current_user(request),
+            "error": "An error occurred generating your Blueprint. Please contact info@grantentic.us for help.",
+            "form_data": bp_data,
+            "launch_date": Config.BLUEPRINT_LAUNCH_DATE,
+        })
+
+    # Clear blueprint data from session
+    request.session.pop("blueprint_data", None)
+
+    return templates.TemplateResponse(request, "blueprint_confirm.html", {
+        "user": get_current_user(request),
+        "email": email,
+        "company_name": company_name,
+        "agency": agency,
+    })
+
+
 # SEO
 @app.get("/robots.txt")
 async def robots_txt():
@@ -1053,6 +1204,7 @@ async def robots_txt():
         "Allow: /login\n"
         "Allow: /register\n"
         "Allow: /privacy\n"
+        "Allow: /blueprint\n"
     )
     return Response(content=content, media_type="text/plain")
 
@@ -1066,6 +1218,7 @@ async def sitemap_xml():
         '  <url><loc>https://www.grantentic.us/login</loc></url>\n'
         '  <url><loc>https://www.grantentic.us/register</loc></url>\n'
         '  <url><loc>https://www.grantentic.us/privacy</loc></url>\n'
+        '  <url><loc>https://www.grantentic.us/blueprint</loc></url>\n'
         '</urlset>\n'
     )
     return Response(content=content, media_type="application/xml")
