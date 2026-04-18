@@ -21,6 +21,11 @@ class Config:
     # the app — not Supabase Auth — gates which rows each user can access.
     # The anon key is kept only for clients that might talk to Supabase directly
     # from the browser in the future.
+    # ============================================================================
+    # EMAIL (Resend)
+    # ============================================================================
+    RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
+
     SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
     SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "")
     SUPABASE_SERVICE_ROLE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")

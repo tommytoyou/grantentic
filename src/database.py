@@ -1,5 +1,7 @@
 import os
 import logging
+import secrets
+from datetime import datetime, timedelta, timezone
 from supabase import create_client, Client
 from typing import Optional
 import json
@@ -107,3 +109,59 @@ def get_proposal(proposal_id: str, user_id: str) -> Optional[dict]:
 def update_proposal_status(proposal_id: str, user_id: str, status: str) -> None:
     sb = get_supabase()
     sb.table("proposals").update({"status": status}).eq("id", proposal_id).eq("user_id", user_id).execute()
+
+
+# ============================================================================
+# USER LOOKUP BY EMAIL
+# ============================================================================
+
+def get_user_by_email(email: str) -> Optional[dict]:
+    sb = get_supabase()
+    result = sb.table("users").select("*").eq("email", email).limit(1).execute()
+    rows = result.data or []
+    return rows[0] if rows else None
+
+
+# ============================================================================
+# PASSWORD RESET
+# ============================================================================
+
+def create_password_reset_token(user_id: str) -> str:
+    sb = get_supabase()
+    token = secrets.token_urlsafe(48)
+    expires_at = (datetime.now(timezone.utc) + timedelta(hours=1)).isoformat()
+    sb.table("password_resets").insert({
+        "user_id": user_id,
+        "token": token,
+        "expires_at": expires_at,
+    }).execute()
+    return token
+
+
+def get_password_reset_token(token: str) -> Optional[dict]:
+    sb = get_supabase()
+    now = datetime.now(timezone.utc).isoformat()
+    result = (
+        sb.table("password_resets")
+        .select("*")
+        .eq("token", token)
+        .eq("used", False)
+        .gte("expires_at", now)
+        .limit(1)
+        .execute()
+    )
+    rows = result.data or []
+    return rows[0] if rows else None
+
+
+def mark_token_used(token: str) -> None:
+    sb = get_supabase()
+    sb.table("password_resets").update({"used": True}).eq("token", token).execute()
+
+
+def update_user_password(user_id: str, hashed_password: str, salt: str) -> None:
+    sb = get_supabase()
+    sb.table("users").update({
+        "hashed_password": hashed_password,
+        "salt": salt,
+    }).eq("id", user_id).execute()

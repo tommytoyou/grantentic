@@ -20,6 +20,9 @@ stripe>=7.0.0
 # Database
 supabase>=2.15.0
 
+# Email
+resend
+
 # Error tracking
 sentry-sdk[fastapi]
 
