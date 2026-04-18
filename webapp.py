@@ -8,6 +8,7 @@ Full HTML control with FastAPI + Jinja2 + HTMX
 
 import json
 import logging
+import os
 import time
 import asyncio
 from pathlib import Path
@@ -20,6 +21,17 @@ logging.basicConfig(
     format="%(asctime)s %(levelname)s %(name)s: %(message)s",
 )
 log = logging.getLogger("grantentic")
+
+# Sentry error tracking — only initialize if DSN is configured
+_sentry_dsn = os.environ.get("SENTRY_DSN", "")
+if _sentry_dsn:
+    import sentry_sdk
+    sentry_sdk.init(
+        dsn=_sentry_dsn,
+        traces_sample_rate=0.2,
+        environment="production",
+    )
+    log.info("Sentry initialized")
 
 from fastapi import FastAPI, Request, Form, Depends, HTTPException, Response
 from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse, FileResponse
