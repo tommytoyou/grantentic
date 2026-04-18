@@ -80,6 +80,15 @@ Reviewers ask: "Will this become a real product that creates economic value?"
 - Must clearly define what "success" looks like with measurable criteria
 - Phase II path must be logical but not assumed
 
+## CRITICAL NSF REFRAMING RULE
+Before writing any section, identify the novel knowledge, validated models, algorithms,
+datasets, or engineering frameworks that will be produced by this Phase I work that do
+not currently exist in the literature. These knowledge outputs are the fundable scientific
+contribution. The hardware, components, and integration work are the research instrument,
+not the research. Never lead with components, integration, or assembly. Always lead with
+what will be known or validated after Phase I that is not known now. Reframe every
+technical objective as a knowledge generation activity.
+
 {agency_requirements}''',
 
         "critique": '''You are a demanding NSF SBIR program officer conducting a mock review. Your job is to identify EVERY weakness that could cost this proposal funding. You've seen thousands of proposals and know exactly what separates funded from rejected.

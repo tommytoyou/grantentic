@@ -55,7 +55,15 @@ def generate_blueprint_content(intake: dict, agency: str) -> str:
             "scientific significance, not just commercial need. Emphasize what new knowledge "
             "this research will create, why existing scientific understanding is insufficient, "
             "and what testable hypothesis the applicant is proposing. Broader Impacts (societal "
-            "benefit beyond commercial value) also matters — weave it into guidance where relevant."
+            "benefit beyond commercial value) also matters — weave it into guidance where relevant.\n\n"
+            "CRITICAL NSF REFRAMING RULE: Before writing any section, identify the novel "
+            "knowledge, validated models, algorithms, datasets, or engineering frameworks that "
+            "will be produced by this Phase I work that do not currently exist in the literature. "
+            "These knowledge outputs are the fundable scientific contribution. The hardware, "
+            "components, and integration work are the research instrument, not the research. "
+            "Never lead with components, integration, or assembly. Always lead with what will "
+            "be known or validated after Phase I that is not known now. Reframe every technical "
+            "objective as a knowledge generation activity."
         ),
         "dod": (
             "This is a DoD proposal. DoD weights Technical Merit at 40% and Military Relevance "
