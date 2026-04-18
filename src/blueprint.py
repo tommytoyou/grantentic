@@ -30,14 +30,8 @@ DARK_COLOR = HexColor("#1e293b")
 GRAY_COLOR = HexColor("#64748b")
 
 
-def generate_blueprint_content(
-    company_name: str,
-    technology: str,
-    problem: str,
-    agency: str,
-    differentiator: str,
-) -> str:
-    """Call Claude to generate personalized SBIR Blueprint content."""
+def generate_blueprint_content(intake: dict, agency: str) -> str:
+    """Call Claude to generate personalized SBIR Blueprint from 13-field intake."""
 
     # Load agency requirements
     try:
@@ -62,15 +56,44 @@ CRITICAL RULES:
 - Do NOT fabricate technical claims, numbers, or performance data
 - Reference what the reviewer is looking for in each section
 - Keep guidance concrete: "Write about X" not "Consider mentioning something"
-- Use the company's own language from their intake form"""
+- Use the company's own language from their intake form
+- When the applicant has provided specific competitors, prior work, or team details, weave
+  those directly into the guidance rather than using generic placeholders"""
+
+    # Build the optional fields block
+    optional_parts = []
+    if intake.get("market_size"):
+        optional_parts.append(f"- Target Market & Size: {intake['market_size']}")
+    if intake.get("team_members"):
+        optional_parts.append(f"- Other Key Team Members: {intake['team_members']}")
+    if intake.get("prior_work"):
+        optional_parts.append(f"- Prior Grants/Publications/Patents: {intake['prior_work']}")
+    if intake.get("solicitation"):
+        optional_parts.append(f"- Specific Solicitation/Topic: {intake['solicitation']}")
+    optional_block = "\n".join(optional_parts) if optional_parts else "(none provided)"
 
     user_prompt = f"""Create a personalized SBIR Blueprint for this company applying to {agency_name} {program}.
 
-## COMPANY INTAKE
-- Company Name: {company_name}
-- Technology: {technology}
-- Problem Being Solved: {problem}
-- Innovation Differentiator: {differentiator}
+## COMPANY INTAKE — SECTION 1: THE PROBLEM
+- Company Name: {intake.get('company_name', '')}
+- Problem Being Solved: {intake.get('problem', '')}
+- Who Suffers and How Severely: {intake.get('who_suffers', '')}
+- Why Current Solutions Fail: {intake.get('why_current_fail', '')}
+
+## COMPANY INTAKE — SECTION 2: TECHNICAL APPROACH
+- Technical Approach / Innovation: {intake.get('technology', '')}
+- Current Development Stage: {intake.get('dev_stage', '')}
+- Phase I Deliverable: {intake.get('phase1_output', '')}
+
+## COMPANY INTAKE — SECTION 3: COMPETITIVE LANDSCAPE
+- Competitors and Their Limitations: {intake.get('competitors', '')}
+- Key Technical Differentiator: {intake.get('differentiator', '')}
+
+## COMPANY INTAKE — SECTION 4: TEAM
+- Principal Investigator: {intake.get('pi_background', '')}
+
+## OPTIONAL DETAILS
+{optional_block}
 
 ## AGENCY SECTION REQUIREMENTS
 {sections_text}
@@ -80,15 +103,16 @@ For EACH section required by {agency_name}, produce:
 
 1. **Section Title** and character/word limit
 2. **What the reviewer wants to see** — specific to this agency
-3. **Your recommended approach** — personalized to this company's technology
-4. **Opening sentence suggestion** — a strong first sentence tailored to their innovation
-5. **Key points to include** — 3-5 bullet points specific to their technology/problem
-6. **What to avoid** — common mistakes for this section
+3. **Your recommended approach** — personalized to this company's specific technology, problem, and team
+4. **Opening sentence suggestion** — a strong first sentence using the applicant's own problem statement and quantified impact
+5. **Key points to include** — 3-5 bullet points drawn directly from their intake answers
+6. **What to avoid** — common mistakes for this section, specific to their situation
 
 Also include:
-- A one-paragraph "Elevator Pitch" summary the company can use verbatim
-- 2-3 suggested measurable Phase I objectives based on their technology
-- Competitive positioning advice based on their differentiator
+- A one-paragraph "Elevator Pitch" summary the company can use verbatim, built from their problem statement, differentiator, and team credentials
+- 2-3 suggested measurable Phase I objectives derived from their stated Phase I deliverable and development stage
+- Competitive positioning advice using the specific competitors they named and their stated differentiator
+- If a solicitation number was provided, note how to align the proposal language with that topic area
 
 Format with clear markdown headers for each section. Be specific and actionable."""
 

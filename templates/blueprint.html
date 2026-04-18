@@ -2,6 +2,21 @@
 
 {% block title %}SBIR Blueprint - Grantentic{% endblock %}
 
+{% block extra_head %}
+<style>
+.section-header { transition: all 0.3s ease-out; }
+.section-header.updating { opacity: 0.3; transform: translateY(-2px); }
+.badge-critical { background: #fef3c7; color: #92400e; }
+.badge-important { background: #dbeafe; color: #1e40af; }
+.badge-supporting { background: #f3f4f6; color: #4b5563; }
+.star-filled { color: #f59e0b; }
+.star-empty { color: #d1d5db; }
+.progress-step { transition: all 0.2s; }
+.progress-step.active { background: #0284c7; color: white; }
+.progress-step.done { background: #10b981; color: white; }
+</style>
+{% endblock %}
+
 {% block body %}
 <div class="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100 py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-4xl mx-auto">
@@ -32,88 +47,213 @@
             </div>
         </div>
 
+        <!-- Progress Indicator -->
+        <div class="mb-6 flex items-center justify-center space-x-2">
+            <span id="prog-1" class="progress-step active w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border-2 border-primary-500">1</span>
+            <span class="w-8 h-0.5 bg-gray-300"></span>
+            <span id="prog-2" class="progress-step w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border-2 border-gray-300 text-gray-400">2</span>
+            <span class="w-8 h-0.5 bg-gray-300"></span>
+            <span id="prog-3" class="progress-step w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border-2 border-gray-300 text-gray-400">3</span>
+            <span class="w-8 h-0.5 bg-gray-300"></span>
+            <span id="prog-4" class="progress-step w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border-2 border-gray-300 text-gray-400">4</span>
+        </div>
+
         <div class="grid md:grid-cols-3 gap-8">
             <!-- Intake Form (2 cols) -->
             <div class="md:col-span-2">
-                <div class="bg-white rounded-xl shadow-lg p-8">
-                    <h2 class="text-xl font-semibold text-gray-900 mb-6">Tell us about your company</h2>
+                {% if error %}
+                <div class="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+                    {{ error }}
+                </div>
+                {% endif %}
 
-                    {% if error %}
-                    <div class="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
-                        {{ error }}
+                <form id="blueprint-form" method="POST" action="/blueprint/checkout" class="space-y-6">
+
+                    <!-- Agency Selector -->
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <label for="agency" class="block text-sm font-medium text-gray-700 mb-1">Target Agency</label>
+                        <select id="agency" name="agency" required onchange="switchAgency(this.value)"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-lg font-medium">
+                            <option value="nsf" {% if (form_data.agency or 'nsf') == 'nsf' %}selected{% endif %}>NSF &mdash; National Science Foundation</option>
+                            <option value="dod" {% if form_data.agency == 'dod' %}selected{% endif %}>DoD &mdash; Department of Defense</option>
+                            <option value="nasa" {% if form_data.agency == 'nasa' %}selected{% endif %}>NASA &mdash; Space Technology</option>
+                        </select>
                     </div>
-                    {% endif %}
 
-                    <form id="blueprint-form" method="POST" action="/blueprint/checkout" class="space-y-5">
-                        <div>
-                            <label for="company_name" class="block text-sm font-medium text-gray-700 mb-1">
-                                Company Name
-                            </label>
-                            <input type="text" id="company_name" name="company_name" required
-                                   value="{{ form_data.company_name or '' }}"
-                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                                   placeholder="Acme Robotics Inc.">
+                    <!-- ============ SECTION 1 ============ -->
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                        <div id="s1-header" class="section-header bg-amber-50 border-b border-amber-200 p-5">
+                            <div class="flex items-center justify-between mb-1">
+                                <h3 class="text-lg font-bold text-gray-900">
+                                    <span class="text-gray-400 mr-1">1.</span>
+                                    <span id="s1-title">The Problem</span>
+                                </h3>
+                                <div class="flex items-center space-x-2">
+                                    <span id="s1-stars" class="text-lg tracking-wide"><span class="star-filled">&#9733;&#9733;&#9733;&#9733;&#9733;</span></span>
+                                    <span id="s1-badge" class="text-xs font-bold px-2 py-0.5 rounded badge-critical">Critical</span>
+                                </div>
+                            </div>
+                            <p id="s1-weight" class="text-xs text-gray-500 mb-2">50% of reviewer score</p>
+                            <p id="s1-desc" class="text-sm text-gray-700">Reviewers decide in the first paragraph whether your proposal is worth reading. You must quantify the problem, show who suffers, and prove current solutions are inadequate.</p>
+                            <p id="s1-rejection" class="text-xs text-gray-500 italic mt-2">"Proposal does not clearly articulate the problem or its significance."</p>
                         </div>
-
-                        <div>
-                            <label for="technology" class="block text-sm font-medium text-gray-700 mb-1">
-                                Technology Description
-                            </label>
-                            <textarea id="technology" name="technology" required rows="3"
-                                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                                      placeholder="Describe your technology in 2-3 sentences...">{{ form_data.technology or '' }}</textarea>
+                        <div class="p-6 space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">What problem does your technology solve? <span class="text-gray-400">(3-5 sentences)</span></label>
+                                <textarea name="problem" required rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500" placeholder="Describe the specific problem your technology addresses...">{{ form_data.problem or '' }}</textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Who specifically suffers from this problem and how severely?</label>
+                                <textarea name="who_suffers" required rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500" placeholder="e.g. 12,000 mid-size manufacturers lose an average of $180K/year to...">{{ form_data.who_suffers or '' }}</textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Why do current solutions fail to solve it adequately?</label>
+                                <textarea name="why_current_fail" required rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500" placeholder="e.g. Existing approaches only achieve 62% accuracy because...">{{ form_data.why_current_fail or '' }}</textarea>
+                            </div>
                         </div>
+                    </div>
 
-                        <div>
-                            <label for="problem" class="block text-sm font-medium text-gray-700 mb-1">
-                                Problem Being Solved
-                            </label>
-                            <textarea id="problem" name="problem" required rows="2"
-                                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                                      placeholder="What specific problem does your technology address?">{{ form_data.problem or '' }}</textarea>
+                    <!-- ============ SECTION 2 ============ -->
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                        <div id="s2-header" class="section-header bg-amber-50 border-b border-amber-200 p-5">
+                            <div class="flex items-center justify-between mb-1">
+                                <h3 class="text-lg font-bold text-gray-900">
+                                    <span class="text-gray-400 mr-1">2.</span>
+                                    <span id="s2-title">Technical Approach</span>
+                                </h3>
+                                <div class="flex items-center space-x-2">
+                                    <span id="s2-stars" class="text-lg tracking-wide"><span class="star-filled">&#9733;&#9733;&#9733;&#9733;</span><span class="star-empty">&#9733;</span></span>
+                                    <span id="s2-badge" class="text-xs font-bold px-2 py-0.5 rounded badge-critical">Critical</span>
+                                </div>
+                            </div>
+                            <p id="s2-weight" class="text-xs text-gray-500 mb-2">25% of reviewer score</p>
+                            <p id="s2-desc" class="text-sm text-gray-700">Show exactly what is technically new about your approach. Reviewers are domain experts — they spot hand-waving immediately. Be specific about your methodology.</p>
+                            <p id="s2-rejection" class="text-xs text-gray-500 italic mt-2">"The proposal describes an incremental improvement rather than a genuinely novel technical approach."</p>
                         </div>
-
-                        <div>
-                            <label for="agency" class="block text-sm font-medium text-gray-700 mb-1">
-                                Target Agency
-                            </label>
-                            <select id="agency" name="agency" required
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
-                                <option value="nsf" {% if form_data.agency == 'nsf' %}selected{% endif %}>NSF - National Science Foundation</option>
-                                <option value="dod" {% if form_data.agency == 'dod' %}selected{% endif %}>DoD - Department of Defense</option>
-                                <option value="nasa" {% if form_data.agency == 'nasa' %}selected{% endif %}>NASA - Space Technology</option>
-                            </select>
+                        <div class="p-6 space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Describe your technical approach or innovation in plain language</label>
+                                <textarea name="technology" required rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500" placeholder="What is technically new about your approach? What is the underlying method or architecture?">{{ form_data.technology or '' }}</textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Current stage of development</label>
+                                <select name="dev_stage" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                                    <option value="" disabled {% if not form_data.dev_stage %}selected{% endif %}>Select stage...</option>
+                                    <option value="idea" {% if form_data.dev_stage == 'idea' %}selected{% endif %}>Idea</option>
+                                    <option value="proof_of_concept" {% if form_data.dev_stage == 'proof_of_concept' %}selected{% endif %}>Proof of Concept</option>
+                                    <option value="prototype" {% if form_data.dev_stage == 'prototype' %}selected{% endif %}>Prototype</option>
+                                    <option value="lab_tested" {% if form_data.dev_stage == 'lab_tested' %}selected{% endif %}>Lab Tested</option>
+                                    <option value="field_tested" {% if form_data.dev_stage == 'field_tested' %}selected{% endif %}>Field Tested</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">What specific experiment, prototype, or demonstration will Phase I produce?</label>
+                                <textarea name="phase1_output" required rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500" placeholder="e.g. A working prototype that demonstrates >90% accuracy on benchmark X">{{ form_data.phase1_output or '' }}</textarea>
+                            </div>
                         </div>
+                    </div>
 
-                        <div>
-                            <label for="differentiator" class="block text-sm font-medium text-gray-700 mb-1">
-                                Innovation Differentiator
-                            </label>
-                            <textarea id="differentiator" name="differentiator" required rows="2"
-                                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                                      placeholder="What makes your approach fundamentally different from alternatives?">{{ form_data.differentiator or '' }}</textarea>
+                    <!-- ============ SECTION 3 ============ -->
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                        <div id="s3-header" class="section-header bg-blue-50 border-b border-blue-200 p-5">
+                            <div class="flex items-center justify-between mb-1">
+                                <h3 class="text-lg font-bold text-gray-900">
+                                    <span class="text-gray-400 mr-1">3.</span>
+                                    <span id="s3-title">Competitive Landscape</span>
+                                </h3>
+                                <div class="flex items-center space-x-2">
+                                    <span id="s3-stars" class="text-lg tracking-wide"><span class="star-filled">&#9733;&#9733;&#9733;</span><span class="star-empty">&#9733;&#9733;</span></span>
+                                    <span id="s3-badge" class="text-xs font-bold px-2 py-0.5 rounded badge-important">Important</span>
+                                </div>
+                            </div>
+                            <p id="s3-weight" class="text-xs text-gray-500 mb-2">25% of reviewer score</p>
+                            <p id="s3-desc" class="text-sm text-gray-700">Name real competitors or alternatives. Claiming "no competitors exist" is a red flag. Reviewers want bottom-up market sizing, not top-down analyst reports.</p>
+                            <p id="s3-rejection" class="text-xs text-gray-500 italic mt-2">"No competitive analysis provided. Claiming no competitors exist is not credible."</p>
                         </div>
+                        <div class="p-6 space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Name 1-3 existing solutions or competitors and their key limitations</label>
+                                <textarea name="competitors" required rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500" placeholder="e.g. Company X offers Y but is limited by Z. Open-source tool A handles B but fails at C.">{{ form_data.competitors or '' }}</textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">The single most important technical advantage of your approach</label>
+                                <textarea name="differentiator" required rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500" placeholder="What specific capability do you have that competitors do not?">{{ form_data.differentiator or '' }}</textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Target market and estimated market size <span class="text-gray-400">(optional)</span></label>
+                                <textarea name="market_size" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500" placeholder="e.g. 2,400 mid-size manufacturers spending avg $180K/year = $432M addressable market">{{ form_data.market_size or '' }}</textarea>
+                            </div>
+                        </div>
+                    </div>
 
-                        <div>
-                            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
-                                Email (for delivery)
-                            </label>
-                            <input type="email" id="email" name="email" required
-                                   value="{{ form_data.email or '' }}"
-                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                                   placeholder="you@company.com">
+                    <!-- ============ SECTION 4 ============ -->
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                        <div id="s4-header" class="section-header bg-gray-50 border-b border-gray-200 p-5">
+                            <div class="flex items-center justify-between mb-1">
+                                <h3 class="text-lg font-bold text-gray-900">
+                                    <span class="text-gray-400 mr-1">4.</span>
+                                    <span id="s4-title">Team</span>
+                                </h3>
+                                <div class="flex items-center space-x-2">
+                                    <span id="s4-stars" class="text-lg tracking-wide"><span class="star-filled">&#9733;&#9733;</span><span class="star-empty">&#9733;&#9733;&#9733;</span></span>
+                                    <span id="s4-badge" class="text-xs font-bold px-2 py-0.5 rounded badge-supporting">Supporting</span>
+                                </div>
+                            </div>
+                            <p id="s4-weight" class="text-xs text-gray-500 mb-2">Included in overall assessment</p>
+                            <p id="s4-desc" class="text-sm text-gray-700">Reviewers ask "Can this team actually do what they claim?" Connect each person's background directly to the project needs. Prior SBIR success is especially strong.</p>
+                            <p id="s4-rejection" class="text-xs text-gray-500 italic mt-2">"Team lacks specific expertise required for the proposed technical approach."</p>
+                        </div>
+                        <div class="p-6 space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Principal Investigator name and relevant background <span class="text-gray-400">(2-3 sentences)</span></label>
+                                <textarea name="pi_background" required rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500" placeholder="e.g. Dr. Jane Smith, PhD in Machine Learning (MIT 2010), 12 years in predictive analytics...">{{ form_data.pi_background or '' }}</textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Other key team members and their expertise <span class="text-gray-400">(optional)</span></label>
+                                <textarea name="team_members" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500" placeholder="e.g. John Doe, Senior Engineer, 8 years in embedded systems...">{{ form_data.team_members or '' }}</textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Relevant prior grants, publications, or patents <span class="text-gray-400">(optional)</span></label>
+                                <textarea name="prior_work" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500" placeholder="e.g. NSF SBIR Phase I #1234567 (2024), 3 patents on predictive maintenance ML methods...">{{ form_data.prior_work or '' }}</textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    Specific topic area or solicitation number <span class="text-gray-400">(optional)</span>
+                                </label>
+                                <input type="text" name="solicitation" value="{{ form_data.solicitation or '' }}"
+                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                       placeholder="e.g. NSF 24-554 Topic EI-01, or DoD BAA HR001125S0001">
+                                <p class="mt-1 text-xs text-amber-700 bg-amber-50 rounded px-2 py-1">Providing a solicitation number significantly improves output quality by targeting your specific topic area.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Email + Company Name + Submit -->
+                    <div class="bg-white rounded-xl shadow-lg p-6 space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Company Name</label>
+                                <input type="text" name="company_name" required value="{{ form_data.company_name or '' }}"
+                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                       placeholder="Acme Robotics Inc.">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Email (for delivery)</label>
+                                <input type="email" name="email" required value="{{ form_data.email or '' }}"
+                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                       placeholder="you@company.com">
+                            </div>
                         </div>
 
                         <input type="hidden" id="tier" name="tier" value="standard">
 
-                        <!-- Standard Purchase -->
                         <button type="submit" onclick="document.getElementById('tier').value='standard'"
                                 class="w-full py-4 px-6 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl transition-colors">
-                            Get My Blueprint — $29
+                            Get My Blueprint &mdash; $29
                         </button>
 
                         <!-- Student Tier -->
-                        <div id="student-section" class="border-t border-gray-200 pt-4 mt-2">
+                        <div id="student-section" class="border-t border-gray-200 pt-4">
                             <p class="text-sm text-gray-500 mb-2 text-center">Are you a student?</p>
                             <div id="sheerid-placeholder" class="text-center">
                                 <button type="button" onclick="verifyStudent()"
@@ -128,44 +268,39 @@
                                 </div>
                                 <button type="submit" onclick="document.getElementById('tier').value='student'"
                                         class="w-full py-3 px-6 bg-green-600 hover:bg-green-700 text-white font-medium rounded-xl transition-colors">
-                                    Get My Blueprint — $19 Student Price
+                                    Get My Blueprint &mdash; $19 Student Price
                                 </button>
                             </div>
                         </div>
-                    </form>
-                </div>
+                    </div>
+                </form>
             </div>
 
             <!-- What's Included (1 col) -->
             <div>
-                <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="bg-white rounded-xl shadow-lg p-6 sticky top-6">
                     <h3 class="text-lg font-semibold text-gray-900 mb-4">What you get</h3>
                     <ul class="space-y-3 text-sm text-gray-700">
                         <li class="flex items-start">
                             <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-                            <span><strong>Personalized Blueprint PDF</strong> — section-by-section strategy tailored to your technology and target agency</span>
+                            <span><strong>Personalized Blueprint PDF</strong> &mdash; section-by-section strategy tailored to your technology and target agency</span>
                         </li>
                         <li class="flex items-start">
                             <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-                            <span><strong>SBIR Prompt Pack PDF</strong> — ready-to-use AI prompts for drafting each section in Claude or ChatGPT</span>
+                            <span><strong>SBIR Prompt Pack PDF</strong> &mdash; ready-to-use AI prompts for Claude or ChatGPT</span>
                         </li>
                         <li class="flex items-start">
                             <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-                            <span><strong>Reviewer insights</strong> — what each section's reviewer is specifically looking for</span>
-                        </li>
-                        <li class="flex items-start">
-                            <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-                            <span><strong>Opening sentences</strong> — suggested first lines for each section</span>
+                            <span><strong>Reviewer insights</strong> &mdash; what each section's reviewer looks for</span>
                         </li>
                         <li class="flex items-start">
                             <svg class="w-5 h-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
                             <span><strong>$29 credit</strong> toward full Grantentic proposal generation</span>
                         </li>
                     </ul>
-
                     <div class="mt-6 p-4 bg-primary-50 rounded-lg">
                         <p class="text-xs text-primary-800">
-                            Delivered to your email within minutes of purchase. Works for NSF, DoD, and NASA SBIR Phase I.
+                            Delivered to your email within minutes. Works for NSF, DoD, and NASA SBIR Phase I.
                         </p>
                     </div>
                 </div>
@@ -181,38 +316,186 @@
 
 {% block extra_scripts %}
 <script>
-// Countdown timer
+// ==================== Agency-specific data ====================
+const AGENCY_DATA = {
+    nsf: {
+        s1: {
+            title: "The Problem",
+            stars: 5, badge: "Critical", badgeClass: "badge-critical",
+            weight: "50% of reviewer score",
+            desc: "Reviewers decide in the first paragraph whether your proposal is worth reading. You must quantify the problem, show who suffers, and prove current solutions are inadequate.",
+            rejection: '"Proposal does not clearly articulate the problem or its significance."'
+        },
+        s2: {
+            title: "Technical Approach",
+            stars: 4, badge: "Critical", badgeClass: "badge-critical",
+            weight: "25% of reviewer score",
+            desc: "Show exactly what is technically new about your approach. Reviewers are domain experts \u2014 they spot hand-waving immediately. Be specific about your methodology.",
+            rejection: '"The proposal describes an incremental improvement rather than a genuinely novel technical approach."'
+        },
+        s3: {
+            title: "Competitive Landscape",
+            stars: 3, badge: "Important", badgeClass: "badge-important",
+            weight: "25% of reviewer score",
+            desc: "Name real competitors or alternatives. Claiming \u201cno competitors exist\u201d is a red flag. Reviewers want bottom-up market sizing, not top-down analyst reports.",
+            rejection: '"No competitive analysis provided. Claiming no competitors exist is not credible."'
+        },
+        s4: {
+            title: "Team",
+            stars: 2, badge: "Supporting", badgeClass: "badge-supporting",
+            weight: "Included in overall assessment",
+            desc: "Reviewers ask \u201cCan this team actually do what they claim?\u201d Connect each person\u2019s background directly to the project needs. Prior SBIR success is especially strong.",
+            rejection: '"Team lacks specific expertise required for the proposed technical approach."'
+        }
+    },
+    dod: {
+        s1: {
+            title: "Technical Approach",
+            stars: 5, badge: "Critical", badgeClass: "badge-critical",
+            weight: "40% of reviewer score",
+            desc: "DoD reviewers evaluate technical soundness and achievability within 6 months. You must show a clear TRL advancement plan with specific performance targets and risk mitigation.",
+            rejection: '"Technical approach lacks specificity and does not demonstrate achievability within Phase I scope."'
+        },
+        s2: {
+            title: "Military Relevance",
+            stars: 4, badge: "Critical", badgeClass: "badge-critical",
+            weight: "30% of reviewer score",
+            desc: "You must connect your technology to a specific military capability gap. Reference named programs, missions, or DoD requirements documents. Generic \u201chelps the military\u201d statements score poorly.",
+            rejection: '"No specific military application or capability gap identified. Solution appears to be technology looking for a problem."'
+        },
+        s3: {
+            title: "Commercialization & Transition",
+            stars: 3, badge: "Important", badgeClass: "badge-important",
+            weight: "20% of reviewer score",
+            desc: "DoD needs to know this will transition to the warfighter. Identify a Phase III path, dual-use applications, and evidence you understand defense acquisition.",
+            rejection: '"No identified transition pathway. Unclear how this technology would reach operational use."'
+        },
+        s4: {
+            title: "Team",
+            stars: 2, badge: "Supporting", badgeClass: "badge-supporting",
+            weight: "10% of reviewer score",
+            desc: "Prior DoD contract performance is highly valued. Team members with military or DoD civilian experience strengthen the proposal significantly.",
+            rejection: '"Team has no demonstrated experience with DoD programs or defense applications."'
+        }
+    },
+    nasa: {
+        s1: {
+            title: "Technical Approach",
+            stars: 5, badge: "Critical", badgeClass: "badge-critical",
+            weight: "35% of reviewer score",
+            desc: "NASA reviewers are world-class scientists and engineers. Your technical approach must advance the state of the art with quantified improvement and rigorous methodology.",
+            rejection: '"Proposed innovation represents an incremental improvement, not a meaningful advancement of state-of-the-art."'
+        },
+        s2: {
+            title: "NASA Mission Alignment",
+            stars: 5, badge: "Critical", badgeClass: "badge-critical",
+            weight: "35% of reviewer score",
+            desc: "You must align with specific NASA Technology Taxonomy areas and name missions or programs that need your capability. Generic \u201cspace applications\u201d is insufficient.",
+            rejection: '"Proposal does not demonstrate alignment with any specific NASA mission, program, or Technology Taxonomy area."'
+        },
+        s3: {
+            title: "Commercialization",
+            stars: 3, badge: "Important", badgeClass: "badge-important",
+            weight: "20% of reviewer score",
+            desc: "NASA wants dual-use: value for NASA missions plus commercial space or terrestrial markets. Show a path to mission infusion and identify commercial customers.",
+            rejection: '"No viable commercialization path beyond NASA identified. Technology appears to be NASA-only with limited market."'
+        },
+        s4: {
+            title: "Team",
+            stars: 2, badge: "Supporting", badgeClass: "badge-supporting",
+            weight: "10% of reviewer score",
+            desc: "Prior NASA SBIR/STTR success and relationships with NASA centers strengthen your proposal. Aerospace heritage and relevant technical expertise are key.",
+            rejection: '"Team lacks aerospace experience or connections to relevant NASA centers."'
+        }
+    }
+};
+
+function renderStars(n) {
+    return '<span class="star-filled">' + '\u2605'.repeat(n) + '</span>' +
+           (n < 5 ? '<span class="star-empty">' + '\u2605'.repeat(5 - n) + '</span>' : '');
+}
+
+function switchAgency(agency) {
+    const d = AGENCY_DATA[agency];
+    if (!d) return;
+
+    // Animate headers
+    document.querySelectorAll('.section-header').forEach(h => h.classList.add('updating'));
+
+    setTimeout(() => {
+        for (let i = 1; i <= 4; i++) {
+            const s = d['s' + i];
+            document.getElementById('s' + i + '-title').textContent = s.title;
+            document.getElementById('s' + i + '-stars').innerHTML = renderStars(s.stars);
+            const badge = document.getElementById('s' + i + '-badge');
+            badge.textContent = s.badge;
+            badge.className = 'text-xs font-bold px-2 py-0.5 rounded ' + s.badgeClass;
+            document.getElementById('s' + i + '-weight').textContent = s.weight;
+            document.getElementById('s' + i + '-desc').textContent = s.desc;
+            document.getElementById('s' + i + '-rejection').textContent = s.rejection;
+
+            // Update header background based on badge type
+            const header = document.getElementById('s' + i + '-header');
+            header.className = 'section-header p-5 border-b';
+            if (s.badgeClass === 'badge-critical') {
+                header.classList.add('bg-amber-50', 'border-amber-200');
+            } else if (s.badgeClass === 'badge-important') {
+                header.classList.add('bg-blue-50', 'border-blue-200');
+            } else {
+                header.classList.add('bg-gray-50', 'border-gray-200');
+            }
+        }
+
+        document.querySelectorAll('.section-header').forEach(h => h.classList.remove('updating'));
+    }, 150);
+}
+
+// ==================== Progress indicator ====================
+const form = document.getElementById('blueprint-form');
+if (form) {
+    const sections = form.querySelectorAll('.section-header');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const id = entry.target.id;
+                const num = parseInt(id.charAt(1));
+                for (let i = 1; i <= 4; i++) {
+                    const el = document.getElementById('prog-' + i);
+                    el.classList.remove('active', 'done');
+                    if (i < num) el.classList.add('done');
+                    else if (i === num) el.classList.add('active');
+                }
+            }
+        });
+    }, { threshold: 0.5 });
+    sections.forEach(s => observer.observe(s));
+}
+
+// ==================== Countdown timer ====================
 const launchDate = new Date('{{ launch_date }}').getTime();
 
 function updateCountdown() {
     const now = Date.now();
     const diff = launchDate - now;
-
     if (diff <= 0) {
         document.getElementById('countdown-banner').innerHTML =
             '<p class="text-sm text-gray-600">Launch pricing has ended. Current price: <span class="text-2xl font-bold text-gray-900">$49</span></p>';
         return;
     }
-
     const days = Math.floor(diff / 86400000);
     const hours = Math.floor((diff % 86400000) / 3600000);
     const mins = Math.floor((diff % 3600000) / 60000);
     const secs = Math.floor((diff % 60000) / 1000);
-
     document.getElementById('cd-days').textContent = String(days).padStart(2, '0');
     document.getElementById('cd-hours').textContent = String(hours).padStart(2, '0');
     document.getElementById('cd-mins').textContent = String(mins).padStart(2, '0');
     document.getElementById('cd-secs').textContent = String(secs).padStart(2, '0');
 }
-
 updateCountdown();
 setInterval(updateCountdown, 1000);
 
-// SheerID student verification placeholder
+// ==================== SheerID placeholder ====================
 function verifyStudent() {
-    // TODO: Replace with actual SheerID verification widget
-    // SheerID JS SDK: https://developer.sheerid.com/
-    // After SheerID calls back with success, show the student button:
     document.getElementById('sheerid-placeholder').classList.add('hidden');
     document.getElementById('student-verified').classList.remove('hidden');
 }

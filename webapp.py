@@ -1056,35 +1056,48 @@ async def blueprint_page(request: Request):
 
 @app.post("/blueprint/checkout")
 async def blueprint_checkout(request: Request):
-    """Validate intake form and redirect to Stripe checkout"""
+    """Validate 13-field intake form and redirect to Stripe checkout"""
     form = await request.form()
-    company_name = form.get("company_name", "").strip()
-    technology = form.get("technology", "").strip()
-    problem = form.get("problem", "").strip()
-    agency = form.get("agency", "nsf").strip()
-    differentiator = form.get("differentiator", "").strip()
-    email = form.get("email", "").strip()
-    tier = form.get("tier", "standard")
 
     form_data = {
-        "company_name": company_name,
-        "technology": technology,
-        "problem": problem,
-        "agency": agency,
-        "differentiator": differentiator,
-        "email": email,
+        # Section 1 — Problem
+        "problem": form.get("problem", "").strip(),
+        "who_suffers": form.get("who_suffers", "").strip(),
+        "why_current_fail": form.get("why_current_fail", "").strip(),
+        # Section 2 — Technical Approach
+        "technology": form.get("technology", "").strip(),
+        "dev_stage": form.get("dev_stage", "").strip(),
+        "phase1_output": form.get("phase1_output", "").strip(),
+        # Section 3 — Competitive Landscape
+        "competitors": form.get("competitors", "").strip(),
+        "differentiator": form.get("differentiator", "").strip(),
+        "market_size": form.get("market_size", "").strip(),
+        # Section 4 — Team
+        "pi_background": form.get("pi_background", "").strip(),
+        "team_members": form.get("team_members", "").strip(),
+        "prior_work": form.get("prior_work", "").strip(),
+        "solicitation": form.get("solicitation", "").strip(),
+        # Meta
+        "company_name": form.get("company_name", "").strip(),
+        "email": form.get("email", "").strip(),
+        "agency": form.get("agency", "nsf").strip(),
     }
+    tier = form.get("tier", "standard")
 
-    # Validate
-    if not all([company_name, technology, problem, differentiator, email]):
+    # Required fields
+    required = ["problem", "who_suffers", "why_current_fail", "technology",
+                 "dev_stage", "phase1_output", "competitors", "differentiator",
+                 "pi_background", "company_name", "email"]
+
+    if not all(form_data.get(f) for f in required):
         return templates.TemplateResponse(request, "blueprint.html", {
             "user": get_current_user(request),
-            "error": "All fields are required.",
+            "error": "Please fill in all required fields.",
             "form_data": form_data,
             "launch_date": Config.BLUEPRINT_LAUNCH_DATE,
         })
 
-    if "@" not in email:
+    if "@" not in form_data["email"]:
         return templates.TemplateResponse(request, "blueprint.html", {
             "user": get_current_user(request),
             "error": "Please enter a valid email address.",
@@ -1111,13 +1124,13 @@ async def blueprint_checkout(request: Request):
             payment_method_types=["card"],
             line_items=[{"price": price_id, "quantity": 1}],
             mode="payment",
-            customer_email=email,
+            customer_email=form_data["email"],
             success_url=f"{Config.BASE_URL}/blueprint/deliver?session_id={{CHECKOUT_SESSION_ID}}",
             cancel_url=f"{Config.BASE_URL}/blueprint",
             metadata={
                 "product": "blueprint",
-                "company_name": company_name[:500],
-                "agency": agency,
+                "company_name": form_data["company_name"][:500],
+                "agency": form_data["agency"],
                 "tier": tier,
             },
         )
@@ -1150,10 +1163,7 @@ async def blueprint_deliver(request: Request, session_id: str = None):
         return RedirectResponse(url="/blueprint", status_code=302)
 
     company_name = bp_data["company_name"]
-    technology = bp_data["technology"]
-    problem = bp_data["problem"]
     agency = bp_data["agency"]
-    differentiator = bp_data["differentiator"]
     email = bp_data["email"]
 
     # Generate the Blueprint via Claude
@@ -1166,7 +1176,7 @@ async def blueprint_deliver(request: Request, session_id: str = None):
 
     try:
         log.info("blueprint_deliver: generating for company=%r agency=%s", company_name, agency)
-        content = generate_blueprint_content(company_name, technology, problem, agency, differentiator)
+        content = generate_blueprint_content(bp_data, agency)
         blueprint_pdf = create_blueprint_pdf(company_name, agency, content)
         prompt_pack_pdf = create_prompt_pack_pdf(agency)
         send_blueprint_email(email, company_name, agency, blueprint_pdf, prompt_pack_pdf)
