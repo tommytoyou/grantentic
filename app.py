@@ -607,8 +607,6 @@ def render_login_page():
                     st.warning("Please enter both username and password")
 
         st.divider()
-        st.caption("Default admin credentials: admin / grantentic2024")
-        st.caption("Please change your password after first login.")
 
 
 def render_results():

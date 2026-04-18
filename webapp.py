@@ -80,9 +80,11 @@ app = FastAPI(
 )
 
 # Session middleware for authentication
+if not Config.SECRET_KEY:
+    log.warning("SECRET_KEY is not set — session cookies are insecure. Set SECRET_KEY in environment variables.")
 app.add_middleware(
     SessionMiddleware,
-    secret_key=Config.SECRET_KEY if hasattr(Config, 'SECRET_KEY') else "grantentic-secret-key-change-in-production",
+    secret_key=Config.SECRET_KEY or "temporary-insecure-key-for-local-dev",
     max_age=3600 * 24  # 24 hours
 )
 

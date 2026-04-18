@@ -38,6 +38,13 @@ env/
 outputs/
 *.docx
 
+# Environment / secrets
+.env
+.env.*
+
+# Claude Code local settings (may contain approved command patterns with keys)
+.claude/settings.local.json
+
 # OS
 .DS_Store
 Thumbs.db

@@ -10,7 +10,7 @@ class Config:
     # ============================================================================
     # WEB APPLICATION
     # ============================================================================
-    SECRET_KEY = os.environ.get('SECRET_KEY', 'grantentic-secret-key-change-in-production')
+    SECRET_KEY = os.environ.get('SECRET_KEY', '')
 
     # ============================================================================
     # SUPABASE DATABASE
