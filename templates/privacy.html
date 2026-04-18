@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Privacy Policy - Grantentic{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">Privacy Policy</h1>
+    <p class="text-sm text-gray-500 mb-8">Last updated: April 2026</p>
+
+    <div class="prose prose-gray max-w-none space-y-8">
+        <section>
+            <h2 class="text-xl font-semibold text-gray-900 mb-3">What we collect</h2>
+            <p class="text-gray-700 leading-relaxed">
+                When you create an account and use Grantentic, we collect the information you provide directly:
+            </p>
+            <ul class="mt-3 space-y-2 text-gray-700">
+                <li class="flex items-start">
+                    <span class="text-primary-600 mr-2 mt-1">-</span>
+                    <span><strong>Account information:</strong> username and email address</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="text-primary-600 mr-2 mt-1">-</span>
+                    <span><strong>Company information:</strong> company name, industry, location, and founding year</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="text-primary-600 mr-2 mt-1">-</span>
+                    <span><strong>Technology description:</strong> your problem statement, solution, and focus area</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="text-primary-600 mr-2 mt-1">-</span>
+                    <span><strong>Team information:</strong> names, roles, and qualifications of key personnel</span>
+                </li>
+            </ul>
+        </section>
+
+        <section>
+            <h2 class="text-xl font-semibold text-gray-900 mb-3">How we use it</h2>
+            <p class="text-gray-700 leading-relaxed">
+                Your information is used solely to generate grant proposals through our AI system.
+                We send your company and technology details to the Claude AI API (operated by Anthropic)
+                to produce tailored proposal sections. We do not use your data for any other purpose.
+            </p>
+        </section>
+
+        <section>
+            <h2 class="text-xl font-semibold text-gray-900 mb-3">Who we share it with</h2>
+            <p class="text-gray-700 leading-relaxed">We share your data with two service providers, and no one else:</p>
+            <ul class="mt-3 space-y-2 text-gray-700">
+                <li class="flex items-start">
+                    <span class="text-primary-600 mr-2 mt-1">-</span>
+                    <span><strong>Anthropic</strong> (Claude AI API) receives your company information during proposal generation to produce the text content.</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="text-primary-600 mr-2 mt-1">-</span>
+                    <span><strong>Stripe</strong> processes payment transactions. Stripe receives your payment details directly; we do not store credit card numbers.</span>
+                </li>
+            </ul>
+            <p class="mt-3 text-gray-700 leading-relaxed">
+                We do not sell, rent, or trade your data to any third party.
+            </p>
+        </section>
+
+        <section>
+            <h2 class="text-xl font-semibold text-gray-900 mb-3">How long we keep it</h2>
+            <p class="text-gray-700 leading-relaxed">
+                We retain your account data, company information, and generated proposals until you
+                request deletion. You can request deletion at any time.
+            </p>
+        </section>
+
+        <section>
+            <h2 class="text-xl font-semibold text-gray-900 mb-3">How to delete your data</h2>
+            <p class="text-gray-700 leading-relaxed">
+                To request deletion of your account and all associated data, send an email to
+                <a href="mailto:info@grantentic.us?subject=Delete%20My%20Data" class="text-primary-600 hover:text-primary-700 font-medium">info@grantentic.us</a>
+                with the subject line <strong>"Delete My Data"</strong>. Include the username or email address
+                associated with your account. We will delete your data within 30 days of receiving
+                the request and confirm by email when complete.
+            </p>
+        </section>
+
+        <section>
+            <h2 class="text-xl font-semibold text-gray-900 mb-3">We do not sell your data</h2>
+            <p class="text-gray-700 leading-relaxed">
+                Grantentic does not sell personal information or company data to third parties,
+                and we never will. Your information exists in our system for one reason: to help
+                you write better grant proposals.
+            </p>
+        </section>
+
+        <section>
+            <h2 class="text-xl font-semibold text-gray-900 mb-3">Questions?</h2>
+            <p class="text-gray-700 leading-relaxed">
+                If you have questions about this policy or how your data is handled, contact us at
+                <a href="mailto:info@grantentic.us" class="text-primary-600 hover:text-primary-700 font-medium">info@grantentic.us</a>.
+            </p>
+        </section>
+    </div>
+</div>
+{% endblock %}

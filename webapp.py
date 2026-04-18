@@ -902,6 +902,13 @@ async def proposal_detail(request: Request, proposal_id: str):
     return templates.TemplateResponse(request, "proposal_detail.html", {"user": user, "proposal": proposal})
 
 
+@app.get("/privacy", response_class=HTMLResponse)
+async def privacy_page(request: Request):
+    """Privacy policy page - publicly accessible"""
+    user = get_current_user(request)
+    return templates.TemplateResponse(request, "privacy.html", {"user": user})
+
+
 # SEO
 @app.get("/robots.txt")
 async def robots_txt():
@@ -915,6 +922,7 @@ async def robots_txt():
         "Allow: /\n"
         "Allow: /login\n"
         "Allow: /register\n"
+        "Allow: /privacy\n"
     )
     return Response(content=content, media_type="text/plain")
 
@@ -927,6 +935,7 @@ async def sitemap_xml():
         '  <url><loc>https://www.grantentic.us/</loc></url>\n'
         '  <url><loc>https://www.grantentic.us/login</loc></url>\n'
         '  <url><loc>https://www.grantentic.us/register</loc></url>\n'
+        '  <url><loc>https://www.grantentic.us/privacy</loc></url>\n'
         '</urlset>\n'
     )
     return Response(content=content, media_type="application/xml")

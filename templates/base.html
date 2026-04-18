@@ -133,15 +133,15 @@
     </main>
 
     <!-- Footer -->
-    {% if user %}
     <footer class="bg-white border-t border-gray-200 mt-auto">
         <div class="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
             <p class="text-center text-sm text-gray-500">
                 Grantentic - AI-Powered Grant Writing System
+                <span class="mx-2">|</span>
+                <a href="/privacy" class="text-gray-500 hover:text-primary-600">Privacy Policy</a>
             </p>
         </div>
     </footer>
-    {% endif %}
     {% endblock %}
 
     {% block extra_scripts %}{% endblock %}
