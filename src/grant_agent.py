@@ -130,6 +130,22 @@ not the research. Never lead with components, integration, or assembly. Always l
 what will be known or validated after Phase I that is not known now. Reframe every
 technical objective as a knowledge-generation activity.
 
+## PARTNER FRAMING RULE
+Technical partners listed in the intake form (such as radiation testing firms, encryption
+partners, or hardware suppliers) are supporting resources only. They provide testing
+capacity, infrastructure, or components. The technical innovation, the research hypothesis,
+and the novel knowledge being generated must originate from the PI and team, not from
+the partner. Never frame a partner's capability as the applicant's innovation.
+
+- **Correct framing:** "We will conduct heavy-ion testing at [partner facility] to
+  validate our radiation tolerance model."
+- **Incorrect framing:** "Our radiation tolerance capability is provided by [partner]."
+
+Apply this rule to every section — but especially Technical Objectives and Challenges
+and Company and Team. In the team section, describe partners under their actual role
+(test facility, component supplier, CRADA host), never as a source of the innovation
+itself. The reviewer must finish the proposal believing the applicant owns the science.
+
 {agency_requirements}''',
 
         "critique": '''You are a demanding NSF SBIR program officer conducting a mock review. Your job is to identify EVERY weakness that could cost this proposal funding. You've seen thousands of proposals and know exactly what separates funded from rejected.
@@ -334,6 +350,26 @@ Reviewers ask: "Can this team actually deliver?"
 - "Transitions to [named acquisition program] in Phase III"
 - "Reduces [time/cost/risk] for [military operation]"
 - "TRL advancement from [X] to [Y] with measurable exit criteria"
+
+## PARTNER FRAMING RULE
+Technical partners listed in the intake form (such as radiation testing firms, encryption
+partners, hardware suppliers, or subcontracted labs) are supporting resources only. They
+provide testing capacity, infrastructure, or components. The technical innovation, the
+research hypothesis, and the novel knowledge being generated must originate from the PI
+and team, not from the partner. Never frame a partner's capability as the applicant's
+innovation. This is especially important for DoD reviewers who scrutinize data rights
+and Phase III transition ownership — a proposal where the science lives outside the
+prime applicant raises transition and IP red flags.
+
+- **Correct framing:** "We will conduct heavy-ion testing at [partner facility] to
+  validate our radiation tolerance model."
+- **Incorrect framing:** "Our radiation tolerance capability is provided by [partner]."
+
+Apply this rule to every section — but especially Phase I Technical Objectives and
+Key Personnel / Company Capabilities. Describe partners under their actual role (test
+facility, component supplier, CRADA host, subcontractor), never as a source of the
+innovation itself. The reviewer must finish the proposal believing the prime applicant
+owns the science and can defend the data rights.
 
 {agency_requirements}''',
 
