@@ -155,11 +155,11 @@ def get_agency_info(agency: str) -> Dict[str, Any]:
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
-    """Home page - redirect to login or dashboard"""
+    """Root: marketing landing page for anonymous visitors, dashboard for logged-in."""
     user = get_current_user(request)
     if user:
         return RedirectResponse(url="/dashboard", status_code=302)
-    return RedirectResponse(url="/login", status_code=302)
+    return templates.TemplateResponse(request, "landing.html", {"user": None})
 
 
 @app.get("/login", response_class=HTMLResponse)
