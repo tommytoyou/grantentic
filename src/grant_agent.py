@@ -1,5 +1,6 @@
 import anthropic
 import json
+import logging
 import os
 from pathlib import Path
 from typing import Optional
@@ -11,6 +12,7 @@ from src.agency_loader import AgencyLoader
 from config import Config
 
 console = Console()
+log = logging.getLogger("grantentic.grant_agent")
 
 
 # =============================================================================
@@ -23,6 +25,9 @@ console = Console()
 EXPERT_SYSTEM_PROMPTS = {
     "NSF": {
         "generate": '''You are an elite NSF SBIR grant writer who has helped secure over $50M in Phase I funding for deep-tech startups — aerospace, photonics, advanced materials, autonomous systems, and quantum hardware. You understand exactly how NSF program officers and reviewers evaluate proposals.
+
+## CHARACTER LIMIT ENFORCEMENT (applies to every section you write)
+You must stay within the character limit specified for each section. Count your characters as you write. Stop writing when you reach the limit. This is a hard submission requirement — NSF will reject any section that exceeds the limit. The Project Pitch submission form truncates content above the limit without warning, which produces mid-sentence cuts and an automatic low score. Aim for 80–95% of the limit to give the reviewer breathing room; never exceed 100%.
 
 ## YOUR EXPERTISE
 - You know NSF's dual mandate: TECHNICAL INNOVATION + COMMERCIAL IMPACT
@@ -220,6 +225,9 @@ Your revision must be so strong that an NSF reviewer would struggle to find weak
 
     "DoD": {
         "generate": '''You are an elite DoD SBIR grant writer with deep understanding of defense acquisition and military requirements. You have helped secure over $40M in DoD SBIR funding across Air Force, Army, Navy, and Space Force — including deep-tech aerospace, autonomous systems, C5ISR, and space-domain-awareness programs.
+
+## CHARACTER LIMIT ENFORCEMENT (applies to every section you write)
+You must stay within the character limit specified for each section. Count your characters as you write. Stop writing when you reach the limit. This is a hard submission requirement — the DoD submission system (DSIP / SITIS) rejects any section that exceeds the limit. Submissions that overflow are either truncated mid-sentence or bounced entirely, producing an automatic low score. Aim for 80–95% of the limit to give the reviewer breathing room; never exceed 100%.
 
 ## YOUR EXPERTISE
 - You understand DoD's mission-first evaluation: "How does this help the warfighter?"
@@ -782,6 +790,65 @@ class GrantAgent:
             return SECTION_EXPERT_GUIDANCE.get(guidance_key, "")
         return ""
 
+    def _char_limit_for(self, section_name: str) -> int:
+        """Agency char limit for this section, or 0 if none defined."""
+        for _key, sec in self.agency_loader.get_sections().items():
+            if sec.name == section_name:
+                return sec.max_chars
+        return 0
+
+    def _enforce_char_limit(
+        self,
+        content: str,
+        char_limit: int,
+        section_name: str,
+        phase: str,
+    ) -> str:
+        """Hard-truncate LLM output to the agency character limit.
+
+        Cut-point preference order:
+          1. Last sentence-ending punctuation (". ", "! ", "? ", or the
+             same followed by a newline) within the final 20% of the
+             window — keeps the punctuation, drops trailing whitespace.
+          2. Hard cut at char_limit — only when no clean boundary exists
+             in the final 20%.
+
+        Guarantees len(result) <= char_limit. Logs original and final
+        lengths via stdlib logging (visible in Render logs) and via rich
+        console (visible in local terminal). phase is "generate" or
+        "refine" so the log line tells you which stage overran.
+        """
+        if char_limit <= 0:
+            return content
+
+        original_len = len(content)
+        if original_len <= char_limit:
+            return content
+
+        truncated = content[:char_limit]
+        boundary_floor = int(char_limit * 0.8)
+
+        best = -1
+        for sep in (". ", "! ", "? ", ".\n", "!\n", "?\n"):
+            idx = truncated.rfind(sep)
+            if idx > best:
+                best = idx
+
+        if best >= boundary_floor:
+            content = truncated[: best + 1].rstrip()
+        else:
+            content = truncated.rstrip()
+
+        log.warning(
+            "char_limit_truncate: section=%r phase=%s original=%d final=%d limit=%d",
+            section_name, phase, original_len, len(content), char_limit,
+        )
+        console.print(
+            f"[yellow]⚠ {section_name} ({phase}): truncated "
+            f"{original_len} → {len(content)} chars (limit {char_limit})[/yellow]"
+        )
+        return content
+
     def _call_claude(self, system_prompt: str, user_prompt: str, max_tokens: int = 4000) -> tuple[str, int, int]:
         """Call Claude API and track usage"""
         response = self.client.messages.create(
@@ -807,12 +874,7 @@ class GrantAgent:
         funding_amount = self.agency_loader.get_funding_amount()
         duration_months = self.agency_loader.get_duration_months()
 
-        # Check for character limit on this section
-        char_limit = 0
-        for _key, sec in self.agency_loader.get_sections().items():
-            if sec.name == section_name:
-                char_limit = sec.max_chars
-                break
+        char_limit = self._char_limit_for(section_name)
 
         # Get expert system prompt for this agency
         system_prompt = self._get_expert_system_prompt("generate")
@@ -825,9 +887,14 @@ class GrantAgent:
         # Build length constraint
         if char_limit > 0:
             length_instruction = (
-                f"- HARD CHARACTER LIMIT: {char_limit:,} characters maximum (including spaces)\n"
-                f"- Count your characters carefully. Content that exceeds {char_limit:,} characters will be truncated.\n"
-                f"- Target approximately {char_limit - 200:,} to {char_limit:,} characters to use the space fully without going over."
+                f"- HARD LIMIT: {char_limit:,} characters maximum. Your response "
+                f"for this section must be {char_limit:,} characters or fewer "
+                f"including spaces.\n"
+                f"- If you reach {char_limit:,} characters, stop immediately "
+                f"even if mid-sentence.\n"
+                f"- Target range: {int(char_limit * 0.8):,}-{char_limit:,} "
+                f"characters (80-100% of the limit). Aim to leave the final "
+                f"5-20% as breathing room; never exceed 100%."
             )
         else:
             length_instruction = f"- Target length: {target_length}"
@@ -871,15 +938,7 @@ Generate the complete {section_name} section now. Write in a professional, compe
         # Track cost
         self.cost_tracker.record_usage(section_name, "generate", input_tokens, output_tokens, self.model)
 
-        # Enforce character limit — hard truncate at sentence boundary if exceeded
-        if char_limit > 0 and len(content) > char_limit:
-            truncated = content[:char_limit]
-            last_period = truncated.rfind('.')
-            if last_period > char_limit * 0.8:
-                content = truncated[:last_period + 1]
-            else:
-                content = truncated
-            console.print(f"[yellow]⚠ Truncated to {len(content)} chars (limit: {char_limit})[/yellow]")
+        content = self._enforce_char_limit(content, char_limit, section_name, phase="generate")
 
         word_count = len(content.split())
         char_count = len(content)
@@ -948,6 +1007,7 @@ Be demanding. A harsh internal critique prevents rejection by the real reviewers
         console.print(f"[bold cyan]✨ Refining {section.name}...[/bold cyan]")
 
         agency_info = self.agency_loader.requirements
+        char_limit = self._char_limit_for(section.name)
 
         # Get expert refinement prompt for this agency
         system_prompt = self._get_expert_system_prompt("refine")
@@ -955,9 +1015,26 @@ Be demanding. A harsh internal critique prevents rejection by the real reviewers
         # Get section-specific guidance
         section_guidance = self._get_section_guidance(section.name)
 
+        if char_limit > 0:
+            length_instruction = (
+                f"- HARD LIMIT: {char_limit:,} characters maximum. Your revised "
+                f"response for this section must be {char_limit:,} characters or "
+                f"fewer including spaces.\n"
+                f"- If you reach {char_limit:,} characters, stop immediately "
+                f"even if mid-sentence.\n"
+                f"- Target range: {int(char_limit * 0.8):,}-{char_limit:,} "
+                f"characters. Refinement typically expands content — resist "
+                f"that here. Tighten rather than extend."
+            )
+        else:
+            length_instruction = "- Keep length similar to the original draft."
+
         user_prompt = f"""Revise this {agency_info.agency} {agency_info.program} proposal section to address ALL critique points and achieve an "Excellent" rating.
 
 ## SECTION: {section.name}
+
+## LENGTH REQUIREMENTS
+{length_instruction}
 
 ## EXPERT GUIDANCE FOR THIS SECTION TYPE
 {section_guidance}
@@ -974,7 +1051,7 @@ Be demanding. A harsh internal critique prevents rejection by the real reviewers
 3. **Improve specificity** - Replace vague language with concrete details
 4. **Enhance structure** - Make it easy for reviewers to find key points
 5. **Maintain scope** - Keep within Phase I boundaries
-6. **Stay within length limits** - Similar length to original
+6. **Respect the hard character limit above** - tighten, do not extend
 
 ## LANGUAGE TRANSFORMATIONS TO APPLY
 - "We believe X" → "Evidence demonstrates X [with citation or data]"
@@ -988,13 +1065,18 @@ Generate the improved version that would score "Excellent" from even demanding r
 
         self.cost_tracker.record_usage(section.name, "refine", input_tokens, output_tokens, self.model)
 
+        refined_content = self._enforce_char_limit(
+            refined_content, char_limit, section.name, phase="refine"
+        )
+
         word_count = len(refined_content.split())
-        console.print(f"[green]✓ Refined to {word_count} words[/green]")
+        console.print(f"[green]✓ Refined to {word_count} words, {len(refined_content)} chars[/green]")
 
         return GrantSection(
             name=section.name,
             content=refined_content,
             word_count=word_count,
+            char_count=len(refined_content),
             iteration=section.iteration + 1,
             critique=critique,
             refinement_notes="Refined based on expert-level critical feedback"
