@@ -60,21 +60,50 @@ class CostMetrics(BaseModel):
 
 class CompanyContext(BaseModel):
     """Company information for grant writing"""
-    company_name: str
-    founded: str
-    location: str
-    industry: str
-    focus_area: str
-    mission: str
-    technology: Dict[str, Any]
-    problem_statement: str
-    solution: str
-    team: List[Dict[str, str]]
-    market_opportunity: Dict[str, Any]
-    current_progress: Dict[str, Any]
-    funding_needs: Dict[str, Any]
-    intellectual_property: Dict[str, Any]
-    social_impact: str
+
+    model_config = {"extra": "ignore"}
+
+    company_name: str = ""
+    founded: str = ""
+    location: str = ""
+    industry: str = ""
+    focus_area: str = ""
+
+    # Core Innovation (replaces the old free-text "mission")
+    primary_innovation: str = ""
+    development_stage: str = ""
+    phase1_proof: str = ""
+
+    # Technical Problem (replaces free-text "problem_statement")
+    who_suffers: str = ""
+    existing_solutions_fail: str = ""
+    core_technical_unknown: str = ""
+
+    # Technical Approach (replaces free-text "solution")
+    technical_approach: str = ""
+    technical_novelty: str = ""
+    technical_risks: str = ""
+
+    # Market and Customers
+    primary_customers: str = ""
+    market_size: str = ""
+    why_now: str = ""
+
+    # Team
+    team: List[Dict[str, str]] = Field(default_factory=list)
+    advisory_board: List[Dict[str, str]] = Field(default_factory=list)
+    key_partnerships: str = ""
+
+    # Legacy fields kept so older saved contexts still validate.
+    mission: str = ""
+    technology: Dict[str, Any] = Field(default_factory=dict)
+    problem_statement: str = ""
+    solution: str = ""
+    market_opportunity: Dict[str, Any] = Field(default_factory=dict)
+    current_progress: Dict[str, Any] = Field(default_factory=dict)
+    funding_needs: Dict[str, Any] = Field(default_factory=dict)
+    intellectual_property: Dict[str, Any] = Field(default_factory=dict)
+    social_impact: str = ""
 
 
 class PaymentRecord(BaseModel):

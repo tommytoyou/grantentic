@@ -424,7 +424,7 @@ async def create_profile(
 
     user_id = str(user["id"])
 
-    # Save company data for this user
+    # Save company data for this user — keys match the rebuilt /company form.
     company_data = {
         'company_name': company_name,
         'contact_email': email,
@@ -433,10 +433,26 @@ async def create_profile(
         'founded': '',
         'location': '',
         'focus_area': '',
-        'mission': '',
-        'problem_statement': '',
-        'solution': '',
-        'team': []
+        # Core Innovation
+        'primary_innovation': '',
+        'development_stage': '',
+        'phase1_proof': '',
+        # Technical Problem
+        'who_suffers': '',
+        'existing_solutions_fail': '',
+        'core_technical_unknown': '',
+        # Technical Approach
+        'technical_approach': '',
+        'technical_novelty': '',
+        'technical_risks': '',
+        # Market
+        'primary_customers': '',
+        'market_size': '',
+        'why_now': '',
+        # Team
+        'team': [],
+        'advisory_board': [],
+        'key_partnerships': '',
     }
     save_company_context(user_id, company_data)
 
@@ -502,15 +518,32 @@ async def company_page(request: Request):
 @app.post("/company")
 async def save_company(
     request: Request,
+    # Section 1 — Company Basics
     company_name: str = Form(""),
     founded: str = Form(""),
     location: str = Form(""),
     industry: str = Form(""),
     focus_area: str = Form(""),
-    mission: str = Form(""),
-    problem_statement: str = Form(""),
-    solution: str = Form(""),
-    team_json: str = Form("[]")
+    # Section 2 — Core Innovation
+    primary_innovation: str = Form(""),
+    development_stage: str = Form(""),
+    phase1_proof: str = Form(""),
+    # Section 3 — Technical Problem
+    who_suffers: str = Form(""),
+    existing_solutions_fail: str = Form(""),
+    core_technical_unknown: str = Form(""),
+    # Section 4 — Technical Approach
+    technical_approach: str = Form(""),
+    technical_novelty: str = Form(""),
+    technical_risks: str = Form(""),
+    # Section 5 — Market
+    primary_customers: str = Form(""),
+    market_size: str = Form(""),
+    why_now: str = Form(""),
+    # Section 6 — Team
+    team_json: str = Form("[]"),
+    advisory_board_json: str = Form("[]"),
+    key_partnerships: str = Form(""),
 ):
     """Save company information"""
     user = get_current_user(request)
@@ -532,7 +565,12 @@ async def save_company(
     except json.JSONDecodeError:
         team_data = []
 
-    # Load existing data to preserve other fields
+    try:
+        advisory_board_data = json.loads(advisory_board_json)
+    except json.JSONDecodeError:
+        advisory_board_data = []
+
+    # Load existing data to preserve unrelated fields (e.g., contact_email from signup).
     existing = get_company_context(user_id) or {}
 
     existing.update({
@@ -541,10 +579,21 @@ async def save_company(
         'location': location,
         'industry': industry,
         'focus_area': focus_area,
-        'mission': mission,
-        'problem_statement': problem_statement,
-        'solution': solution,
-        'team': team_data
+        'primary_innovation': primary_innovation,
+        'development_stage': development_stage,
+        'phase1_proof': phase1_proof,
+        'who_suffers': who_suffers,
+        'existing_solutions_fail': existing_solutions_fail,
+        'core_technical_unknown': core_technical_unknown,
+        'technical_approach': technical_approach,
+        'technical_novelty': technical_novelty,
+        'technical_risks': technical_risks,
+        'primary_customers': primary_customers,
+        'market_size': market_size,
+        'why_now': why_now,
+        'team': team_data,
+        'advisory_board': advisory_board_data,
+        'key_partnerships': key_partnerships,
     })
 
     try:
@@ -605,9 +654,12 @@ async def generate_stream(request: Request, agency: str = "nsf", iterations: int
 
             yield f"data: {json.dumps({'type': 'status', 'message': f'Loaded {agency_loader.requirements.agency} requirements'})}\n\n"
 
-            # Initialize components
+            # Initialize components — load this user's intake from Supabase so
+            # the generation prompt sees the 13-field deep-tech form data.
             cost_tracker = CostTracker()
-            agent = GrantAgent(cost_tracker, agency_loader)
+            user_id_for_ctx = request.session.get("user_id")
+            company_ctx = get_company_context(user_id_for_ctx) if user_id_for_ctx else None
+            agent = GrantAgent(cost_tracker, agency_loader, company_context=company_ctx)
             workflow = AgenticWorkflow(agent, agency_loader)
             quality_checker = QualityChecker(agency_loader)
             exporter = DocxExporter()

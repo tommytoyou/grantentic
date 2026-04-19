@@ -7,170 +7,277 @@
     <!-- Header -->
     <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900">Company Information</h1>
-        <p class="mt-1 text-gray-600">Edit your company details for the grant proposal</p>
+        <p class="mt-1 text-gray-600">
+            This intake drives every proposal you generate. Deep-tech specifics —
+            the testable unknown, named customers, team credentials — is what
+            separates funded Phase I proposals from rejections.
+        </p>
     </div>
 
-    <!-- Form -->
     <form
         hx-post="/company"
         hx-target="#save-result"
         hx-swap="innerHTML"
         class="space-y-8"
     >
-        <!-- Basic Info -->
+        <!-- Section 1 — Company Basics -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h2 class="text-lg font-semibold text-gray-900 mb-4">Basic Information</h2>
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">1. Company Basics</h2>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label for="company_name" class="block text-sm font-medium text-gray-700 mb-1">
-                        Company Name
-                    </label>
-                    <input
-                        type="text"
-                        id="company_name"
-                        name="company_name"
+                    <label for="company_name" class="block text-sm font-medium text-gray-700 mb-1">Company Name</label>
+                    <input type="text" id="company_name" name="company_name"
                         value="{{ company_data.company_name or '' }}"
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                        placeholder="Your Company, Inc."
-                    >
+                        placeholder="Erickson Space Systems">
                 </div>
 
                 <div>
-                    <label for="founded" class="block text-sm font-medium text-gray-700 mb-1">
-                        Founded Year
-                    </label>
-                    <input
-                        type="text"
-                        id="founded"
-                        name="founded"
+                    <label for="founded" class="block text-sm font-medium text-gray-700 mb-1">Founded Year</label>
+                    <input type="text" id="founded" name="founded"
                         value="{{ company_data.founded or '' }}"
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                        placeholder="2020"
-                    >
+                        placeholder="2024">
                 </div>
 
                 <div>
-                    <label for="location" class="block text-sm font-medium text-gray-700 mb-1">
-                        Location
-                    </label>
-                    <input
-                        type="text"
-                        id="location"
-                        name="location"
+                    <label for="location" class="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                    <input type="text" id="location" name="location"
                         value="{{ company_data.location or '' }}"
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                        placeholder="San Francisco, CA"
-                    >
+                        placeholder="Huntsville, AL">
                 </div>
 
                 <div>
-                    <label for="industry" class="block text-sm font-medium text-gray-700 mb-1">
-                        Industry
-                    </label>
-                    <input
-                        type="text"
-                        id="industry"
-                        name="industry"
+                    <label for="industry" class="block text-sm font-medium text-gray-700 mb-1">Industry</label>
+                    <input type="text" id="industry" name="industry"
                         value="{{ company_data.industry or '' }}"
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                        placeholder="Biotechnology"
-                    >
+                        placeholder="Aerospace / Spacecraft Systems">
                 </div>
             </div>
 
             <div class="mt-6">
-                <label for="focus_area" class="block text-sm font-medium text-gray-700 mb-1">
-                    Focus Area
-                </label>
-                <textarea
-                    id="focus_area"
-                    name="focus_area"
-                    rows="3"
+                <label for="focus_area" class="block text-sm font-medium text-gray-700 mb-1">Focus Area</label>
+                <textarea id="focus_area" name="focus_area" rows="3"
                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                    placeholder="Brief description of your company's focus area..."
+                    placeholder="One or two sentences on your core technical domain (e.g., radiation-tolerant edge compute for small satellites)."
                 >{{ company_data.focus_area or '' }}</textarea>
-            </div>
-
-            <div class="mt-6">
-                <label for="mission" class="block text-sm font-medium text-gray-700 mb-1">
-                    Mission Statement
-                </label>
-                <textarea
-                    id="mission"
-                    name="mission"
-                    rows="3"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                    placeholder="Your company's mission statement..."
-                >{{ company_data.mission or '' }}</textarea>
             </div>
         </div>
 
-        <!-- Technology & Innovation -->
+        <!-- Section 2 — The Core Innovation -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h2 class="text-lg font-semibold text-gray-900 mb-4">Technology & Innovation</h2>
+            <h2 class="text-lg font-semibold text-gray-900 mb-1">2. The Core Innovation</h2>
+            <p class="text-sm text-gray-600 mb-4">What does your technology do that has never been done before?</p>
 
             <div class="space-y-6">
                 <div>
-                    <label for="problem_statement" class="block text-sm font-medium text-gray-700 mb-1">
-                        Problem Statement
+                    <label for="primary_innovation" class="block text-sm font-medium text-gray-700 mb-1">
+                        Primary Innovation
                     </label>
-                    <textarea
-                        id="problem_statement"
-                        name="problem_statement"
-                        rows="4"
+                    <textarea id="primary_innovation" name="primary_innovation" rows="6"
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                        placeholder="What problem are you solving?"
-                    >{{ company_data.problem_statement or '' }}</textarea>
-                    <p class="mt-1 text-xs text-gray-500">Describe the technical or market problem your innovation addresses.</p>
+                        placeholder="5-10 sentences describing the specific technical capability that does not currently exist. Lead with the knowledge or validated model being produced, not the hardware being assembled."
+                    >{{ company_data.primary_innovation or '' }}</textarea>
+                    <p class="mt-1 text-xs text-gray-500">5-10 sentences. Focus on the capability that is new, not the product you want to build.</p>
                 </div>
 
                 <div>
-                    <label for="solution" class="block text-sm font-medium text-gray-700 mb-1">
-                        Solution
+                    <label for="development_stage" class="block text-sm font-medium text-gray-700 mb-1">Development Stage</label>
+                    <select id="development_stage" name="development_stage"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                        {% set stages = [
+                            ('', '— Select stage —'),
+                            ('concept', 'Concept'),
+                            ('simulation', 'Simulation'),
+                            ('proof_of_concept', 'Proof of Concept'),
+                            ('prototype', 'Prototype'),
+                            ('lab_tested', 'Lab Tested'),
+                            ('field_tested', 'Field Tested'),
+                        ] %}
+                        {% for value, label in stages %}
+                        <option value="{{ value }}"
+                            {% if company_data.development_stage == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label for="phase1_proof" class="block text-sm font-medium text-gray-700 mb-1">
+                        What Phase I Will Prove
                     </label>
-                    <textarea
-                        id="solution"
-                        name="solution"
-                        rows="4"
+                    <textarea id="phase1_proof" name="phase1_proof" rows="4"
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                        placeholder="How does your technology solve this problem?"
-                    >{{ company_data.solution or '' }}</textarea>
-                    <p class="mt-1 text-xs text-gray-500">Explain your innovative approach and its advantages.</p>
+                        placeholder="3-5 sentences on the specific experiment, test, or demonstration Phase I funding will produce. State the measurable success criterion."
+                    >{{ company_data.phase1_proof or '' }}</textarea>
+                    <p class="mt-1 text-xs text-gray-500">Feasibility demonstration, not product build. Include a measurable pass/fail criterion.</p>
                 </div>
             </div>
         </div>
 
-        <!-- Team Members -->
+        <!-- Section 3 — The Technical Problem -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h2 class="text-lg font-semibold text-gray-900 mb-4">Team Members</h2>
-            <p class="text-sm text-gray-500 mb-4">Edit the JSON directly to add or modify team members.</p>
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">3. The Technical Problem</h2>
 
-            <div>
-                <label for="team_json" class="block text-sm font-medium text-gray-700 mb-1">
-                    Team (JSON format)
-                </label>
-                <textarea
-                    id="team_json"
-                    name="team_json"
-                    rows="10"
-                    class="w-full px-4 py-2 font-mono text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                >{{ company_data.team | tojson(indent=2) if company_data.team else '[]' }}</textarea>
-                <p class="mt-1 text-xs text-gray-500">
-                    Format: [{"name": "John Doe", "role": "CEO", "background": "PhD in..."}]
-                </p>
+            <div class="space-y-6">
+                <div>
+                    <label for="who_suffers" class="block text-sm font-medium text-gray-700 mb-1">
+                        Who suffers from this problem and how severely
+                    </label>
+                    <textarea id="who_suffers" name="who_suffers" rows="4"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                        placeholder="Name the specific users, operators, or programs. Quantify the pain (downtime, cost, mission risk, loss rate)."
+                    >{{ company_data.who_suffers or '' }}</textarea>
+                </div>
+
+                <div>
+                    <label for="existing_solutions_fail" class="block text-sm font-medium text-gray-700 mb-1">
+                        Why existing solutions fail
+                    </label>
+                    <textarea id="existing_solutions_fail" name="existing_solutions_fail" rows="4"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                        placeholder="Name specific competing approaches, vendors, or published methods and state the exact technical limit that stops each one."
+                    >{{ company_data.existing_solutions_fail or '' }}</textarea>
+                </div>
+
+                <div>
+                    <label for="core_technical_unknown" class="block text-sm font-medium text-gray-700 mb-1">
+                        The core technical unknown
+                    </label>
+                    <textarea id="core_technical_unknown" name="core_technical_unknown" rows="4"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                        placeholder="The specific scientific or engineering question your R&D answers that nobody has answered yet. Frame it as a testable hypothesis."
+                    >{{ company_data.core_technical_unknown or '' }}</textarea>
+                    <p class="mt-1 text-xs text-gray-500">If you can answer this today, it is not an R&D project.</p>
+                </div>
             </div>
         </div>
 
-        <!-- Save Result -->
+        <!-- Section 4 — Technical Approach -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">4. Technical Approach</h2>
+
+            <div class="space-y-6">
+                <div>
+                    <label for="technical_approach" class="block text-sm font-medium text-gray-700 mb-1">
+                        Your technical approach in plain language
+                    </label>
+                    <textarea id="technical_approach" name="technical_approach" rows="5"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                        placeholder="How you plan to attack the core unknown. Describe the method, model, or architecture — not the product roadmap."
+                    >{{ company_data.technical_approach or '' }}</textarea>
+                </div>
+
+                <div>
+                    <label for="technical_novelty" class="block text-sm font-medium text-gray-700 mb-1">
+                        What makes this approach genuinely novel vs existing methods
+                    </label>
+                    <textarea id="technical_novelty" name="technical_novelty" rows="4"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                        placeholder='Be specific: "first to combine X with Y," "replaces deterministic method Z with learned model," etc. Avoid the word "novel."'
+                    >{{ company_data.technical_novelty or '' }}</textarea>
+                </div>
+
+                <div>
+                    <label for="technical_risks" class="block text-sm font-medium text-gray-700 mb-1">
+                        Key technical risks and how you plan to address them
+                    </label>
+                    <textarea id="technical_risks" name="technical_risks" rows="4"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                        placeholder="List 2-4 real risks (physics, data, integration, etc.) and the mitigation for each. Reviewers reject proposals that pretend there are no risks."
+                    >{{ company_data.technical_risks or '' }}</textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 5 — Market and Customers -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">5. Market and Customers</h2>
+
+            <div class="space-y-6">
+                <div>
+                    <label for="primary_customers" class="block text-sm font-medium text-gray-700 mb-1">
+                        Primary customers
+                    </label>
+                    <textarea id="primary_customers" name="primary_customers" rows="4"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                        placeholder="Name specific agencies, companies, or programs (e.g., Space Force SSC, NASA Marshall, Lockheed Martin Skunk Works). Generic categories are a red flag."
+                    >{{ company_data.primary_customers or '' }}</textarea>
+                </div>
+
+                <div>
+                    <label for="market_size" class="block text-sm font-medium text-gray-700 mb-1">
+                        Market size estimate <span class="text-gray-400 font-normal">(optional)</span>
+                    </label>
+                    <input type="text" id="market_size" name="market_size"
+                        value="{{ company_data.market_size or '' }}"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                        placeholder="$800M SAM for radiation-tolerant small-sat compute by 2030 (bottom-up)">
+                </div>
+
+                <div>
+                    <label for="why_now" class="block text-sm font-medium text-gray-700 mb-1">
+                        Why now
+                    </label>
+                    <textarea id="why_now" name="why_now" rows="3"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                        placeholder="What has changed that makes this the right time? Policy, budget line, new launch cadence, new fab node, regulatory shift, etc."
+                    >{{ company_data.why_now or '' }}</textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 6 — Team -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">6. Team</h2>
+            <p class="text-sm text-gray-500 mb-4">Edit the JSON directly. Credentials must be real — the generator will not fabricate.</p>
+
+            <div class="space-y-6">
+                <div>
+                    <label for="team_json" class="block text-sm font-medium text-gray-700 mb-1">
+                        Team (JSON format)
+                    </label>
+                    <textarea id="team_json" name="team_json" rows="8"
+                        class="w-full px-4 py-2 font-mono text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                        placeholder='[{"name": "Tom Erickson", "role": "CEO", "background": "CAPM certified, spacecraft systems engineer"}, {"name": "Michael Garner", "role": "CISO", "background": "CISSP, AWS Solutions Architect"}]'
+                    >{{ company_data.team | tojson(indent=2) if company_data.team else '[]' }}</textarea>
+                    <p class="mt-1 text-xs text-gray-500">
+                        Format: [{"name": "Tom Erickson", "role": "CEO", "background": "CAPM certified, spacecraft systems engineer"}]
+                    </p>
+                </div>
+
+                <div>
+                    <label for="advisory_board_json" class="block text-sm font-medium text-gray-700 mb-1">
+                        Advisory Board (JSON format) <span class="text-gray-400 font-normal">(optional)</span>
+                    </label>
+                    <textarea id="advisory_board_json" name="advisory_board_json" rows="6"
+                        class="w-full px-4 py-2 font-mono text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                        placeholder='[{"name": "Dr. Jane Rivera", "role": "Technical Advisor", "background": "Former NASA JPL, 20 yrs radiation-hardened electronics"}]'
+                    >{{ company_data.advisory_board | tojson(indent=2) if company_data.advisory_board else '[]' }}</textarea>
+                </div>
+
+                <div>
+                    <label for="key_partnerships" class="block text-sm font-medium text-gray-700 mb-1">
+                        Key partnerships <span class="text-gray-400 font-normal">(optional)</span>
+                    </label>
+                    <textarea id="key_partnerships" name="key_partnerships" rows="4"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                        placeholder="Letters of intent, technical partners, university collaborators, federal lab CRADAs, test-range access agreements."
+                    >{{ company_data.key_partnerships or '' }}</textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Save result -->
         <div id="save-result"></div>
 
-        <!-- Submit Button -->
         <div class="flex justify-end">
-            <button
-                type="submit"
-                class="inline-flex items-center px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-colors"
-            >
+            <button type="submit"
+                class="inline-flex items-center px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-colors">
                 <svg class="w-5 h-5 mr-2 htmx-indicator animate-spin" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
