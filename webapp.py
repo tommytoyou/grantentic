@@ -749,85 +749,29 @@ async def generate_stream(request: Request, agency: str = "nsf", iterations: int
 
 
 def create_proposal_from_sections(company_name: str, sections: dict, agency_loader) -> GrantProposal:
-    """Create proposal from sections"""
-    # Section mapping
-    section_map = {
-        # NSF Project Pitch sections (4 sections)
-        "Technology Innovation": "project_pitch",
-        "Technical Objectives and Challenges": "technical_objectives",
-        "Market Opportunity": "commercialization_plan",
-        "Company and Team": "biographical_sketches",
-        # NSF Full Proposal sections (legacy, kept for future use)
-        "Project Pitch": "project_pitch",
-        "Technical Objectives": "technical_objectives",
-        "Broader Impacts": "broader_impacts",
-        "Commercialization Plan": "commercialization_plan",
-        "Budget and Budget Justification": "budget_justification",
-        "Work Plan and Timeline": "work_plan",
-        "Key Personnel Biographical Sketches": "biographical_sketches",
-        "Facilities, Equipment, and Other Resources": "facilities_equipment",
-        # DoD sections
-        "Technical Abstract": "project_pitch",
-        "Identification and Significance of Problem": "broader_impacts",
-        "Phase I Technical Objectives": "technical_objectives",
-        "Work Plan": "work_plan",
-        "Related Work": "technical_objectives",
-        "Dual Use and Commercialization": "commercialization_plan",
-        "Company Capabilities and Experience": "facilities_equipment",
-        "Key Personnel": "biographical_sketches",
-        "Cost Proposal and Budget Justification": "budget_justification",
-        # NASA sections
-        "Innovation and Technical Approach": "technical_objectives",
-        "Anticipated Benefits": "broader_impacts",
-        "Related Research": "technical_objectives",
-        "Commercialization Strategy": "commercialization_plan",
-        "Facilities and Equipment": "facilities_equipment",
-        "Key Personnel and Qualifications": "biographical_sketches",
-        "Budget Narrative and Justification": "budget_justification"
-    }
+    """Build a GrantProposal from the agency's ordered section definitions.
 
-    # Initialize proposal fields
-    proposal_fields = {
-        "company_name": company_name,
-        "project_pitch": None,
-        "technical_objectives": None,
-        "broader_impacts": None,
-        "commercialization_plan": None,
-        "budget_justification": None,
-        "work_plan": None,
-        "biographical_sketches": None,
-        "facilities_equipment": None
-    }
-
-    # Map sections
-    for section_name, section in sections.items():
-        field_name = section_map.get(section_name)
-        if field_name:
-            if proposal_fields[field_name] is None:
-                proposal_fields[field_name] = section
-            else:
-                existing = proposal_fields[field_name]
-                merged_content = f"{existing.content}\n\n{'='*50}\n\n{section.content}"
-                merged_section = GrantSection(
-                    name=f"{existing.name} + {section.name}",
-                    content=merged_content,
-                    word_count=existing.word_count + section.word_count,
-                    iteration=max(existing.iteration, section.iteration)
-                )
-                proposal_fields[field_name] = merged_section
-
-    # Fill missing fields
-    for field_name in ["project_pitch", "technical_objectives", "broader_impacts",
-                       "commercialization_plan", "budget_justification", "work_plan",
-                       "biographical_sketches", "facilities_equipment"]:
-        if proposal_fields[field_name] is None:
-            proposal_fields[field_name] = GrantSection(
-                name=f"{field_name.replace('_', ' ').title()}",
-                content=f"[Section not generated for this agency]",
-                word_count=0
+    Sections appear in the proposal in the exact order the agency's
+    requirements.json defines them, with their canonical names (e.g.
+    "Technology Innovation", "Market Opportunity"). Missing sections fall
+    back to an empty placeholder so the proposal stays complete.
+    """
+    ordered = agency_loader.get_ordered_sections()
+    proposal_sections: list = []
+    for _key, section_req in ordered:
+        section = sections.get(section_req.name)
+        if section is None:
+            section = GrantSection(
+                name=section_req.name,
+                content="[Section not generated]",
+                word_count=0,
             )
+        proposal_sections.append(section)
 
-    return GrantProposal(**proposal_fields)
+    return GrantProposal(
+        company_name=company_name,
+        sections=proposal_sections,
+    )
 
 
 @app.get("/results", response_class=HTMLResponse)

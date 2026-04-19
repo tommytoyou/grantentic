@@ -83,18 +83,7 @@
         <!-- Tab Content: Sections -->
         <div id="content-sections" class="tab-content p-6">
             <div class="space-y-4">
-                {% set section_list = [
-                    ('Project Pitch', proposal.project_pitch),
-                    ('Technical Objectives', proposal.technical_objectives),
-                    ('Broader Impacts', proposal.broader_impacts),
-                    ('Commercialization Plan', proposal.commercialization_plan),
-                    ('Budget & Justification', proposal.budget_justification),
-                    ('Work Plan & Timeline', proposal.work_plan),
-                    ('Biographical Sketches', proposal.biographical_sketches),
-                    ('Facilities & Equipment', proposal.facilities_equipment)
-                ] %}
-
-                {% for name, section in section_list %}
+                {% for section in proposal.sections %}
                 {% if section and section.word_count > 0 %}
                 <div class="border border-gray-200 rounded-lg overflow-hidden">
                     <button
@@ -105,7 +94,7 @@
                             <svg id="chevron-section-{{ loop.index }}" class="w-5 h-5 text-gray-400 mr-3 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                             </svg>
-                            <span class="font-medium text-gray-900">{{ name }}</span>
+                            <span class="font-medium text-gray-900">{{ section.name }}</span>
                         </div>
                         <span class="text-sm text-gray-500">{{ section.word_count|number }} words</span>
                     </button>

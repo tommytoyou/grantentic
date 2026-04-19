@@ -82,25 +82,36 @@ class QualityChecker:
 
         return trimmed_section, True
 
-    def check_page_limits(self, proposal: GrantProposal) -> Dict:
-        """Check sections against word limits and/or character limits"""
-        results = {}
-        trimmed_sections = {}
+    def _name_to_key(self, section_name: str) -> Optional[str]:
+        """Map a section's display name to its agency-loader key (used for
+        char_limit / page_limit lookups). None if no match."""
+        if not self.agency_loader:
+            # Fall back to a tolerant slug lookup against the defaults.
+            slug = section_name.lower().replace(" and ", "_").replace(" ", "_")
+            return slug if slug in self.char_limits else None
+        for key, sec in self.agency_loader.get_sections().items():
+            if sec.name == section_name:
+                return key
+        return None
 
-        for section_key, (min_pages, max_pages, min_words, max_words) in self.page_limits.items():
-            section = getattr(proposal, section_key, None)
-            if section is None:
+    def check_page_limits(self, proposal: GrantProposal) -> Tuple[Dict, Dict]:
+        """Check each section in the proposal against its agency-defined
+        character or word limit. Returns (results, trimmed_sections)."""
+        results: Dict = {}
+        trimmed_sections: Dict[int, GrantSection] = {}
+
+        for idx, section in enumerate(proposal.sections):
+            if section is None or section.word_count == 0:
                 continue
 
-            char_limit = self.char_limits.get(section_key, 0)
+            section_key = self._name_to_key(section.name)
+            char_limit = self.char_limits.get(section_key, 0) if section_key else 0
+            page_limit = self.page_limits.get(section_key, (0, 0, 0, 0)) if section_key else (0, 0, 0, 0)
+            min_pages, max_pages, min_words, max_words = page_limit
+
             char_count = len(section.content)
             word_count = section.word_count
 
-            status = "✓ Good"
-            passed = True
-            trimmed = False
-
-            # Character limit check takes priority when defined
             if char_limit > 0:
                 if char_count > char_limit:
                     status = f"❌ OVER LIMIT: {char_count:,}/{char_limit:,} chars (+{char_count - char_limit:,})"
@@ -108,21 +119,24 @@ class QualityChecker:
                     self.suggestions.append(
                         f"**{section.name}**: EXCEEDS character limit — {char_count:,} chars "
                         f"vs {char_limit:,} max. Remove {char_count - char_limit:,} characters. "
-                        f"The NSF submission system will truncate or reject content over the limit."
+                        f"The {self.agency_name} submission system will truncate or reject content over the limit."
                     )
                 else:
                     remaining = char_limit - char_count
                     status = f"✓ {char_count:,}/{char_limit:,} chars ({remaining:,} remaining)"
+                    passed = True
 
                 results[section.name] = {
                     "count": char_count,
                     "range": f"0-{char_limit:,} chars",
                     "status": status,
                     "passed": passed,
-                    "trimmed": trimmed
+                    "trimmed": False,
                 }
             elif max_words > 0:
-                # Fall back to word limit check
+                status = "✓ Good"
+                passed = True
+                trimmed = False
                 if word_count < min_words:
                     status = f"⚠️  Too short ({word_count}/{min_words} words)"
                     passed = False
@@ -132,7 +146,7 @@ class QualityChecker:
                 elif word_count > max_words:
                     trimmed_section, was_trimmed = self.auto_trim_section(section, max_words)
                     if was_trimmed:
-                        trimmed_sections[section_key] = trimmed_section
+                        trimmed_sections[idx] = trimmed_section
                         trimmed = True
                         status = f"✂️  Auto-trimmed ({word_count} → {trimmed_section.word_count} words)"
                         passed = True
@@ -142,60 +156,75 @@ class QualityChecker:
                     "range": f"{min_words}-{max_words} words ({min_pages}-{max_pages} pages)",
                     "status": status,
                     "passed": passed,
-                    "trimmed": trimmed
+                    "trimmed": trimmed,
                 }
+            # If no limits are defined for this section, skip it silently.
 
         return results, trimmed_sections
 
     def check_required_keywords(self, proposal: GrantProposal) -> Dict:
-        """Check for required keywords in each section"""
-        results = {}
+        """Check required keywords on each section actually present in the proposal."""
+        results: Dict = {}
 
-        section_map = {
-            # NSF Project Pitch
-            "Technology Innovation": "project_pitch",
-            "Technical Objectives and Challenges": "technical_objectives",
-            "Market Opportunity": "commercialization_plan",
-            "Company and Team": "biographical_sketches",
-            # Full Proposal (used when those sections exist)
-            "Project Pitch": "project_pitch",
-            "Technical Objectives": "technical_objectives",
-            "Broader Impacts": "broader_impacts",
-            "Commercialization Plan": "commercialization_plan",
-            "Budget and Budget Justification": "budget_justification",
-            "Work Plan and Timeline": "work_plan",
-            "Key Personnel Biographical Sketches": "biographical_sketches",
-            "Facilities, Equipment, and Other Resources": "facilities_equipment"
-        }
-
-        for section_name, section_key in section_map.items():
-            section = getattr(proposal, section_key)
-            keywords = self.required_keywords.get(section_name, [])
+        for section in proposal.sections:
+            if section is None or section.word_count == 0:
+                continue
+            keywords = self.required_keywords.get(section.name, [])
+            if not keywords:
+                continue
 
             content_lower = section.content.lower()
             found = [kw for kw in keywords if kw.lower() in content_lower]
             missing = [kw for kw in keywords if kw.lower() not in content_lower]
-
             passed = len(missing) == 0
 
             if not passed:
                 self.suggestions.append(
                     f"**{section.name}**: Missing required keywords: {', '.join(missing)}. "
-                    f"These are important for NSF reviewers and should be explicitly addressed."
+                    f"These are important for {self.agency_name} reviewers and should be explicitly addressed."
                 )
 
             results[section.name] = {
                 "found": found,
                 "missing": missing,
                 "coverage": f"{len(found)}/{len(keywords)}",
-                "passed": passed
+                "passed": passed,
             }
 
         return results
 
-    def check_budget_total(self, proposal: GrantProposal) -> Dict:
-        """Validate that budget totals exactly the target funding amount"""
-        budget_content = proposal.budget_justification.content
+    _BUDGET_SECTION_NAMES = (
+        "Budget and Budget Justification",
+        "Cost Proposal and Budget Justification",
+        "Budget Narrative and Justification",
+    )
+
+    _TIMELINE_SECTION_NAMES = (
+        "Work Plan and Timeline",
+        "Work Plan",
+    )
+
+    _BIO_SECTION_NAMES = (
+        "Key Personnel Biographical Sketches",
+        "Key Personnel",
+        "Key Personnel and Qualifications",
+        "Company and Team",
+    )
+
+    def _find_section(self, proposal: GrantProposal, candidates) -> Optional[GrantSection]:
+        for name in candidates:
+            sec = proposal.get_section(name)
+            if sec is not None and sec.word_count > 0:
+                return sec
+        return None
+
+    def check_budget_total(self, proposal: GrantProposal) -> Optional[Dict]:
+        """Validate that budget totals exactly the target funding amount.
+        Returns None when no budget section exists (e.g. NSF Project Pitch)."""
+        budget_section = self._find_section(proposal, self._BUDGET_SECTION_NAMES)
+        if budget_section is None:
+            return None
+        budget_content = budget_section.content
 
         # Look for dollar amounts in the budget
         dollar_pattern = r'\$\s*(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)'
@@ -252,9 +281,13 @@ class QualityChecker:
             "passed": passed
         }
 
-    def check_timeline_coverage(self, proposal: GrantProposal) -> Dict:
-        """Check that timeline covers full Phase I duration"""
-        timeline_content = proposal.work_plan.content.lower()
+    def check_timeline_coverage(self, proposal: GrantProposal) -> Optional[Dict]:
+        """Check that timeline covers full Phase I duration.
+        Returns None when no work-plan section exists."""
+        timeline_section = self._find_section(proposal, self._TIMELINE_SECTION_NAMES)
+        if timeline_section is None:
+            return None
+        timeline_content = timeline_section.content.lower()
 
         # Look for month references
         month_patterns = [
@@ -301,9 +334,13 @@ class QualityChecker:
             "passed": passed
         }
 
-    def check_team_bios(self, proposal: GrantProposal, company_context: CompanyContext) -> Dict:
-        """Ensure all team members have biographical sketches"""
-        bio_content = proposal.biographical_sketches.content.lower()
+    def check_team_bios(self, proposal: GrantProposal, company_context: CompanyContext) -> Optional[Dict]:
+        """Ensure all team members have biographical sketches.
+        Returns None when no bio/team section exists."""
+        bio_section = self._find_section(proposal, self._BIO_SECTION_NAMES)
+        if bio_section is None:
+            return None
+        bio_content = bio_section.content.lower()
         team_members = company_context.team
 
         results = []
@@ -368,15 +405,10 @@ class QualityChecker:
         ]
 
         results = {}
-        sections_to_check = {
-            "Project Pitch": "project_pitch",
-            "Technical Objectives": "technical_objectives",
-            "Broader Impacts": "broader_impacts",
-            "Commercialization Plan": "commercialization_plan"
-        }
 
-        for section_name, section_key in sections_to_check.items():
-            section = getattr(proposal, section_key)
+        for section in proposal.sections:
+            if section is None or section.word_count == 0:
+                continue
             content = section.content
 
             # Count potential claims
@@ -424,20 +456,12 @@ class QualityChecker:
         return results
 
     def check_readability(self, proposal: GrantProposal) -> Dict:
-        """Check readability and clarity"""
+        """Check readability and clarity across every populated section."""
         results = {}
 
-        all_sections = [
-            ("Project Pitch", "project_pitch"),
-            ("Technical Objectives", "technical_objectives"),
-            ("Broader Impacts", "broader_impacts"),
-            ("Commercialization Plan", "commercialization_plan"),
-            ("Budget and Budget Justification", "budget_justification"),
-            ("Work Plan and Timeline", "work_plan"),
-        ]
-
-        for section_name, section_key in all_sections:
-            section = getattr(proposal, section_key)
+        for section in proposal.sections:
+            if section is None or section.word_count == 0:
+                continue
 
             # Simple heuristics for clarity
             sentences = [s.strip() for s in section.content.split('.') if s.strip()]
@@ -477,7 +501,7 @@ class QualityChecker:
         """Generate comprehensive quality report with improvement suggestions"""
         report = []
 
-        report.append("# NSF SBIR Phase I Proposal - Quality Report")
+        report.append(f"# {self.agency_name} SBIR Proposal - Quality Report")
         report.append("")
         report.append(f"**Company:** {proposal.company_name}")
         report.append(f"**Total Word Count:** {proposal.total_word_count:,}")
@@ -489,7 +513,9 @@ class QualityChecker:
         # Reset suggestions
         self.suggestions = []
 
-        # Run all checks
+        # Run all checks. Section-specific checks return None when the
+        # proposal doesn't include their target section (e.g. the NSF
+        # Project Pitch has no budget / timeline / bio sections).
         page_results, trimmed_sections = self.check_page_limits(proposal)
         keyword_results = self.check_required_keywords(proposal)
         budget_result = self.check_budget_total(proposal)
@@ -502,9 +528,12 @@ class QualityChecker:
         all_checks = []
         all_checks.extend([r["passed"] for r in page_results.values()])
         all_checks.extend([r["passed"] for r in keyword_results.values()])
-        all_checks.append(budget_result["passed"])
-        all_checks.append(timeline_result["passed"])
-        all_checks.append(bio_result["passed"])
+        if budget_result is not None:
+            all_checks.append(budget_result["passed"])
+        if timeline_result is not None:
+            all_checks.append(timeline_result["passed"])
+        if bio_result is not None:
+            all_checks.append(bio_result["passed"])
         all_checks.extend([r["passed"] for r in citation_results.values()])
         all_checks.extend([r["passed"] for r in readability_results.values()])
 
@@ -518,7 +547,7 @@ class QualityChecker:
         report.append("")
 
         if pass_rate >= 90:
-            report.append("✅ **Status:** EXCELLENT - Proposal meets NSF quality standards")
+            report.append(f"✅ **Status:** EXCELLENT - Proposal meets {self.agency_name} quality standards")
         elif pass_rate >= 75:
             report.append("⚠️  **Status:** GOOD - Minor improvements recommended")
         elif pass_rate >= 60:
@@ -539,43 +568,49 @@ class QualityChecker:
         report.append("")
         for section_name, data in page_results.items():
             symbol = "✓" if data["passed"] else "⚠️"
-            report.append(f"- **{symbol} {section_name}:** {data['count']} words (target: {data['range']}) - {data['status']}")
+            report.append(f"- **{symbol} {section_name}:** {data['count']} (target: {data['range']}) - {data['status']}")
         report.append("")
 
         # 2. Required Keywords
         report.append("### 2. Required Keywords")
         report.append("")
-        for section_name, data in keyword_results.items():
-            symbol = "✓" if data["passed"] else "⚠️"
-            report.append(f"- **{symbol} {section_name}:** {data['coverage']} keywords found")
-            if data["missing"]:
-                report.append(f"  - Missing: {', '.join(data['missing'])}")
+        if keyword_results:
+            for section_name, data in keyword_results.items():
+                symbol = "✓" if data["passed"] else "⚠️"
+                report.append(f"- **{symbol} {section_name}:** {data['coverage']} keywords found")
+                if data["missing"]:
+                    report.append(f"  - Missing: {', '.join(data['missing'])}")
+        else:
+            report.append("- No keyword requirements defined for this agency's sections.")
         report.append("")
 
-        # 3. Budget
-        report.append("### 3. Budget Validation")
-        report.append("")
-        report.append(f"- {budget_result['status']}")
-        if budget_result['actual']:
-            report.append(f"- Target: ${budget_result['target']:,.2f}")
-            report.append(f"- Actual: ${budget_result['actual']:,.2f}")
-        report.append("")
+        # 3. Budget (only when a budget section exists)
+        if budget_result is not None:
+            report.append("### 3. Budget Validation")
+            report.append("")
+            report.append(f"- {budget_result['status']}")
+            if budget_result['actual']:
+                report.append(f"- Target: ${budget_result['target']:,.2f}")
+                report.append(f"- Actual: ${budget_result['actual']:,.2f}")
+            report.append("")
 
-        # 4. Timeline
-        report.append("### 4. Timeline Coverage")
-        report.append("")
-        report.append(f"- {timeline_result['status']}")
-        report.append(f"- Months mentioned: {', '.join(map(str, timeline_result['months_mentioned'])) if timeline_result['months_mentioned'] else 'None identified'}")
-        report.append("")
+        # 4. Timeline (only when a work-plan section exists)
+        if timeline_result is not None:
+            report.append("### 4. Timeline Coverage")
+            report.append("")
+            report.append(f"- {timeline_result['status']}")
+            report.append(f"- Months mentioned: {', '.join(map(str, timeline_result['months_mentioned'])) if timeline_result['months_mentioned'] else 'None identified'}")
+            report.append("")
 
-        # 5. Team Bios
-        report.append("### 5. Team Member Biographical Sketches")
-        report.append("")
-        report.append(f"- {bio_result['status']}")
-        for detail in bio_result['details']:
-            symbol = "✓" if detail['complete'] else "❌"
-            report.append(f"  - {symbol} {detail['name']} ({detail['role']})")
-        report.append("")
+        # 5. Team Bios (only when a bio/team section exists)
+        if bio_result is not None:
+            report.append("### 5. Team Member Biographical Sketches")
+            report.append("")
+            report.append(f"- {bio_result['status']}")
+            for detail in bio_result['details']:
+                symbol = "✓" if detail['complete'] else "❌"
+                report.append(f"  - {symbol} {detail['name']} ({detail['role']})")
+            report.append("")
 
         # 6. Citations
         report.append("### 6. Citations and Supporting Evidence")
@@ -612,7 +647,7 @@ class QualityChecker:
             report.append("1. Review auto-trimmed sections if any")
             report.append("2. Add specific citations where needed")
             report.append("3. Final proofreading pass")
-            report.append("4. Submit proposal to NSF")
+            report.append(f"4. Submit proposal to {self.agency_name}")
         else:
             report.append("1. Address all items in 'Recommended Improvements' section")
             report.append("2. Re-run quality checker after revisions")
@@ -648,9 +683,10 @@ class QualityChecker:
             border_style="blue"
         ))
 
-        # Apply trimmed sections to proposal
-        for section_key, trimmed_section in trimmed_sections.items():
-            setattr(proposal, section_key, trimmed_section)
+        # Apply trimmed sections in place on the proposal's section list.
+        for idx, trimmed_section in trimmed_sections.items():
+            if 0 <= idx < len(proposal.sections):
+                proposal.sections[idx] = trimmed_section
 
         return {
             "report": report_text,
