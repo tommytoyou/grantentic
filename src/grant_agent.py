@@ -263,6 +263,15 @@ and Company and Team. In the team section, describe partners under their actual 
 (test facility, component supplier, CRADA host), never as a source of the innovation
 itself. The reviewer must finish the proposal believing the applicant owns the science.
 
+## NSF REVIEW CRITERIA (every section must satisfy these)
+NSF evaluates every Project Pitch against three criteria. Every section you write must speak to at least one, and the proposal as a whole must satisfy all three:
+
+1. **Intellectual Merit** — does this advance knowledge in the field?
+2. **Broader Impacts** — does this benefit society or contribute to societal goals?
+3. **Commercial Impact** — does this have potential for significant commercial outcomes?
+
+NSF explicitly does NOT fund: straightforward engineering, incremental product development, systems integration, or test-and-optimize efforts. Every section must make clear this is high-risk R&D with uncertain outcomes — the outcome of Phase I could be that the hypothesis fails, and that failure is itself a fundable scientific contribution. A proposal that reads as execution-of-a-known-design will be scored "Fair" on Intellectual Merit and rejected.
+
 {agency_requirements}''',
 
         "critique": '''You are a demanding NSF SBIR program officer conducting a mock review. Your job is to identify EVERY weakness that could cost this proposal funding. You've seen thousands of proposals and know exactly what separates funded from rejected.
@@ -731,27 +740,28 @@ SECTION_EXPERT_GUIDANCE = {
     # =========================================================================
     "Technology Innovation": '''
 ## TECHNOLOGY INNOVATION (3,500 characters max)
-This is the core of the pitch. Reviewers decide here whether the idea is genuinely new high-risk R&D or just engineering work dressed up as research.
+
+**NSF OFFICIAL INSTRUCTION (your primary directive — this is NSF's own language):**
+> "Explain the core high-risk technical innovation to be researched and developed during a Phase I project. NSF must understand what research and development is required and how this technical innovation differs from and is significantly better than existing solutions. It may also be that the proposed innovation creates a new market — in this case, why will it be adopted? Describing features or benefits of the proposed technology is not sufficient. The section must demonstrate Intellectual Merit — the potential to advance knowledge."
 
 **FIELDS TO USE (from the COMPANY INFORMATION JSON):**
 - `primary_innovation` — the specific capability that does not currently exist
 - `development_stage` — concept / simulation / proof_of_concept / prototype / lab_tested / field_tested
 - `core_technical_unknown` — the open scientific or engineering question this work answers
 
-**WHAT YOU MUST ARTICULATE:**
-1. What is genuinely new (drawn verbatim from `primary_innovation`, not paraphrased into fluff)
-2. Why this qualifies as high-risk R&D — i.e., the outcome is uncertain and the uncertainty is technical, not market-based
-3. What scientific or engineering question the work answers (`core_technical_unknown`)
-4. A testable hypothesis stated explicitly in this form:
-   **"We will demonstrate that X can achieve Y under Z conditions."**
-   X = the mechanism or method, Y = the measurable outcome, Z = the experimental conditions. If the intake does not supply enough information to fill X/Y/Z, emit a MISSING INFORMATION warning — DO NOT invent values.
-5. Current state: one or two sentences anchored to `development_stage`. If stage is "concept" or "simulation", say so; do not claim lab results that do not exist.
+**REQUIRED ELEMENTS:**
+- A testable hypothesis stated explicitly in this form:
+  **"We will demonstrate that X can achieve Y under Z conditions."**
+  X = the mechanism or method, Y = the measurable outcome, Z = the experimental conditions. If the intake does not supply enough information to fill X/Y/Z, emit a MISSING INFORMATION warning — DO NOT invent values.
+- Current state anchored to `development_stage`. If stage is "concept" or "simulation", say so; do not claim lab results that do not exist.
+- Explicit statement of what new knowledge, validated model, algorithm, dataset, or framework Phase I produces that does not exist in the literature today.
 
 **YOU MUST NOT:**
 - Describe systems integration, COTS assembly, component packaging, or productization
 - Describe incremental improvement over an existing product
 - Describe product development — Phase I funds feasibility, not products
 - Lead with hardware, components, or deliverables; lead with the knowledge or validated model being produced
+- Write about features or benefits — NSF's instruction explicitly rejects that framing
 - Fabricate performance numbers, TRL levels, or test results
 
 **HARD LIMITS:**
@@ -761,7 +771,9 @@ This is the core of the pitch. Reviewers decide here whether the idea is genuine
 
     "Technical Objectives and Challenges": '''
 ## TECHNICAL OBJECTIVES AND CHALLENGES (3,500 characters max)
-Define exactly what Phase I will prove, what makes each piece scientifically hard, and how the proposed R&D resolves it.
+
+**NSF OFFICIAL INSTRUCTION (your primary directive — this is NSF's own language):**
+> "Clearly explain the specific research and development required to prove that the foundational technology works and address the associated challenges explicitly with a high level description of how each will be managed. This section must convey how the proposed work is technically innovative and demonstrate that you have an understanding of the core research and development tasks necessary to prove out the technical innovation."
 
 **FIELDS TO USE:**
 - `phase1_proof` — the specific experiment, test, or demonstration Phase I funding will produce
@@ -791,7 +803,8 @@ Repeat the same three-subsection structure for Objective 2 and Objective 3.
 
     "Market Opportunity": '''
 ## MARKET OPPORTUNITY (1,750 characters max)
-Prove there is a real, accessible market with named customers.
+**NSF OFFICIAL INSTRUCTION (your primary directive — this is NSF's own language):**
+> "Explain the value of the technological innovation including the potential uses and those who will benefit — who is the customer — and demonstrate a high-level understanding of the competitive landscape and why this innovation has the potential to compete. This section must demonstrate Commercial Impact — the potential to lead to significant outcomes in the commercial market. Also address Broader Impacts — the potential to benefit society and contribute to desired societal outcomes."
 
 **FIELDS TO USE:**
 - `primary_customers` — the applicant's list of named agencies, companies, or programs
@@ -799,17 +812,19 @@ Prove there is a real, accessible market with named customers.
 - `why_now` — what has changed that makes this the right moment
 - `existing_solutions_fail` — why current approaches cannot solve this problem
 
-**WHAT YOU MUST INCLUDE:**
-1. **Named customers** — list specific agencies, companies, acquisition programs, or commands from `primary_customers` by name. Do NOT substitute generic categories ("defense primes", "space companies", "satellite operators"). If the applicant did not name specific customers, emit a MISSING INFORMATION warning; do not invent customer names.
+**REQUIRED ELEMENTS:**
+1. **Named customers** — use specific agencies, companies, acquisition programs, or commands from `primary_customers` by name. Do NOT substitute generic categories ("defense primes", "space companies", "satellite operators"). If the applicant did not name specific customers, emit a MISSING INFORMATION warning; do not invent customer names.
 2. **Why existing solutions cannot solve this problem** — paraphrase `existing_solutions_fail` to name the specific competing approaches or vendors the applicant identified and the exact technical limit that stops each one.
 3. **Why now** — the specific policy, budget, launch-cadence, technology, or regulatory change (from `why_now`) that makes this timing right.
-4. **Market sizing** — only if `market_size` is provided, reference it as given. If not provided, skip sizing entirely rather than fabricate numbers.
+4. **Broader Impacts** — one or two sentences on societal benefit (workforce development, energy, public health, climate, underserved communities, STEM access, national competitiveness) — whichever is genuinely applicable to THIS innovation. Do not invent a Broader Impact the technology doesn't actually produce.
+5. **Market sizing** — only if `market_size` is provided. If not provided, skip sizing entirely rather than fabricate numbers.
 
 **YOU MUST NOT:**
 - Use top-down analyst sizing ("$X billion market per Gartner") — reviewers reject this
 - Claim "no competitors exist"
 - Invent customer conversations, LOIs, or revenue projections
 - Name any agency, program, or company the applicant did not list
+- Fabricate Broader Impact claims the technology does not genuinely produce
 
 **HARD LIMITS:**
 - 1,750 characters maximum
@@ -818,7 +833,11 @@ Prove there is a real, accessible market with named customers.
 
     "Company and Team": '''
 ## COMPANY AND TEAM (1,750 characters max)
-Prove this team can execute THIS project — using only the credentials the applicant supplied, framed as capability not as apology.
+
+**NSF OFFICIAL INSTRUCTION (your primary directive — this is NSF's own language):**
+> "Explain the team's suitability to successfully execute the project based on the proposed innovation and approach to R&D. Provide information on plans to address gaps in the team. Note: describing features or benefits is not sufficient — the team description must connect specific credentials to specific Phase I technical tasks."
+
+NSF's own instruction permits discussing "plans to address gaps" — that phrasing refers to YOUR hiring/subcontracting plan, NOT to writing that the current team is deficient. Frame planned additions as funded Phase I investments. The forbidden-words list below governs the words you may use in the OUTPUT; it does not restrict the NSF instruction itself.
 
 **FIELDS TO USE:**
 - `team` — list of team members with `name`, `role`, `background`
