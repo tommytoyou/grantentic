@@ -4,7 +4,7 @@ import logging
 import os
 import re
 from pathlib import Path
-from typing import Callable, List, Optional
+from typing import Callable, Dict, List, Optional
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from src.models import CompanyContext, GrantSection
@@ -62,31 +62,33 @@ _NON_PERSON_BIGRAMS = frozenset({
     "Strategic Plan", "Strategic Advisor", "Go No",
     # Common technical terms that match the bigram regex
     "Machine Learning", "Deep Learning", "Artificial Intelligence",
-    "Neural Network", "Computer Vision",
+    "Neural Network", "Computer Vision", "Monte Carlo",
+    # Known multi-word nouns flagged by real use
+    "Budget Justification", "Team Erickson", "Weather Service",
+    "Prediction Center", "National Cislunar", "Exolaunch Space",
 })
 
 # Bigrams whose SECOND word flags the whole phrase as a policy document,
-# government study, or other institutional noun — not a person. Catches the
-# long tail without us having to enumerate every combination (Authorization
-# Act, National Defense Authorization Act, Heliophysics Decadal, National
-# Academy Survey, etc.).
+# government study, publication, facility, or institutional noun — never
+# a person. Catches the long tail without enumerating every combination
+# (Authorization Act, Heliophysics Decadal, Applied Physics Laboratory,
+# Physical Review Letters, etc.).
 _NON_PERSON_SUFFIXES = frozenset({
-    "Act",          # "Authorization Act", "Defense Act", "CHIPS Act"
-    "Decadal",      # "Heliophysics Decadal"
-    "Survey",       # "National Academy Survey", "Decadal Survey"
-    "Roadmap",      # "Technology Roadmap"
-    "Taxonomy",     # "NASA Taxonomy"
-    "Strategy",     # "National Strategy", "Modernization Strategy"
-    "Directive",    # "Presidential Directive", "Executive Directive"
-    "Policy",       # "National Policy"
-    "Initiative",   # "Artemis Initiative"
-    "Program",      # "SBIR Program", "Flight Program" — rarely a person
-    "Command",      # "Space Command", "Strategic Command"
-    "Office",       # "Program Office"
-    "Agency",       # "Defense Agency"
-    "Authority",    # "Space Authority"
-    "Council",      # "National Council"
-    "Committee",    # "Advisory Committee"
+    # Policy / legislation
+    "Act", "Directive", "Policy", "Authorization",
+    # Studies / reports / publications
+    "Decadal", "Survey", "Roadmap", "Taxonomy", "Strategy",
+    "Review", "Letters", "Journal", "Memorandum",
+    "Catalog", "Database", "Archive",
+    # Organizations / institutions / facilities
+    "Initiative", "Program", "Project", "Mission",
+    "Command", "Office", "Agency", "Administration",
+    "Authority", "Council", "Committee",
+    "Institute", "Institution", "Laboratory", "Foundation",
+    "Center", "Service", "Division", "Branch",
+    "Observatory", "University", "College", "School",
+    # Generic capitalized nouns the model over-capitalizes
+    "Science", "Nature", "Budget", "Simulation", "Analysis",
 })
 
 _TEAM_LIKE_SECTIONS = frozenset({
@@ -1118,16 +1120,25 @@ class GrantAgent:
         candidates: set = set()
         for m in _TITLED_NAME_RE.findall(content):
             candidates.add(re.sub(r"\s+", " ", m).strip())
-        for m in _BARE_NAME_RE.findall(content):
+        for m in _BARE_NAME_RE.finditer(content):
             # Normalize whitespace so "Gap\nAnalysis" matches "Gap Analysis".
-            normalized = re.sub(r"\s+", " ", m).strip()
+            normalized = re.sub(r"\s+", " ", m.group()).strip()
             if normalized in _NON_PERSON_BIGRAMS:
                 continue
-            # Suffix rule: "<Something> Act", "<Something> Decadal",
-            # "<Something> Survey", etc. — these are policy documents,
-            # government studies, and institutional nouns, not people.
+            # Trailing-suffix rule: "<Something> Act", "<Something> Decadal",
+            # etc. — these are policy documents, institutional nouns, not
+            # people.
             last_token = normalized.rsplit(None, 1)[-1]
             if last_token in _NON_PERSON_SUFFIXES:
+                continue
+            # Look-ahead: if the bigram is followed by a capitalized word
+            # that IS a suffix (Laboratory, Center, Institute, Program,
+            # etc.), the whole 3-word phrase is an institution name, not
+            # a person. Catches "Johns Hopkins Laboratory", "Weather
+            # Prediction Center", "Applied Physics Laboratory".
+            tail = content[m.end():m.end() + 32]
+            next_cap = re.match(r"\s+([A-Z][a-z]+)", tail)
+            if next_cap and next_cap.group(1) in _NON_PERSON_SUFFIXES:
                 continue
             candidates.add(normalized)
 
@@ -1551,3 +1562,187 @@ Generate the improved version that would score "Excellent" from even demanding r
             critique=critique,
             refinement_notes="Refined based on expert-level critical feedback"
         )
+
+    # ── NSF seven-criteria post-generation checker ──
+
+    _NSF_CRITERIA_MAP = {
+        # Criterion N -> (display name, index of target section)
+        # Sections are indexed 0..3 in the NSF Project Pitch order:
+        # 0=Technology Innovation, 1=Technical Objectives and Challenges,
+        # 2=Market Opportunity, 3=Company and Team
+        1: ("Technological Innovation", 0),
+        2: ("Risky Unproven R&D", 1),
+        3: ("Big Impact", 2),
+        4: ("Competitive Advantage", 0),
+        5: ("Commercial Potential", 2),
+        6: ("Qualified Team", 3),
+        7: ("Engaged PI", 3),
+    }
+
+    def _check_nsf_criteria(self, sections: List[GrantSection]) -> List[GrantSection]:
+        """Read-only check against NSF's seven funding criteria.
+
+        Runs one additional Claude call that scores each criterion
+        STRONG / ADEQUATE / WEAK. For any WEAK criterion, appends a
+        visible [REVIEWER RISK — ...] flag to the relevant section so
+        the applicant sees it before submission. Never rewrites body
+        content; truncates the body rather than the flag if the total
+        exceeds the section's char limit.
+
+        No-ops for non-NSF agencies.
+        """
+        if self.agency_name != "NSF":
+            return sections
+
+        # Look up the four NSF Project Pitch sections by canonical name.
+        by_name = {s.name: s for s in sections}
+        s1 = by_name.get("Technology Innovation")
+        s2 = by_name.get("Technical Objectives and Challenges")
+        s3 = by_name.get("Market Opportunity")
+        s4 = by_name.get("Company and Team")
+        if not all([s1, s2, s3, s4]):
+            log.warning(
+                "nsf_criteria: missing one or more NSF sections (have=%s), skipping check",
+                sorted(by_name.keys()),
+            )
+            return sections
+
+        system_prompt = (
+            "You are an NSF SBIR program officer evaluating a Project Pitch "
+            "against NSF's seven funding criteria. Be strict — these criteria "
+            "determine fundability. Respond only in JSON."
+        )
+        user_prompt = f"""Evaluate this NSF SBIR Project Pitch against the seven criteria. For each criterion, return a score of STRONG, ADEQUATE, or WEAK, and if WEAK, return a specific one-sentence warning.
+
+The seven criteria:
+1. Technological Innovation (evaluate Section 1) — does it demonstrate substantial differentiation from existing solutions? Features and benefits are not sufficient.
+2. Risky Unproven R&D (evaluate Section 2) — does it describe genuine technical risk with real possibility of failure, even for expert teams?
+3. Big Impact (evaluate Section 3) — does it address significant societal or national importance beyond commercial benefit?
+4. Competitive Advantage (evaluate Section 1) — is the innovation difficult to replicate by experts in the field?
+5. Commercial Potential (evaluate Section 3) — does it demonstrate a significant enough market for a sustainable commercial enterprise?
+6. Qualified Team (evaluate Section 4) — does it demonstrate technical qualifications directly relevant to the R&D?
+7. Engaged PI (evaluate Section 4) — does it confirm the PI will hold a key technical role with at least 20 hours per week commitment?
+
+Sections:
+Section 1 - Technology Innovation:
+{s1.content}
+
+Section 2 - Technical Objectives and Challenges:
+{s2.content}
+
+Section 3 - Market Opportunity:
+{s3.content}
+
+Section 4 - Company and Team:
+{s4.content}
+
+Return JSON only (no prose, no markdown code fences):
+{{
+  "criterion_1_score": "STRONG|ADEQUATE|WEAK",
+  "criterion_1_warning": "warning text if WEAK, else null",
+  "criterion_2_score": "...",
+  "criterion_2_warning": "...",
+  "criterion_3_score": "...",
+  "criterion_3_warning": "...",
+  "criterion_4_score": "...",
+  "criterion_4_warning": "...",
+  "criterion_5_score": "...",
+  "criterion_5_warning": "...",
+  "criterion_6_score": "...",
+  "criterion_6_warning": "...",
+  "criterion_7_score": "...",
+  "criterion_7_warning": "..."
+}}"""
+
+        try:
+            raw, in_t, out_t = self._call_claude(
+                system_prompt, user_prompt, max_tokens=2000
+            )
+            self.cost_tracker.record_usage(
+                "nsf_criteria_check", "check", in_t, out_t, self.model
+            )
+        except Exception as exc:
+            log.error("nsf_criteria: Claude call failed: %s", exc)
+            return sections
+
+        # Strip any markdown fence the model added despite the instruction.
+        json_text = raw.strip()
+        json_text = re.sub(r"^```(?:json)?\s*", "", json_text)
+        json_text = re.sub(r"\s*```$", "", json_text).strip()
+
+        try:
+            scores = json.loads(json_text)
+        except json.JSONDecodeError as exc:
+            log.error(
+                "nsf_criteria: JSON parse failed (%s) — raw=%r",
+                exc, raw[:300],
+            )
+            return sections
+
+        # Ordered list so we can index by section position (0-3).
+        ordered = [s1, s2, s3, s4]
+        warnings_by_idx: Dict[int, List[str]] = {}
+
+        for n, (display_name, target_idx) in self._NSF_CRITERIA_MAP.items():
+            score = str(scores.get(f"criterion_{n}_score", "")).strip().upper()
+            if score != "WEAK":
+                continue
+            warn_raw = scores.get(f"criterion_{n}_warning")
+            warning = str(warn_raw).strip() if warn_raw else ""
+            if not warning or warning.lower() in ("null", "none"):
+                continue
+            flag = (
+                f"\n\n[REVIEWER RISK — NSF Criterion {n} ({display_name}): "
+                f"{warning}. Strengthen this before submission.]"
+            )
+            warnings_by_idx.setdefault(target_idx, []).append(flag)
+            log.info(
+                "nsf_criteria: WEAK criterion %d (%s) -> section %d (%s)",
+                n, display_name, target_idx, ordered[target_idx].name,
+            )
+            console.print(
+                f"[yellow]⚠ NSF criterion {n} ({display_name}) flagged WEAK "
+                f"on {ordered[target_idx].name}[/yellow]"
+            )
+
+        if not warnings_by_idx:
+            log.info("nsf_criteria: all seven criteria cleared")
+            console.print("[green]✓ NSF seven-criteria check: all cleared[/green]")
+            return sections
+
+        # Append warnings and re-enforce char limits. The warning is
+        # sacred: if the combined length exceeds the limit, truncate the
+        # BODY to make room — never trim the REVIEWER RISK flag itself.
+        updated: List[GrantSection] = list(sections)
+        name_to_idx = {s.name: i for i, s in enumerate(sections)}
+        for idx_in_ordered, flags in warnings_by_idx.items():
+            target = ordered[idx_in_ordered]
+            flag_text = "".join(flags)
+            char_limit = self._char_limit_for(target.name)
+            combined = target.content + flag_text
+
+            if char_limit > 0 and len(combined) > char_limit:
+                body_budget = char_limit - len(flag_text)
+                if body_budget <= 0:
+                    # Warning alone overflows — keep warning, drop body.
+                    new_content = flag_text.lstrip("\n")
+                else:
+                    trimmed_body = self._enforce_char_limit(
+                        target.content, body_budget, target.name,
+                        phase="nsf_criteria_trim",
+                    )
+                    new_content = trimmed_body + flag_text
+            else:
+                new_content = combined
+
+            new_section = target.model_copy(update={
+                "content": new_content,
+                "word_count": len(new_content.split()),
+                "char_count": len(new_content),
+            })
+            # Write back into the position it occupied in the caller's list.
+            orig_list_idx = name_to_idx.get(target.name)
+            if orig_list_idx is not None:
+                updated[orig_list_idx] = new_section
+
+        return updated

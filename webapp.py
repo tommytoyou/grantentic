@@ -699,6 +699,16 @@ async def generate_stream(request: Request, agency: str = "nsf", iterations: int
 
                 yield f"data: {json.dumps({'type': 'section_complete', 'section': section_req.name, 'word_count': section.word_count, 'cost': f'${current_cost:.2f}', 'progress': progress})}\n\n"
 
+            # NSF only: run the seven-criteria post-generation checker.
+            # Read-only — appends [REVIEWER RISK — ...] flags to the relevant
+            # sections but never rewrites body content.
+            if agency_loader.requirements.agency == "NSF":
+                yield f"data: {json.dumps({'type': 'status', 'message': 'Running NSF seven-criteria fit check...'})}\n\n"
+                ordered_names = [s_req.name for _k, s_req in agency_loader.get_ordered_sections()]
+                section_list = [sections[n] for n in ordered_names if n in sections]
+                checked_list = agent._check_nsf_criteria(section_list)
+                sections = {s.name: s for s in checked_list}
+
             yield f"data: {json.dumps({'type': 'status', 'message': 'Creating proposal document...'})}\n\n"
 
             # Create proposal
