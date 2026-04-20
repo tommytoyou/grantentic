@@ -43,16 +43,50 @@ _LOI_CLAIM_RE = re.compile(
 # Known non-person capitalized bigrams that appear in proposals. Keep this
 # conservative — the intake-presence check is doing the heavy lifting.
 _NON_PERSON_BIGRAMS = frozenset({
-    "United States", "Small Business", "Federal Government",
-    "Space Force", "Air Force", "Space Command", "Space Systems",
-    "Department of", "North America", "South America",
+    # Geography / nations
+    "United States", "North America", "South America",
     "New York", "New Jersey", "New Mexico", "New Hampshire",
     "North Carolina", "South Carolina", "North Dakota", "South Dakota",
     "West Virginia", "Rhode Island",
+    # Government branches and services (noun phrases, not people)
+    "Federal Government", "Small Business", "National Defense",
+    "Space Force", "Air Force", "Coast Guard", "National Guard",
+    "Space Command", "Space Systems", "Department of",
+    # Proposal section / structural phrases the model loves to capitalize
     "Technology Innovation", "Technical Objectives", "Market Opportunity",
     "Company Team", "Principal Investigator", "Project Pitch",
+    "Phase I", "Phase II", "Phase III",
     "Phase One", "Phase Two", "Phase Three",
+    "This Phase", "Key Personnel", "Work Package", "Work Plan",
+    "Critical Path", "Critical Team", "Gap Analysis", "Gap Acknowledged",
+    "Strategic Plan", "Strategic Advisor", "Go No",
+    # Common technical terms that match the bigram regex
     "Machine Learning", "Deep Learning", "Artificial Intelligence",
+    "Neural Network", "Computer Vision",
+})
+
+# Bigrams whose SECOND word flags the whole phrase as a policy document,
+# government study, or other institutional noun — not a person. Catches the
+# long tail without us having to enumerate every combination (Authorization
+# Act, National Defense Authorization Act, Heliophysics Decadal, National
+# Academy Survey, etc.).
+_NON_PERSON_SUFFIXES = frozenset({
+    "Act",          # "Authorization Act", "Defense Act", "CHIPS Act"
+    "Decadal",      # "Heliophysics Decadal"
+    "Survey",       # "National Academy Survey", "Decadal Survey"
+    "Roadmap",      # "Technology Roadmap"
+    "Taxonomy",     # "NASA Taxonomy"
+    "Strategy",     # "National Strategy", "Modernization Strategy"
+    "Directive",    # "Presidential Directive", "Executive Directive"
+    "Policy",       # "National Policy"
+    "Initiative",   # "Artemis Initiative"
+    "Program",      # "SBIR Program", "Flight Program" — rarely a person
+    "Command",      # "Space Command", "Strategic Command"
+    "Office",       # "Program Office"
+    "Agency",       # "Defense Agency"
+    "Authority",    # "Space Authority"
+    "Council",      # "National Council"
+    "Committee",    # "Advisory Committee"
 })
 
 _TEAM_LIKE_SECTIONS = frozenset({
@@ -784,28 +818,48 @@ Prove there is a real, accessible market with named customers.
 
     "Company and Team": '''
 ## COMPANY AND TEAM (1,750 characters max)
-Prove this team can execute THIS project — using only the credentials the applicant supplied.
+Prove this team can execute THIS project — using only the credentials the applicant supplied, framed as capability not as apology.
 
 **FIELDS TO USE:**
 - `team` — list of team members with `name`, `role`, `background`
 - `advisory_board` — list of advisors with `name`, `role`, `background` (if provided)
 - `key_partnerships` — letters of intent, technical partners, university collaborators, federal-lab CRADAs (if provided)
 
-**WHAT YOU MUST INCLUDE:**
-1. **Principal Investigator** — PI name (first entry in `team` or the member whose role indicates PI/CEO/CTO with technical lead) plus the specific credentials from their `background` field that are directly relevant to this project. If the intake does not identify a PI or lists no relevant credentials, emit a MISSING INFORMATION warning.
-2. **Key team members** — by name and role, with the domain-specific expertise from each member's `background` field that matches the technical approach. Use only credentials present in the intake.
-3. **Advisory board** — if `advisory_board` is populated, name each advisor and the specific strategic or technical value they bring. If empty, skip entirely.
-4. **Strategic partnerships** — if `key_partnerships` is populated, name each partner organization and the specific role they play (test facility, co-investigator, transition partner, etc.). If empty, skip entirely.
+**STRUCTURE (2-3 sentences per person — no more, no less):**
+For each team and advisory member, write exactly: (1) name and role, (2) the specific credential from their `background` field that qualifies them, (3) their specific Phase I contribution. That's it.
+
+**POSITIVE CREDENTIAL FRAMING** — translate credentials into capability language. Never describe any credential as a limitation:
+
+- **CAPM certification** → "project execution discipline, milestone-driven delivery, and formal risk-management methodology suited to a 6-month Phase I."
+- **PMI-GenAI certification** → "AI integration methodology and responsible-AI deployment frameworks."
+- **Full-stack development experience** → "Phase I simulation software, data-pipeline development, and algorithm prototyping."
+- **CISSP** → "cybersecurity architecture, secure communications design, and data protection for controlled research artifacts."
+- **PhD in Robotics** → "autonomous-systems design, reinforcement learning, and AI algorithm development."
+- **CubeSat mission experience (advisory board)** → "launch licensing guidance and low-cost scalable design validation."
+- **Other certifications (AWS, PMP, Sec+, CISM, etc.)** → cite the exact concrete capability the certification represents, not the acronym alone.
+
+**FRAME PHASE I HIRES AND PARTNERSHIPS AS PLANNED INVESTMENTS, NOT GAPS:**
+Instead of "the team lacks radiation testing expertise", write "Phase I includes subcontracted radiation-effects validation with [partner named in key_partnerships]" — a planned, funded line of work, not a missing piece. Partnerships are capability extensions, not team weaknesses.
+
+**FORBIDDEN WORDS IN THIS SECTION** — NSF reviewers read self-deprecation as "this team will not succeed." Never use:
+- "gap", "limitation", "lacks", "weakness", "fundamental" (as in "fundamental limitation")
+- "constraint" (when describing the team — OK when describing technical constraints elsewhere)
+- "acknowledged gap", "critical gap", "team gap", "capability gap" (as team descriptors)
+- "inexperienced", "unproven", "missing", "deficient"
+
+Reviewers understand a small deep-tech team. They penalize teams that sound unsure of themselves.
 
 **YOU MUST NOT:**
-- Invent degrees, publications, patents, years of experience, prior grants, or clearances
+- Invent degrees, publications, patents, years of experience, prior grants, clearances, or employers beyond what the intake provides
+- Upgrade certifications to degrees (CAPM → "PhD", CISSP → "MS in Cybersecurity", etc.)
 - Claim DoD/NASA/NSF contract history the applicant did not list
 - Name advisors, partners, or institutions the applicant did not list
 - Pad the team with fabricated roles to appear larger
 
 **HARD LIMITS:**
 - 1,750 characters maximum
-- If `team` is sparse (one or two members), keep the section brief — do NOT invent credentials to fill space
+- Exactly 2-3 sentences per person. If the intake lists 3 people, that's 6-9 sentences plus a 1-sentence company opener.
+- If `team` is sparse, frame the existing team at full capability and describe planned Phase I subcontracts / advisor engagements — do NOT apologize for team size
 ''',
 
     # =========================================================================
@@ -1044,10 +1098,19 @@ class GrantAgent:
         intake_lower = self._collect_intake_text()
         candidates: set = set()
         for m in _TITLED_NAME_RE.findall(content):
-            candidates.add(m.strip())
+            candidates.add(re.sub(r"\s+", " ", m).strip())
         for m in _BARE_NAME_RE.findall(content):
-            if m not in _NON_PERSON_BIGRAMS:
-                candidates.add(m.strip())
+            # Normalize whitespace so "Gap\nAnalysis" matches "Gap Analysis".
+            normalized = re.sub(r"\s+", " ", m).strip()
+            if normalized in _NON_PERSON_BIGRAMS:
+                continue
+            # Suffix rule: "<Something> Act", "<Something> Decadal",
+            # "<Something> Survey", etc. — these are policy documents,
+            # government studies, and institutional nouns, not people.
+            last_token = normalized.rsplit(None, 1)[-1]
+            if last_token in _NON_PERSON_SUFFIXES:
+                continue
+            candidates.add(normalized)
 
         fabricated: List[str] = []
         for cand in candidates:
