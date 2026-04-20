@@ -2,8 +2,9 @@ import anthropic
 import json
 import logging
 import os
+import re
 from pathlib import Path
-from typing import Optional
+from typing import Callable, List, Optional
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from src.models import CompanyContext, GrantSection
@@ -13,6 +14,61 @@ from config import Config
 
 console = Console()
 log = logging.getLogger("grantentic.grant_agent")
+
+
+# ── Fabrication detectors (used by _validate_no_fabrication) ──
+
+# Titled name: "Dr. Sarah Chen", "Prof. A. B. Smith", "Ms. Priya Natarajan".
+_TITLED_NAME_RE = re.compile(
+    r"\b(?:Dr|Prof|Mr|Ms|Mrs|Professor)\.?\s+"
+    r"(?:[A-Z]\.?\s+)?"
+    r"[A-Z][a-z]+(?:\s+[A-Z][a-z]+)+"
+)
+
+# Bare two-word capitalized bigram: "Sarah Chen", "Tom Erickson".
+# Matches far more than people — filtered via (a) the stopword list below
+# and (b) a substring check against the entire intake text.
+_BARE_NAME_RE = re.compile(r"\b[A-Z][a-z]+\s+[A-Z][a-z]+\b")
+
+# LOI-style claim patterns used by the Market-section check. Case-insensitive
+# — the surrounding context determines whether the claim is fabricated.
+_LOI_CLAIM_RE = re.compile(
+    r"\b(Letter[s]? of Intent|LOI[s]?|Letter[s]? of Support|"
+    r"Memorand(?:um|a) of Understanding|MOU[s]?|CRADA[s]?|"
+    r"confirmed via|per (?:our|a) conversation with|"
+    r"meeting minutes from|per the attached letter|signed agreement with)\b",
+    re.IGNORECASE,
+)
+
+# Known non-person capitalized bigrams that appear in proposals. Keep this
+# conservative — the intake-presence check is doing the heavy lifting.
+_NON_PERSON_BIGRAMS = frozenset({
+    "United States", "Small Business", "Federal Government",
+    "Space Force", "Air Force", "Space Command", "Space Systems",
+    "Department of", "North America", "South America",
+    "New York", "New Jersey", "New Mexico", "New Hampshire",
+    "North Carolina", "South Carolina", "North Dakota", "South Dakota",
+    "West Virginia", "Rhode Island",
+    "Technology Innovation", "Technical Objectives", "Market Opportunity",
+    "Company Team", "Principal Investigator", "Project Pitch",
+    "Phase One", "Phase Two", "Phase Three",
+    "Machine Learning", "Deep Learning", "Artificial Intelligence",
+})
+
+_TEAM_LIKE_SECTIONS = frozenset({
+    "Company and Team",
+    "Key Personnel",
+    "Key Personnel Biographical Sketches",
+    "Key Personnel and Qualifications",
+    "Company Capabilities and Experience",
+})
+
+_MARKET_LIKE_SECTIONS = frozenset({
+    "Market Opportunity",
+    "Dual Use and Commercialization",
+    "Commercialization Plan",
+    "Commercialization Strategy",
+})
 
 
 # =============================================================================
@@ -940,6 +996,211 @@ class GrantAgent:
         )
         return content
 
+    def _collect_intake_text(self) -> str:
+        """Every free-text field from the company context, lowercased and
+        concatenated. Used as the ground truth for fabrication checks —
+        if a name or claim isn't in here verbatim, the model invented it.
+        """
+        ctx = self.company_context
+        parts: List[str] = []
+        for roster in (ctx.team or [], ctx.advisory_board or []):
+            for member in roster:
+                for v in member.values():
+                    if isinstance(v, str):
+                        parts.append(v)
+        for attr in (
+            "company_name", "founded", "location", "industry", "focus_area",
+            "primary_innovation", "development_stage", "phase1_proof",
+            "who_suffers", "existing_solutions_fail", "core_technical_unknown",
+            "technical_approach", "technical_novelty", "technical_risks",
+            "primary_customers", "market_size", "why_now",
+            "key_partnerships",
+            # Legacy fields that may still carry intake data
+            "mission", "problem_statement", "solution", "social_impact",
+        ):
+            val = getattr(ctx, attr, "")
+            if isinstance(val, str) and val:
+                parts.append(val)
+        return "\n".join(parts).lower()
+
+    def _allowed_team_names(self) -> List[str]:
+        """Names the model is permitted to mention, drawn from team JSON
+        and advisory_board JSON. Returned in original case for display in
+        the retry prompt."""
+        ctx = self.company_context
+        names: List[str] = []
+        seen = set()
+        for roster in (ctx.team or [], ctx.advisory_board or []):
+            for member in roster:
+                n = (member.get("name") or "").strip()
+                if n and n.lower() not in seen:
+                    seen.add(n.lower())
+                    names.append(n)
+        return names
+
+    def _find_fabricated_people(self, content: str) -> List[str]:
+        """Return person-name-like strings that appear in content but not
+        anywhere in the intake. Empty list means clean."""
+        intake_lower = self._collect_intake_text()
+        candidates: set = set()
+        for m in _TITLED_NAME_RE.findall(content):
+            candidates.add(m.strip())
+        for m in _BARE_NAME_RE.findall(content):
+            if m not in _NON_PERSON_BIGRAMS:
+                candidates.add(m.strip())
+
+        fabricated: List[str] = []
+        for cand in candidates:
+            # Strip honorific for the intake lookup so "Dr. Sarah Chen"
+            # matches an intake that lists her as just "Sarah Chen".
+            stripped = re.sub(
+                r"^(?:Dr|Prof|Mr|Ms|Mrs|Professor)\.?\s+(?:[A-Z]\.?\s+)?",
+                "",
+                cand,
+            ).strip()
+            if stripped.lower() in intake_lower:
+                continue
+            if cand.lower() in intake_lower:
+                continue
+            fabricated.append(cand)
+        return sorted(set(fabricated))
+
+    def _find_fabricated_loi_claims(self, content: str) -> List[str]:
+        """LOI/MOU/letter-of-support claims in content that are not
+        grounded in the intake. If the intake itself mentions LOIs or
+        letters of support, we assume the claims are grounded and don't
+        flag — the check only fires when the output is making commitments
+        the user never listed."""
+        claims = _LOI_CLAIM_RE.findall(content)
+        if not claims:
+            return []
+        intake_lower = self._collect_intake_text()
+        if _LOI_CLAIM_RE.search(intake_lower):
+            return []
+        return sorted({c.strip() for c in claims})
+
+    def _validate_no_fabrication(
+        self,
+        content: str,
+        section_name: str,
+        phase: str,
+        regen_fn: Optional[Callable[[str], str]] = None,
+        max_retries: int = 2,
+    ) -> str:
+        """Post-generation fabrication check for Team- and Market-like
+        sections. Retries up to max_retries times with a strengthened
+        constraint listing the only permitted names; on exhaustion,
+        prepends a visible WARNING and returns the content so the user
+        can review rather than silently shipping a fabrication.
+
+        regen_fn(extra_instruction) re-runs the relevant model call with
+        the extra instruction appended and returns the new content
+        (already char-limit-enforced). If regen_fn is None we skip
+        retries and go straight to the warning on first detection.
+        """
+        if section_name in _TEAM_LIKE_SECTIONS:
+            market_like = False
+        elif section_name in _MARKET_LIKE_SECTIONS:
+            market_like = True
+        else:
+            return content
+
+        allowed_names = self._allowed_team_names()
+        attempts_used = 0
+        fabricated_people: List[str] = []
+        fabricated_loi: List[str] = []
+
+        while True:
+            if not market_like:
+                fabricated_people = self._find_fabricated_people(content)
+                fabricated_loi = []
+            else:
+                fabricated_people = self._find_fabricated_people(content)
+                fabricated_loi = self._find_fabricated_loi_claims(content)
+
+            if not fabricated_people and not fabricated_loi:
+                if attempts_used > 0:
+                    log.info(
+                        "fabrication_validate: %s (%s) cleared after %d retry(s)",
+                        section_name, phase, attempts_used,
+                    )
+                    console.print(
+                        f"[green]✓ {section_name}: fabrication check cleared after "
+                        f"{attempts_used} retry(s)[/green]"
+                    )
+                return content
+
+            if regen_fn is None or attempts_used >= max_retries:
+                break
+
+            attempts_used += 1
+            log.warning(
+                "fabrication_validate: %s (%s) attempt %d — people=%s loi=%s",
+                section_name, phase, attempts_used, fabricated_people, fabricated_loi,
+            )
+            console.print(
+                f"[yellow]⚠ {section_name}: fabrication detected on attempt "
+                f"{attempts_used} — regenerating[/yellow]"
+            )
+
+            constraint_blocks: List[str] = []
+            if fabricated_people:
+                names_clause = (
+                    ", ".join(allowed_names)
+                    if allowed_names
+                    else "(none — the intake listed no team members)"
+                )
+                constraint_blocks.append(
+                    "⚠️ FABRICATION DETECTED in your previous draft. You invented "
+                    f"these people who are NOT in the intake: {fabricated_people}. "
+                    "The ONLY people you may mention in this section are: "
+                    f"{names_clause}. If you write any other person's name, the "
+                    "output will be rejected. Do not invent co-investigators, "
+                    "advisors, or subcontractors. Do not invent degrees, "
+                    "universities, employers, publications, or prior grants for "
+                    "anyone. Use only the exact credentials from the team and "
+                    "advisory_board JSON."
+                )
+            if fabricated_loi:
+                constraint_blocks.append(
+                    "⚠️ FABRICATION DETECTED. You invented these LOI / MOU / "
+                    f"letter-of-support claims that are NOT in the intake: "
+                    f"{fabricated_loi}. The intake lists NO letters of intent "
+                    "or customer commitments. Remove every reference to LOIs, "
+                    "MOUs, letters of support, CRADAs, or confirmed customer "
+                    "agreements. Use bracketed placeholders like "
+                    "[confirm LOI status with customer] instead."
+                )
+            content = regen_fn("\n\n".join(constraint_blocks))
+
+        # Retries exhausted (or no regen_fn provided) — prepend warning.
+        log.error(
+            "fabrication_validate: %s (%s) FAILED after %d attempt(s) — "
+            "people=%s loi=%s",
+            section_name, phase, attempts_used, fabricated_people, fabricated_loi,
+        )
+        console.print(
+            f"[red]✗ {section_name}: fabrication persisted after "
+            f"{attempts_used} retry(s) — prepending WARNING[/red]"
+        )
+
+        warning_lines: List[str] = [
+            "⚠️ **WARNING: AI attempted to add team members not in your intake. "
+            "Please review and remove any names not on your team.**",
+            "",
+        ]
+        if fabricated_people:
+            warning_lines.append(
+                f"*Detected fabricated names:* {', '.join(fabricated_people)}"
+            )
+        if fabricated_loi:
+            warning_lines.append(
+                f"*Detected fabricated LOI / commitment claims:* "
+                f"{', '.join(fabricated_loi)}"
+            )
+        warning_lines.extend(["", "---", ""])
+        return "\n".join(warning_lines) + content
+
     def _call_claude(self, system_prompt: str, user_prompt: str, max_tokens: int = 4000) -> tuple[str, int, int]:
         """Call Claude API and track usage"""
         response = self.client.messages.create(
@@ -1030,6 +1291,24 @@ Generate the complete {section_name} section now. Write in a professional, compe
         self.cost_tracker.record_usage(section_name, "generate", input_tokens, output_tokens, self.model)
 
         content = self._enforce_char_limit(content, char_limit, section_name, phase="generate")
+
+        def _regen_with_constraint(extra_instruction: str) -> str:
+            retry_prompt = (
+                f"{user_prompt}\n\n## FABRICATION CONSTRAINT (RETRY)\n{extra_instruction}"
+            )
+            retry_content, in_t, out_t = self._call_claude(
+                system_prompt, retry_prompt, max_tokens=Config.MAX_TOKENS_GENERATE
+            )
+            self.cost_tracker.record_usage(
+                section_name, "generate_retry", in_t, out_t, self.model
+            )
+            return self._enforce_char_limit(
+                retry_content, char_limit, section_name, phase="generate_retry"
+            )
+
+        content = self._validate_no_fabrication(
+            content, section_name, phase="generate", regen_fn=_regen_with_constraint
+        )
 
         word_count = len(content.split())
         char_count = len(content)
@@ -1158,6 +1437,24 @@ Generate the improved version that would score "Excellent" from even demanding r
 
         refined_content = self._enforce_char_limit(
             refined_content, char_limit, section.name, phase="refine"
+        )
+
+        def _regen_with_constraint(extra_instruction: str) -> str:
+            retry_prompt = (
+                f"{user_prompt}\n\n## FABRICATION CONSTRAINT (RETRY)\n{extra_instruction}"
+            )
+            retry_content, in_t, out_t = self._call_claude(
+                system_prompt, retry_prompt, max_tokens=Config.MAX_TOKENS_REFINE
+            )
+            self.cost_tracker.record_usage(
+                section.name, "refine_retry", in_t, out_t, self.model
+            )
+            return self._enforce_char_limit(
+                retry_content, char_limit, section.name, phase="refine_retry"
+            )
+
+        refined_content = self._validate_no_fabrication(
+            refined_content, section.name, phase="refine", regen_fn=_regen_with_constraint
         )
 
         word_count = len(refined_content.split())
