@@ -80,6 +80,8 @@ _NON_PERSON_SUFFIXES = frozenset({
     "Decadal", "Survey", "Roadmap", "Taxonomy", "Strategy",
     "Review", "Letters", "Journal", "Memorandum",
     "Catalog", "Database", "Archive",
+    "Document", "Summary", "Statistics", "Report",
+    "Bulletin", "Notice", "Standard", "Specification", "Requirement",
     # Organizations / institutions / facilities
     "Initiative", "Program", "Project", "Mission",
     "Command", "Office", "Agency", "Administration",
@@ -152,7 +154,7 @@ Never name a specific component, chip, sensor model, facility, laboratory, unive
 Never invent specific numerical specifications — wattage, accuracy percentages, radiation dose thresholds, fluence rates, component costs, weights, data rates, angular resolutions, SWaP figures, or cost savings percentages — unless the user provided those exact numbers in the intake. You MAY use the numbers the user stated; you may NOT add new ones. If a number would strengthen the section but the user did not provide it, use a bracketed placeholder instead (see Rule 4).
 
 **ABSOLUTE RULE 3 — No invented citations.**
-Never name a specific published paper, citation, author, or journal unless the user provided that reference. Do not fabricate "[Smith et al., 2023]" or "per the 2024 NASA TRL Roadmap" or "according to Nature Materials" to make the proposal appear more credible. If a claim needs a citation the user did not supply, leave a placeholder (see Rule 4).
+Never name a specific published paper, citation, author, or journal unless the user provided that reference. Do not fabricate "[Author et al., YYYY]" or "per the [title] Roadmap" or "according to [Journal Name]" to make the proposal appear more credible. If a claim needs a citation the user did not supply, leave a placeholder (see Rule 4). Never invent years, dates, or prior-award numbers — use only values that appear in the intake JSON.
 
 **ABSOLUTE RULE 4 — Bracketed placeholders instead of inventions.**
 If you find yourself wanting to add a specific detail the user did not provide, replace it with a placeholder in square brackets that names what the applicant must supply:
@@ -400,7 +402,7 @@ Never name a specific component, chip, sensor model, facility, laboratory, unive
 Never invent specific numerical specifications — wattage, accuracy percentages, radiation dose thresholds, fluence rates, component costs, weights, data rates, SWaP-C figures, CONOPS timelines, or cost savings percentages — unless the user provided those exact numbers in the intake. You MAY use the numbers the user stated; you may NOT add new ones. If a number would strengthen the section but the user did not provide it, use a bracketed placeholder instead (see Rule 4).
 
 **ABSOLUTE RULE 3 — No invented citations.**
-Never name a specific published paper, citation, author, requirements document (BAA number, AoA, CDD, CPD), or journal unless the user provided that reference. Do not fabricate "[Smith et al., 2023]" or "per BAA N-24-001" or "according to the 2024 DoD Modernization Strategy" to make the proposal appear more credible. If a claim needs a citation the user did not supply, leave a placeholder (see Rule 4).
+Never name a specific published paper, citation, author, requirements document (BAA number, AoA, CDD, CPD), or journal unless the user provided that reference. Do not fabricate "[Author et al., YYYY]" or "per BAA [number]" or "according to the [title] Modernization Strategy" to make the proposal appear more credible. If a claim needs a citation the user did not supply, leave a placeholder (see Rule 4). Never invent years, dates, or prior-contract numbers — use only values that appear in the intake JSON.
 
 **ABSOLUTE RULE 4 — Bracketed placeholders instead of inventions.**
 If you find yourself wanting to add a specific detail the user did not provide, replace it with a placeholder in square brackets that names what the applicant must supply:
@@ -842,9 +844,15 @@ Repeat the same three-subsection structure for Objective 2 and Objective 3.
 NSF's own instruction permits discussing "plans to address gaps" — that phrasing refers to YOUR hiring/subcontracting plan, NOT to writing that the current team is deficient. Frame planned additions as funded Phase I investments. The forbidden-words list below governs the words you may use in the OUTPUT; it does not restrict the NSF instruction itself.
 
 **FIELDS TO USE:**
+- `company_name` — exact legal name (use verbatim)
+- `founded` — the founding year (use EXACTLY the string in the JSON; do NOT invent a year; if `founded` is empty, write "[founded year]" as a placeholder — never guess)
+- `location` — company location (use verbatim)
+- `focus_area` — one-sentence core capability
 - `team` — list of team members with `name`, `role`, `background`
 - `advisory_board` — list of advisors with `name`, `role`, `background` (if provided)
 - `key_partnerships` — letters of intent, technical partners, university collaborators, federal-lab CRADAs (if provided)
+
+**COMPANY OPENER (1 sentence):** "{company_name}, founded {founded} in {location}, is a {focus_area}." Substitute VERBATIM from the JSON. If any field is empty, use a bracketed placeholder — do not fabricate a year or a city.
 
 **STRUCTURE (2-3 sentences per person — no more, no less):**
 For each team and advisory member, write exactly: (1) name and role, (2) the specific credential from their `background` field that qualifies them, (3) their specific Phase I contribution. That's it.
