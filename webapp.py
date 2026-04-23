@@ -842,14 +842,9 @@ async def get_agency_api(request: Request, agency: str):
 
 @app.get("/pricing", response_class=HTMLResponse)
 async def pricing_page(request: Request):
-    """Pricing/paywall page"""
-    user = get_current_user(request)
-
+    """Public pricing page — marketing surface, extends marketing_base."""
     return templates.TemplateResponse(request, "pricing.html", {
-        "user": user,
-        "payment_status": {'can_generate': False},
-        "tiers": Config.PAYMENT_TIERS,
-        "stripe_publishable_key": Config.STRIPE_PUBLISHABLE_KEY
+        "user": get_current_user(request),
     })
 
 
