@@ -1046,6 +1046,72 @@ async def privacy_page(request: Request):
 
 
 # ============================================================================
+# PRODUCT MARKETING PAGES (public, top-of-funnel)
+# ============================================================================
+# These are the /products/* stubs linked from the landing page funnel. The
+# actual paid flows live at /blueprint, /register, /generate — the product
+# pages are informational destinations that eventually drive there.
+
+@app.get("/products/prompt-pack", response_class=HTMLResponse)
+async def product_prompt_pack(request: Request):
+    """Free SBIR Prompt Pack — email capture landing page."""
+    return templates.TemplateResponse(request, "products/prompt_pack.html", {
+        "user": get_current_user(request),
+        "submitted_email": None,
+    })
+
+
+@app.post("/products/prompt-pack", response_class=HTMLResponse)
+async def product_prompt_pack_signup(request: Request, email: str = Form("")):
+    """Capture email for the free SBIR Prompt Pack waitlist."""
+    clean = email.strip()
+    if clean and "@" in clean:
+        log.info("prompt_pack_signup: email=%r", clean)
+    return templates.TemplateResponse(request, "products/prompt_pack.html", {
+        "user": get_current_user(request),
+        "submitted_email": clean if clean and "@" in clean else None,
+    })
+
+
+@app.get("/products/blueprint", response_class=HTMLResponse)
+async def product_blueprint_info(request: Request):
+    """Informational page for the $49 SBIR Blueprint — links to the paid flow at /blueprint."""
+    return templates.TemplateResponse(request, "products/blueprint.html", {
+        "user": get_current_user(request),
+    })
+
+
+@app.get("/products/generate", response_class=HTMLResponse)
+async def product_generate_info(request: Request):
+    """Informational page for Full Proposal Generation — links to /register."""
+    return templates.TemplateResponse(request, "products/generate.html", {
+        "user": get_current_user(request),
+    })
+
+
+@app.get("/products/accelerator", response_class=HTMLResponse)
+async def product_accelerator_info(request: Request):
+    """Space Proposal Accelerator — coming soon, waitlist capture."""
+    return templates.TemplateResponse(request, "products/accelerator.html", {
+        "user": get_current_user(request),
+        "submitted_email": None,
+    })
+
+
+@app.post("/products/accelerator", response_class=HTMLResponse)
+async def product_accelerator_waitlist(request: Request, email: str = Form("")):
+    """Capture email for the Space Proposal Accelerator waitlist."""
+    clean = email.strip()
+    if clean and "@" in clean:
+        log.info("accelerator_waitlist: email=%r", clean)
+    return templates.TemplateResponse(request, "products/accelerator.html", {
+        "user": get_current_user(request),
+        "submitted_email": clean if clean and "@" in clean else None,
+    })
+
+
+
+# ============================================================================
 # BLUEPRINT PRODUCT
 # ============================================================================
 

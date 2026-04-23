@@ -1,0 +1,74 @@
+{% extends "marketing_base.html" %}
+
+{% block title %}SBIR Blueprint — Grantentic{% endblock %}
+{% block description %}Personalized SBIR strategy document before you write a word — $49.{% endblock %}
+
+{% block extra_styles %}
+        .product-hero { padding: 5rem 0 4rem; text-align: center; }
+        .product-hero .eyebrow {
+            color: var(--accent-dim); font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.14em; font-size: 0.75rem; margin-bottom: 1rem; display: block;
+        }
+        .product-hero h1 {
+            font-size: clamp(2rem, 4.5vw, 3rem); letter-spacing: -0.025em;
+            margin-bottom: 1.25rem;
+        }
+        .product-hero .lead {
+            font-size: 1.125rem; color: var(--text-muted);
+            max-width: 640px; margin: 0 auto 2.25rem;
+        }
+        .value-list {
+            max-width: 640px; margin: 0 auto 2.5rem;
+            text-align: left;
+            display: flex; flex-direction: column; gap: 1rem;
+        }
+        .value-item {
+            display: flex; gap: 0.875rem;
+            padding: 1rem 1.25rem;
+            background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+        }
+        .value-item::before {
+            content: '✓';
+            color: var(--accent);
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .value-item span { color: var(--text); font-size: 0.9375rem; line-height: 1.5; }
+        .cta-row {
+            display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+        .back-link {
+            display: inline-block; margin-top: 2.5rem;
+            color: var(--text-muted); font-size: 0.9375rem;
+        }
+        .back-link:hover { color: #fff; }
+{% endblock %}
+
+{% block content %}
+<section class="product-hero">
+    <div class="container">
+        <span class="eyebrow">$49 — Step 2</span>
+        <h1>SBIR Blueprint</h1>
+        <p class="lead">
+            A personalized strategy document for your proposal — before you write a word. Know exactly how to frame your innovation for NSF, DoD, or NASA.
+        </p>
+
+        <div class="value-list">
+            <div class="value-item"><span>Agency-specific framing (NSF vs. DoD vs. NASA scoring rubrics)</span></div>
+            <div class="value-item"><span>Section-by-section outline tuned to your technology</span></div>
+            <div class="value-item"><span>Red-flag check: rejection patterns your draft might trigger</span></div>
+            <div class="value-item"><span>Delivered as a PDF within minutes of purchase</span></div>
+        </div>
+
+        <div class="cta-row">
+            <a href="/blueprint" class="btn btn-primary btn-lg">Get My Blueprint — $49</a>
+            <a href="/" class="btn btn-secondary btn-lg">Not ready yet</a>
+        </div>
+
+        <a href="/" class="back-link">← Back to home</a>
+    </div>
+</section>
+{% endblock %}

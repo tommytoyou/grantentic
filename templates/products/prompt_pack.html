@@ -1,0 +1,88 @@
+{% extends "marketing_base.html" %}
+
+{% block title %}SBIR Prompt Pack — Grantentic{% endblock %}
+{% block description %}Free, ready-to-use AI prompts for NSF, DoD, and NASA SBIR Project Pitches.{% endblock %}
+
+{% block extra_styles %}
+        .product-hero {
+            padding: 5rem 0 4rem;
+            text-align: center;
+        }
+        .product-hero .eyebrow {
+            color: var(--accent-dim);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            font-size: 0.75rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+        .product-hero h1 {
+            font-size: clamp(2rem, 4.5vw, 3rem);
+            letter-spacing: -0.025em;
+            margin-bottom: 1.25rem;
+        }
+        .product-hero .lead {
+            font-size: 1.125rem;
+            color: var(--text-muted);
+            max-width: 640px;
+            margin: 0 auto 2.25rem;
+        }
+        .confirmation {
+            max-width: 640px;
+            margin: 2.5rem auto 0;
+            background: linear-gradient(180deg, rgba(16, 185, 129, 0.08) 0%, rgba(16, 185, 129, 0.02) 100%);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            border-radius: var(--radius);
+            padding: 2rem;
+            text-align: left;
+        }
+        .confirmation h2 {
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+            color: #fff;
+        }
+        .confirmation p {
+            color: var(--text-muted);
+            font-size: 0.9375rem;
+            line-height: 1.55;
+        }
+        .confirmation .email-shown {
+            color: var(--accent-dim);
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: 0.9rem;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 2.5rem;
+            color: var(--text-muted);
+            font-size: 0.9375rem;
+        }
+        .back-link:hover { color: #fff; }
+{% endblock %}
+
+{% block content %}
+<section class="product-hero">
+    <div class="container">
+        <span class="eyebrow">Free — Step 1</span>
+        <h1>SBIR Prompt Pack</h1>
+        <p class="lead">
+            Ready-to-use AI prompts for NSF, DoD, and NASA SBIR Project Pitches. Paste them into Claude or ChatGPT and start drafting — no payment, no spam.
+        </p>
+
+        {% if submitted_email %}
+        <div class="confirmation">
+            <h2>You're on the list.</h2>
+            <p>We saved <span class="email-shown">{{ submitted_email }}</span> and will email you the SBIR Prompt Pack as soon as it's ready. Meanwhile, check out the paid products below if you're further along.</p>
+        </div>
+        {% else %}
+        <form action="/products/prompt-pack" method="post" class="email-form">
+            <input type="email" name="email" placeholder="you@company.com" required aria-label="Email address">
+            <button type="submit" class="btn btn-primary btn-lg">Get Free Access</button>
+        </form>
+        {% endif %}
+
+        <a href="/" class="back-link">← Back to home</a>
+    </div>
+</section>
+{% endblock %}

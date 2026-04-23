@@ -1,0 +1,130 @@
+{% extends "marketing_base.html" %}
+
+{% block title %}Full Proposal Generation — Grantentic{% endblock %}
+{% block description %}AI-generated SBIR Project Pitches with exact character limits and anti-fabrication guardrails. From $149.{% endblock %}
+
+{% block extra_styles %}
+        .product-hero { padding: 5rem 0 4rem; text-align: center; }
+        .product-hero .eyebrow {
+            color: var(--accent-dim); font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.14em; font-size: 0.75rem; margin-bottom: 1rem; display: block;
+        }
+        .product-hero h1 {
+            font-size: clamp(2rem, 4.5vw, 3rem); letter-spacing: -0.025em;
+            margin-bottom: 1.25rem;
+        }
+        .product-hero .lead {
+            font-size: 1.125rem; color: var(--text-muted);
+            max-width: 680px; margin: 0 auto 2.5rem;
+        }
+        .tier-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.25rem;
+            max-width: 960px;
+            margin: 0 auto 2.5rem;
+            text-align: left;
+        }
+        .tier {
+            background: linear-gradient(180deg, rgba(255,255,255,0.035) 0%, rgba(255,255,255,0.01) 100%);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.75rem;
+        }
+        .tier.featured { border-color: rgba(16, 185, 129, 0.35); }
+        .tier-name {
+            display: flex; align-items: center; justify-content: space-between;
+            font-size: 1.125rem; font-weight: 600; color: #fff;
+            margin-bottom: 0.5rem;
+        }
+        .tier-price {
+            font-size: 1.75rem; font-weight: 600; color: var(--accent-dim);
+            margin-bottom: 0.75rem;
+        }
+        .tier-features {
+            list-style: none; padding: 0; margin: 1rem 0 0;
+            display: flex; flex-direction: column; gap: 0.5rem;
+        }
+        .tier-features li {
+            font-size: 0.9375rem; color: var(--text-muted);
+            padding-left: 1.25rem; position: relative;
+        }
+        .tier-features li::before {
+            content: '✓'; position: absolute; left: 0;
+            color: var(--accent);
+        }
+        .cta-row {
+            display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;
+        }
+        .back-link {
+            display: inline-block; margin-top: 2.5rem;
+            color: var(--text-muted); font-size: 0.9375rem;
+        }
+        .back-link:hover { color: #fff; }
+        .product-tag.hot {
+            font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.08em;
+            text-transform: uppercase; padding: 0.25rem 0.625rem;
+            border-radius: var(--radius-pill);
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: var(--accent-dim);
+        }
+{% endblock %}
+
+{% block content %}
+<section class="product-hero">
+    <div class="container">
+        <span class="eyebrow">$149 – $1,200 — Step 3</span>
+        <h1>Full Proposal Generation</h1>
+        <p class="lead">
+            AI-generated 4-section NSF SBIR Project Pitch with exact character limits enforced, anti-fabrication guardrails built in, and a seven-criteria fit check that flags weak sections before you submit.
+        </p>
+
+        <div class="tier-grid">
+            <div class="tier">
+                <div class="tier-name">Starter</div>
+                <div class="tier-price">$149</div>
+                <p style="color: var(--text-muted); font-size: 0.9375rem;">For founders ready to submit a first draft.</p>
+                <ul class="tier-features">
+                    <li>All four NSF Project Pitch sections</li>
+                    <li>Character-limit enforcement</li>
+                    <li>Anti-fabrication guardrails</li>
+                </ul>
+            </div>
+
+            <div class="tier featured">
+                <div class="tier-name">
+                    Pro
+                    <span class="product-tag hot">Most popular</span>
+                </div>
+                <div class="tier-price">$449</div>
+                <p style="color: var(--text-muted); font-size: 0.9375rem;">For founders ready for a serious submission.</p>
+                <ul class="tier-features">
+                    <li>Everything in Starter</li>
+                    <li>2× critique-refine iterations</li>
+                    <li>Seven-criteria NSF fit check</li>
+                    <li>DOCX export</li>
+                </ul>
+            </div>
+
+            <div class="tier">
+                <div class="tier-name">Done-With-You</div>
+                <div class="tier-price">$1,200</div>
+                <p style="color: var(--text-muted); font-size: 0.9375rem;">For high-stakes proposals that need expert review.</p>
+                <ul class="tier-features">
+                    <li>Everything in Pro</li>
+                    <li>Expert review before submission</li>
+                    <li>30-day revision access</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="cta-row">
+            <a href="/register" class="btn btn-primary btn-lg">Generate My Proposal</a>
+            <a href="/" class="btn btn-secondary btn-lg">Back to home</a>
+        </div>
+
+        <a href="/" class="back-link">← Back to home</a>
+    </div>
+</section>
+{% endblock %}
