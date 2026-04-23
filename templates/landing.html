@@ -332,9 +332,12 @@
             gap: 3rem;
             position: relative;
             list-style: none;
+            list-style-type: none;
             padding: 0;
             margin: 0;
         }
+        .steps > .step { list-style: none; list-style-type: none; }
+        .steps > .step::marker { content: ''; }
         .steps::before {
             content: '';
             position: absolute;
@@ -387,6 +390,14 @@
         }
 
         /* ── Trust section ── */
+        /* Explicitly match the hero agency strip (180px desktop / 130px mobile).
+           Inline here as belt-and-suspenders against any cascade override. */
+        .trust-agency-strip { margin-top: 5rem; }
+        .trust-agency-strip .logos img { height: 180px; }
+        @media (max-width: 768px) {
+            .trust-agency-strip .logos img { height: 130px; }
+            .trust-agency-strip .logos { gap: 2.5rem; }
+        }
         .trust-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -597,23 +608,23 @@
             <span class="section-label">How It Works</span>
             <h2 class="section-heading">Three Steps to a Fundable Proposal</h2>
         </div>
-        <ol class="steps">
-            <li class="step">
+        <div class="steps" role="list">
+            <div class="step" role="listitem">
                 <div class="step-number">1</div>
                 <h3>Describe Your Innovation</h3>
                 <p>A guided intake walks you through what the reviewer actually needs &mdash; the testable unknown, named customers, real team credentials.</p>
-            </li>
-            <li class="step">
+            </div>
+            <div class="step" role="listitem">
                 <div class="step-number">2</div>
                 <h3>Choose Your Agency</h3>
                 <p>NSF, DoD, or NASA. Each scores proposals differently. We apply the right rubric, scoring weights, and language automatically.</p>
-            </li>
-            <li class="step">
+            </div>
+            <div class="step" role="listitem">
                 <div class="step-number">3</div>
                 <h3>Get Your Proposal</h3>
                 <p>Section-by-section output with exact character limits enforced and anti-fabrication guardrails built in.</p>
-            </li>
-        </ol>
+            </div>
+        </div>
     </div>
 </section>
 
@@ -636,7 +647,7 @@
             </div>
         </div>
 
-        <div class="agency-strip-wrap">
+        <div class="agency-strip-wrap trust-agency-strip">
             <p class="label">Built for companies applying to</p>
             <div class="logos">
                 <img src="/static/images/NSF_Logo.png" alt="National Science Foundation">
