@@ -12,7 +12,7 @@ import os
 import time
 import asyncio
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict, Any
 from contextlib import asynccontextmanager
 
@@ -733,7 +733,7 @@ async def generate_stream(request: Request, agency: str = "nsf", iterations: int
             # Export
             output_file = exporter.create_document(proposal)
 
-            # Store proposal
+            # Store proposal in-memory for the /results page.
             app_state.proposals[user['username']] = {
                 'proposal': proposal,
                 'quality_report': validation_results,
@@ -742,8 +742,29 @@ async def generate_stream(request: Request, agency: str = "nsf", iterations: int
                 'generated_at': datetime.now().isoformat()
             }
 
+            # Persist to Supabase so the SSE-status check endpoint can detect a
+            # successful completion when the long-running stream's connection
+            # drops on Render's free tier (10–15 min generations).
+            saved_proposal_id = None
+            user_id_for_save = request.session.get("user_id")
+            if user_id_for_save:
+                try:
+                    sections_payload = {
+                        name: s.model_dump() for name, s in sections.items()
+                    }
+                    saved = save_proposal(
+                        user_id=user_id_for_save,
+                        proposal_type=agency_loader.requirements.agency,
+                        sections=sections_payload,
+                        status="complete",
+                    )
+                    saved_proposal_id = saved.get("id")
+                    log.info("generate_stream: saved proposal id=%s for user_id=%s", saved_proposal_id, user_id_for_save)
+                except Exception as save_exc:
+                    log.exception("generate_stream: save_proposal failed: %s", save_exc)
+
             # Final result
-            yield f"data: {json.dumps({'type': 'complete', 'total_words': proposal.total_word_count, 'total_cost': f'${proposal.total_cost:.2f}', 'generation_time': f'{proposal.generation_time_seconds:.1f}s', 'output_file': output_file})}\n\n"
+            yield f"data: {json.dumps({'type': 'complete', 'total_words': proposal.total_word_count, 'total_cost': f'${proposal.total_cost:.2f}', 'generation_time': f'{proposal.generation_time_seconds:.1f}s', 'output_file': output_file, 'proposal_id': saved_proposal_id})}\n\n"
 
         except Exception as e:
             yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
@@ -756,6 +777,50 @@ async def generate_stream(request: Request, agency: str = "nsf", iterations: int
             "Connection": "keep-alive",
         }
     )
+
+
+@app.get("/api/check-generation-status")
+async def check_generation_status(request: Request):
+    """Lightweight check used by the /generate page when the SSE connection
+    drops mid-stream — typical on Render's free tier for 10–15 minute jobs.
+    Tells the frontend whether a proposal actually saved despite the dropped
+    connection, so we can redirect to /results instead of falsely showing a
+    failure."""
+    user = get_current_user(request)
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return {"status": "failed"}
+
+    try:
+        proposals = get_proposals_for_user(user_id)
+    except Exception as exc:
+        log.exception("check_generation_status: lookup failed: %s", exc)
+        return {"status": "failed"}
+
+    if not proposals:
+        return {"status": "failed"}
+
+    most_recent = proposals[0]
+    created_at_raw = most_recent.get("created_at")
+    if not created_at_raw:
+        return {"status": "failed"}
+
+    try:
+        # Supabase returns ISO 8601; normalize trailing Z to +00:00 for fromisoformat.
+        created_at = datetime.fromisoformat(str(created_at_raw).replace("Z", "+00:00"))
+        if created_at.tzinfo is None:
+            created_at = created_at.replace(tzinfo=timezone.utc)
+    except ValueError:
+        log.warning("check_generation_status: unparseable created_at=%r", created_at_raw)
+        return {"status": "failed"}
+
+    if datetime.now(timezone.utc) - created_at > timedelta(minutes=30):
+        return {"status": "failed"}
+
+    return {"status": "complete", "proposal_id": most_recent.get("id")}
 
 
 def create_proposal_from_sections(company_name: str, sections: dict, agency_loader) -> GrantProposal:

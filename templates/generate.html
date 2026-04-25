@@ -267,6 +267,10 @@ function selectTier(tier) {
     selected.classList.add('border-primary-500', 'ring-2', 'ring-primary-100');
 }
 
+// Tracks whether the SSE stream itself emitted a clean 'complete' event so the
+// disconnect handler doesn't fight the success path.
+let generationCompleted = false;
+
 function startGeneration() {
     const agency = '{{ agency }}';
     const tier = document.getElementById('selected-tier').value;
@@ -282,13 +286,41 @@ function startGeneration() {
     eventSource.onmessage = function(event) {
         const data = JSON.parse(event.data);
         handleEvent(data);
+        if (data.type === 'complete') {
+            generationCompleted = true;
+            eventSource.close();
+        }
     };
 
+    // Render's free tier drops long-lived SSE connections at ~10–15 minutes,
+    // which fires onerror even when the proposal actually saved. Don't trust
+    // the dropped connection — ask the server.
     eventSource.onerror = function(error) {
         console.error('SSE Error:', error);
         eventSource.close();
-        showError('Connection lost. Please try again.');
+        if (generationCompleted) return;
+        verifyGenerationStatus();
     };
+}
+
+async function verifyGenerationStatus() {
+    document.getElementById('section-text').textContent = 'Verifying generation status...';
+    try {
+        const resp = await fetch('/api/check-generation-status', { credentials: 'same-origin' });
+        if (!resp.ok) {
+            showError('Connection lost. Please try again.');
+            return;
+        }
+        const data = await resp.json();
+        if (data.status === 'complete') {
+            // Proposal saved despite the dropped SSE — send the user to it.
+            window.location.href = '/results';
+            return;
+        }
+    } catch (e) {
+        console.error('Status check failed:', e);
+    }
+    showError('Connection lost. Please try again.');
 }
 
 function handleEvent(data) {

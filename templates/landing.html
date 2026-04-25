@@ -3,6 +3,24 @@
 {% block title %}Grantentic — Win Federal Grants Without the Guesswork{% endblock %}
 {% block description %}Most SBIR proposals are rejected in the first paragraph. Grantentic fixes that — AI-powered NSF, DoD, and NASA proposals for deep tech founders.{% endblock %}
 
+{% block extra_head %}
+<style>
+    /* Agency logos ship with white-square backgrounds baked into the image
+       files. Multiply blends those white pixels into whatever sits behind,
+       erasing the visible box on both light and dark backgrounds. The
+       contrast bump compensates for the slight wash multiply causes. */
+    .agency-logo {
+        background: transparent;
+        mix-blend-mode: multiply;
+        filter: contrast(1.05);
+        padding: 0;
+        border-radius: 0;
+        box-shadow: none;
+        border: none;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 
 <!-- 1. Hero -->
@@ -41,9 +59,9 @@
                 Accepted formats for NSF, DoD, and NASA SBIR submissions
             </p>
             <div class="flex items-center justify-center flex-wrap gap-12 sm:gap-20">
-                <img src="/static/images/NSF_Logo.png" alt="National Science Foundation" class="h-40 sm:h-44 w-auto object-contain">
-                <img src="/static/images/NASA_Logo.webp" alt="NASA" class="h-40 sm:h-44 w-auto object-contain">
-                <img src="/static/images/DOD_Logo.png" alt="Department of Defense" class="h-40 sm:h-44 w-auto object-contain">
+                <img src="/static/images/NSF_Logo.png" alt="National Science Foundation" class="agency-logo h-40 sm:h-44 w-auto object-contain">
+                <img src="/static/images/NASA_Logo.webp" alt="NASA" class="agency-logo h-40 sm:h-44 w-auto object-contain">
+                <img src="/static/images/DOD_Logo.png" alt="Department of Defense" class="agency-logo h-40 sm:h-44 w-auto object-contain">
             </div>
         </div>
     </div>
@@ -216,9 +234,9 @@
         <div class="text-center pt-12 border-t border-gray-200">
             <p class="text-xs uppercase tracking-wider font-semibold text-gray-500 mb-8">Built for companies applying to</p>
             <div class="flex items-center justify-center flex-wrap gap-12 sm:gap-20">
-                <img src="/static/images/NSF_Logo.png" alt="National Science Foundation" class="h-40 sm:h-44 w-auto object-contain">
-                <img src="/static/images/NASA_Logo.webp" alt="NASA" class="h-40 sm:h-44 w-auto object-contain">
-                <img src="/static/images/DOD_Logo.png" alt="Department of Defense" class="h-40 sm:h-44 w-auto object-contain">
+                <img src="/static/images/NSF_Logo.png" alt="National Science Foundation" class="agency-logo h-40 sm:h-44 w-auto object-contain">
+                <img src="/static/images/NASA_Logo.webp" alt="NASA" class="agency-logo h-40 sm:h-44 w-auto object-contain">
+                <img src="/static/images/DOD_Logo.png" alt="Department of Defense" class="agency-logo h-40 sm:h-44 w-auto object-contain">
             </div>
         </div>
     </div>
