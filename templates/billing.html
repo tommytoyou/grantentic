@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-    <h1 class="text-3xl font-bold text-gray-900 mb-8">Billing & Subscription</h1>
+    <h1 class="text-3xl font-bold text-gray-900 mb-8">Billing</h1>
 
     <!-- Current Plan -->
     <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
@@ -13,31 +13,7 @@
         {% if payment_status.has_paid %}
         <div class="flex items-center justify-between">
             <div>
-                {% if payment_status.payment_type == 'one_time' %}
-                <div class="flex items-center">
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                        Active
-                    </span>
-                    <span class="ml-3 text-lg font-semibold text-gray-900">SBIR Phase I Package</span>
-                </div>
-                <p class="text-gray-600 mt-2">One-time purchase - Pre-application + Full Application</p>
-                {% if payment_status.expires_at %}
-                <p class="text-sm text-gray-500 mt-1">Revision access expires: {{ payment_status.expires_at[:10] }}</p>
-                {% endif %}
-                {% elif payment_status.payment_type == 'subscription' %}
-                <div class="flex items-center">
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
-                        {% if payment_status.subscription_status == 'active' %}bg-green-100 text-green-800
-                        {% elif payment_status.subscription_status == 'past_due' %}bg-yellow-100 text-yellow-800
-                        {% else %}bg-red-100 text-red-800{% endif %}">
-                        {{ payment_status.subscription_status|title }}
-                    </span>
-                    <span class="ml-3 text-lg font-semibold text-gray-900">{{ payment_status.tier|title }} Subscription</span>
-                </div>
-                {% if payment_status.current_period_end %}
-                <p class="text-sm text-gray-500 mt-2">Next billing date: {{ payment_status.current_period_end[:10] }}</p>
-                {% endif %}
-                {% elif payment_status.is_admin %}
+                {% if payment_status.is_admin %}
                 <div class="flex items-center">
                     <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
                         Admin
@@ -45,16 +21,16 @@
                     <span class="ml-3 text-lg font-semibold text-gray-900">Full Access</span>
                 </div>
                 <p class="text-gray-600 mt-2">Administrator account with unlimited access</p>
+                {% else %}
+                <div class="flex items-center">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                        Active
+                    </span>
+                    <span class="ml-3 text-lg font-semibold text-gray-900">{{ payment_status.product_name or 'NSF Product' }}</span>
+                </div>
+                <p class="text-gray-600 mt-2">One-time purchase</p>
                 {% endif %}
             </div>
-
-            {% if payment_status.stripe_customer_id and not payment_status.is_admin %}
-            <form action="/billing/portal" method="POST">
-                <button type="submit" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 transition-colors">
-                    Manage Billing
-                </button>
-            </form>
-            {% endif %}
         </div>
         {% else %}
         <div class="text-center py-8">

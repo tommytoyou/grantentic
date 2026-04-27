@@ -107,32 +107,14 @@ class PaymentRecord(BaseModel):
     amount_cents: int
     currency: str = "usd"
     status: str  # 'pending', 'completed', 'failed', 'refunded'
-    tier: str  # 'one_time', 'monthly_basic', 'monthly_pro', 'monthly_enterprise'
+    tier: str  # 'nsf_pitch', 'nsf_full', 'nsf_bundle', 'blueprint'
     created_at: datetime = Field(default_factory=datetime.now)
     completed_at: Optional[datetime] = None
 
 
-class SubscriptionRecord(BaseModel):
-    """Record of a subscription"""
-    subscription_id: str
-    stripe_subscription_id: Optional[str] = None
-    stripe_customer_id: Optional[str] = None
-    tier: str  # 'monthly_basic', 'monthly_pro', 'monthly_enterprise'
-    status: str  # 'active', 'canceled', 'past_due', 'unpaid'
-    current_period_start: Optional[datetime] = None
-    current_period_end: Optional[datetime] = None
-    created_at: datetime = Field(default_factory=datetime.now)
-    canceled_at: Optional[datetime] = None
-
-
 class UserPaymentStatus(BaseModel):
-    """User's payment and subscription status"""
+    """User's payment status"""
     has_paid: bool = False
-    payment_type: Optional[str] = None  # 'one_time' or 'subscription'
-    one_time_purchase: Optional[PaymentRecord] = None
-    subscription: Optional[SubscriptionRecord] = None
+    last_purchase: Optional[PaymentRecord] = None
     stripe_customer_id: Optional[str] = None
-    # For one-time purchases: expiration for revision access
-    one_time_expires_at: Optional[datetime] = None
-    # Usage tracking
     proposals_generated: int = 0

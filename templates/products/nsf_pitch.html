@@ -1,0 +1,42 @@
+{% extends "marketing_base.html" %}
+
+{% block title %}NSF Project Pitch Generator — $149 — Grantentic{% endblock %}
+{% block description %}AI-generated NSF SBIR/STTR Project Pitch with full-quality critique-refine iterations, character limits enforced, anti-fabrication guarantee, and seven-criteria reviewer fit check. $149 flat.{% endblock %}
+
+{% block content %}
+<section class="bg-white border-b border-gray-200">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
+        <div class="text-center">
+            <p class="text-sm uppercase tracking-wider font-semibold text-primary-600 mb-3">$149 · One-time · Per pitch</p>
+            <h1 class="text-4xl sm:text-5xl font-bold text-gray-900 tracking-tight">NSF Project Pitch Generator</h1>
+            <p class="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
+                The Project Pitch is the short pre-proposal NSF SBIR/STTR requires before they invite you to submit a full proposal. Our generator produces all four sections at full quality with character limits enforced.
+            </p>
+        </div>
+
+        <div class="mt-12 bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">What you get</h2>
+            <ul class="space-y-3 text-gray-700">
+                <li class="flex gap-3"><span class="text-primary-600 font-bold">✓</span> Full-quality generation with critique-refine iterations</li>
+                <li class="flex gap-3"><span class="text-primary-600 font-bold">✓</span> All four NSF Project Pitch sections (Innovation, Technical, Market, Team)</li>
+                <li class="flex gap-3"><span class="text-primary-600 font-bold">✓</span> Exact character limits enforced in code, not just in prompts</li>
+                <li class="flex gap-3"><span class="text-primary-600 font-bold">✓</span> NSF seven-criteria fit check with reviewer risk flags</li>
+                <li class="flex gap-3"><span class="text-primary-600 font-bold">✓</span> Anti-fabrication guarantee — no invented team members, LOIs, or publications</li>
+                <li class="flex gap-3"><span class="text-primary-600 font-bold">✓</span> Word document download</li>
+            </ul>
+        </div>
+
+        <form action="/checkout/nsf/pitch" method="post" class="mt-8">
+            <button type="submit"
+                    class="w-full inline-flex items-center justify-center px-6 py-4 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-colors">
+                Continue to Checkout — $149
+            </button>
+            <p class="text-center mt-3 text-sm text-gray-500">Need a Full Proposal too? <a href="/products/nsf-bundle" class="text-primary-600 hover:underline">Get the Bundle and save $49 →</a></p>
+        </form>
+
+        <div class="mt-10 text-center">
+            <a href="/pricing" class="text-sm text-gray-500 hover:text-primary-600">← Back to pricing</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

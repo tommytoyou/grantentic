@@ -76,13 +76,20 @@ def save_company_context(user_id: str, context: dict) -> None:
         result.data, getattr(result, "count", None),
     )
 
-def save_proposal(user_id: str, proposal_type: str, sections: dict, status: str = "draft") -> dict:
+def save_proposal(
+    user_id: str,
+    proposal_type: str,
+    sections: dict,
+    status: str = "draft",
+    expert_review_requested: bool = False,
+) -> dict:
     sb = get_supabase()
     result = sb.table("proposals").insert({
         "user_id": user_id,
         "proposal_type": proposal_type,
         "sections_json": json.dumps(sections),
-        "status": status
+        "status": status,
+        "expert_review_requested": expert_review_requested,
     }).execute()
     return result.data[0]
 

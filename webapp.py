@@ -628,13 +628,19 @@ async def generate_page(request: Request, agency: str = "nsf"):
 
 
 @app.get("/generate/stream")
-async def generate_stream(request: Request, agency: str = "nsf", iterations: int = 1, tier: str = "pro"):
+async def generate_stream(request: Request, agency: str = "nsf"):
     """SSE endpoint for proposal generation with real-time updates"""
     user = get_current_user(request)
     if not user:
         raise HTTPException(status_code=401, detail="Not authenticated")
 
-    log.info("generate_stream: user=%r agency=%s tier=%s iterations=%d", user.get("username"), agency, tier, iterations)
+    iterations = Config.DEFAULT_ITERATIONS
+    nsf_product = request.session.get("nsf_product")
+    expert_review_requested = nsf_product in ("full", "bundle")
+    log.info(
+        "generate_stream: user=%r agency=%s iterations=%d nsf_product=%s expert_review=%s",
+        user.get("username"), agency, iterations, nsf_product, expert_review_requested,
+    )
 
     async def event_generator():
         try:
@@ -757,6 +763,7 @@ async def generate_stream(request: Request, agency: str = "nsf", iterations: int
                         proposal_type=agency_loader.requirements.agency,
                         sections=sections_payload,
                         status="complete",
+                        expert_review_requested=expert_review_requested,
                     )
                     saved_proposal_id = saved.get("id")
                     log.info("generate_stream: saved proposal id=%s for user_id=%s", saved_proposal_id, user_id_for_save)
@@ -913,9 +920,9 @@ async def pricing_page(request: Request):
     })
 
 
-@app.post("/checkout/one-time")
-async def create_checkout_one_time(request: Request):
-    """Create Stripe Checkout session for one-time purchase"""
+@app.post("/checkout/nsf/{product}")
+async def create_checkout_nsf(request: Request, product: str):
+    """Create a Stripe Checkout session for one of the three NSF products."""
     user = get_current_user(request)
     if not user:
         raise HTTPException(status_code=401, detail="Not authenticated")
@@ -923,76 +930,37 @@ async def create_checkout_one_time(request: Request):
     if not Config.STRIPE_SECRET_KEY:
         raise HTTPException(status_code=500, detail="Stripe not configured")
 
-    try:
-        customer = stripe.Customer.create(
-            metadata={'username': user['username']}
-        )
+    cfg = Config.NSF_PRODUCTS.get(product)
+    if not cfg:
+        raise HTTPException(status_code=400, detail="Unknown NSF product")
 
+    price_id = getattr(Config, cfg['price_id_env'], '')
+    if not price_id:
+        raise HTTPException(status_code=500, detail=f"Stripe price not configured for {product}")
+
+    form = await request.form()
+    invitation_confirmed = form.get("invitation_confirmed") == "on"
+
+    request.session["nsf_product"] = product
+    tier_key = f"nsf_{product}"
+
+    try:
+        customer = stripe.Customer.create(metadata={'username': user['username']})
         checkout_session = stripe.checkout.Session.create(
             customer=customer.id,
             payment_method_types=['card'],
-            line_items=[{
-                'price': Config.STRIPE_PRICE_ONE_TIME,
-                'quantity': 1,
-            }],
+            line_items=[{'price': price_id, 'quantity': 1}],
             mode='payment',
             success_url=f"{Config.BASE_URL}/payment/success?session_id={{CHECKOUT_SESSION_ID}}",
             cancel_url=f"{Config.BASE_URL}/payment/cancel",
             metadata={
                 'username': user['username'],
-                'tier': 'one_time'
-            }
+                'tier': tier_key,
+                'nsf_product': product,
+                'invitation_confirmed': str(invitation_confirmed).lower(),
+            },
         )
-
         return RedirectResponse(url=checkout_session.url, status_code=303)
-
-    except stripe.error.StripeError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-
-@app.post("/checkout/subscription/{tier}")
-async def create_checkout_subscription(request: Request, tier: str):
-    """Create Stripe Checkout session for subscription"""
-    user = get_current_user(request)
-    if not user:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-
-    if not Config.STRIPE_SECRET_KEY:
-        raise HTTPException(status_code=500, detail="Stripe not configured")
-
-    price_map = {
-        'basic': Config.STRIPE_PRICE_MONTHLY_BASIC,
-        'standard': Config.STRIPE_PRICE_MONTHLY_STANDARD,
-        'pro': Config.STRIPE_PRICE_MONTHLY_PRO
-    }
-
-    price_id = price_map.get(tier)
-    if not price_id:
-        raise HTTPException(status_code=400, detail="Invalid subscription tier")
-
-    try:
-        customer = stripe.Customer.create(
-            metadata={'username': user['username']}
-        )
-
-        checkout_session = stripe.checkout.Session.create(
-            customer=customer.id,
-            payment_method_types=['card'],
-            line_items=[{
-                'price': price_id,
-                'quantity': 1,
-            }],
-            mode='subscription',
-            success_url=f"{Config.BASE_URL}/payment/success?session_id={{CHECKOUT_SESSION_ID}}",
-            cancel_url=f"{Config.BASE_URL}/payment/cancel",
-            metadata={
-                'username': user['username'],
-                'tier': f'monthly_{tier}'
-            }
-        )
-
-        return RedirectResponse(url=checkout_session.url, status_code=303)
-
     except stripe.error.StripeError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -1066,7 +1034,6 @@ async def billing_page(request: Request):
     return templates.TemplateResponse(request, "billing.html", {
         "user": user,
         "payment_status": {'can_generate': False},
-        "tiers": Config.PAYMENT_TIERS
     })
 
 
@@ -1142,10 +1109,31 @@ async def product_blueprint_info(request: Request):
 
 
 @app.get("/products/generate", response_class=HTMLResponse)
-async def product_generate_info(request: Request):
-    """Informational page for Full Proposal Generation — links to /register."""
-    return templates.TemplateResponse(request, "products/generate.html", {
+async def product_generate_legacy(request: Request):
+    return RedirectResponse(url="/pricing", status_code=302)
+
+
+@app.get("/products/nsf-pitch", response_class=HTMLResponse)
+async def product_nsf_pitch(request: Request):
+    return templates.TemplateResponse(request, "products/nsf_pitch.html", {
         "user": get_current_user(request),
+        "product": Config.NSF_PRODUCTS["pitch"],
+    })
+
+
+@app.get("/products/nsf-full", response_class=HTMLResponse)
+async def product_nsf_full(request: Request):
+    return templates.TemplateResponse(request, "products/nsf_full.html", {
+        "user": get_current_user(request),
+        "product": Config.NSF_PRODUCTS["full"],
+    })
+
+
+@app.get("/products/nsf-bundle", response_class=HTMLResponse)
+async def product_nsf_bundle(request: Request):
+    return templates.TemplateResponse(request, "products/nsf_bundle.html", {
+        "user": get_current_user(request),
+        "product": Config.NSF_PRODUCTS["bundle"],
     })
 
 

@@ -39,75 +39,39 @@ class Config:
     STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET', '')
 
     # Blueprint product
-    STRIPE_PRICE_BLUEPRINT = os.environ.get('STRIPE_PRICE_BLUEPRINT', '')          # $29
+    STRIPE_PRICE_BLUEPRINT = os.environ.get('STRIPE_PRICE_BLUEPRINT', '')          # $49
     STRIPE_PRICE_BLUEPRINT_STUDENT = os.environ.get('STRIPE_PRICE_BLUEPRINT_STUDENT', '')  # $19
     BLUEPRINT_LAUNCH_DATE = os.environ.get('BLUEPRINT_LAUNCH_DATE', '2026-05-15T00:00:00Z')
 
-    # Stripe Price IDs (create these in Stripe Dashboard)
-    # One-time purchase: $800 for SBIR Phase I pre-application + full application
-    STRIPE_PRICE_ONE_TIME = os.environ.get('STRIPE_PRICE_ONE_TIME', '')
+    # NSF product Stripe price IDs (create in Stripe Dashboard)
+    STRIPE_PRICE_NSF_PITCH = os.environ.get('STRIPE_PRICE_NSF_PITCH', '')   # $149
+    STRIPE_PRICE_NSF_FULL = os.environ.get('STRIPE_PRICE_NSF_FULL', '')     # $449
+    STRIPE_PRICE_NSF_BUNDLE = os.environ.get('STRIPE_PRICE_NSF_BUNDLE', '') # $549
 
-    # Monthly subscription tiers
-    STRIPE_PRICE_MONTHLY_BASIC = os.environ.get('STRIPE_PRICE_MONTHLY_BASIC', '')
-    STRIPE_PRICE_MONTHLY_STANDARD = os.environ.get('STRIPE_PRICE_MONTHLY_STANDARD', '')
-    STRIPE_PRICE_MONTHLY_PRO = os.environ.get('STRIPE_PRICE_MONTHLY_PRO', '')
-
-    # Payment tiers configuration
-    PAYMENT_TIERS = {
-        'one_time': {
-            'name': 'One-Time',
-            'description': 'Get started immediately',
-            'price': 800,
-            'price_id_env': 'STRIPE_PRICE_ONE_TIME',
-            'type': 'one_time',
-            'features': [
-                'Up to 3 Pre-Pitches',
-                '1 Phase I submission',
-                'NSF, DoD, NASA support',
-                '30-day revision access'
-            ]
+    NSF_PRODUCTS = {
+        'pitch': {
+            'name': 'NSF Project Pitch Generator',
+            'price_cents': 14900,
+            'price_id_env': 'STRIPE_PRICE_NSF_PITCH',
+            'requires_invitation': False,
+            'expert_review': False,
         },
-        'monthly_basic': {
-            'name': 'Basic',
-            'description': 'For light users',
-            'price': 199,
-            'price_id_env': 'STRIPE_PRICE_MONTHLY_BASIC',
-            'type': 'subscription',
-            'coming_soon': True,
-            'features': [
-                '1 Pre-Pitch/month',
-                'Email support',
-                'All agency templates'
-            ]
+        'full': {
+            'name': 'NSF Full Proposal Generator',
+            'price_cents': 44900,
+            'price_id_env': 'STRIPE_PRICE_NSF_FULL',
+            'requires_invitation': True,
+            'expert_review': True,
         },
-        'monthly_standard': {
-            'name': 'Standard',
-            'description': 'For regular applicants',
-            'price': 399,
-            'price_id_env': 'STRIPE_PRICE_MONTHLY_STANDARD',
-            'type': 'subscription',
-            'coming_soon': True,
-            'features': [
-                '2 Pre-Pitches/month',
-                '1 Phase I/quarter',
-                'Priority email support',
-                'All agency templates'
-            ]
+        'bundle': {
+            'name': 'NSF Complete Bundle',
+            'price_cents': 54900,
+            'price_id_env': 'STRIPE_PRICE_NSF_BUNDLE',
+            'requires_invitation': True,
+            'expert_review': True,
+            'separately_cents': 59800,
+            'savings_cents': 4900,
         },
-        'monthly_pro': {
-            'name': 'Pro',
-            'description': 'For power users',
-            'price': 699,
-            'price_id_env': 'STRIPE_PRICE_MONTHLY_PRO',
-            'type': 'subscription',
-            'coming_soon': True,
-            'features': [
-                'Unlimited Pre-Pitches',
-                '2 Phase I/month',
-                'Priority support',
-                'All agency templates'
-            ]
-        }
     }
 
     # Base URL for Stripe redirects (set in production)
@@ -170,9 +134,9 @@ class Config:
     # ============================================================================
     # WORKFLOW SETTINGS
     # ============================================================================
-    # Number of critique-refine iterations per section
-    # Higher values improve quality but increase cost
-    DEFAULT_ITERATIONS = 1
+    # Number of critique-refine iterations per section.
+    # Every NSF product runs full-quality generation at this level.
+    DEFAULT_ITERATIONS = 2
 
     # Enable parallel section generation (not yet implemented)
     PARALLEL_GENERATION = False

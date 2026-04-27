@@ -15,10 +15,8 @@
                 <span class="text-green-800 font-medium">
                     {% if payment_status.is_admin %}
                         Admin Access - Full Access Enabled
-                    {% elif payment_status.payment_type == 'one_time' %}
-                        SBIR Phase I Package - Active
-                    {% elif payment_status.payment_type == 'subscription' %}
-                        {{ payment_status.tier|title }} Subscription - Active
+                    {% else %}
+                        {{ payment_status.product_name or 'NSF Product' }} - Active
                     {% endif %}
                 </span>
             </div>
