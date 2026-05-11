@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Pending approvals — Grantentic admin{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Full Proposal — pending approvals</h1>
+        <p class="mt-1 text-gray-600">NSF invitation letters submitted by users who chose Option B (success-fee).</p>
+    </div>
+
+    {% if not approvals %}
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center text-gray-500">
+            No pending approvals.
+        </div>
+    {% else %}
+        <div class="space-y-4">
+            {% for a in approvals %}
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div class="flex items-start justify-between mb-3">
+                    <div>
+                        <div class="text-sm text-gray-500">{{ a.requested_at[:19].replace('T', ' ') }} UTC</div>
+                        <div class="text-base font-semibold text-gray-900">{{ a.contact_email }}</div>
+                        <div class="text-xs text-gray-500 font-mono mt-1">{{ a.id }}</div>
+                    </div>
+                    <span class="text-xs font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full
+                        {% if a.status == 'pending' %}bg-yellow-100 text-yellow-800
+                        {% elif a.status == 'approved' %}bg-green-100 text-green-800
+                        {% else %}bg-gray-100 text-gray-700{% endif %}">
+                        {{ a.status }}
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4 text-sm">
+                    <div>
+                        <div class="text-gray-500">User ID</div>
+                        <div class="font-mono text-gray-800">{{ a.user_id or '(not logged in)' }}</div>
+                    </div>
+                    <div>
+                        <div class="text-gray-500">Invitation letter</div>
+                        <a href="/admin/approvals/{{ a.id }}/letter" class="text-primary-600 hover:underline font-medium">Download PDF</a>
+                    </div>
+                </div>
+
+                {% if a.status == 'pending' %}
+                <div class="flex gap-3 pt-3 border-t border-gray-100">
+                    <form action="/admin/approvals/{{ a.id }}/approve" method="post">
+                        <button type="submit" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-md">Approve</button>
+                    </form>
+                    <form action="/admin/approvals/{{ a.id }}/reject" method="post">
+                        <button type="submit" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm font-medium rounded-md">Reject</button>
+                    </form>
+                </div>
+                {% elif a.decided_at %}
+                <div class="text-xs text-gray-500 pt-3 border-t border-gray-100">
+                    Decided {{ a.decided_at[:19].replace('T', ' ') }} UTC by {{ a.decided_by }}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

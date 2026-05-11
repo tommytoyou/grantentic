@@ -45,7 +45,7 @@
                         class="p-4 rounded-lg border-2 transition-all hover:shadow-md text-center {% if agency == ag.code %}border-primary-500 bg-primary-50{% else %}border-gray-200 hover:border-gray-300{% endif %}"
                     >
                         <div class="flex justify-center mb-2">
-                            <img src="/static/images/{{ ag.code|upper }}_Logo{% if ag.code == 'nasa' %}.webp{% else %}.png{% endif %}" alt="{{ ag.name }} Logo" class="h-16 object-contain">
+                            <img src="/static/images/{{ ag.code|upper }}_Logo.png" alt="{{ ag.name }} Logo" class="h-16 object-contain">
                         </div>
                         <div class="font-semibold text-gray-900">{{ ag.name }}</div>
                         <div class="text-xs text-gray-500">{{ ag.full_name }}</div>
@@ -67,7 +67,7 @@
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <!-- Pre-Pitch Option -->
+                        <!-- Pre-Proposal Option -->
                         <a
                             href="/generate?agency={{ agency }}&type=pre-pitch"
                             class="block p-6 rounded-xl border-2 border-gray-200 hover:border-primary-500 hover:bg-primary-50 transition-all group"
@@ -79,21 +79,25 @@
                                     </svg>
                                 </div>
                                 <div>
-                                    <h3 class="font-semibold text-gray-900 group-hover:text-primary-700">Pre-Pitch</h3>
-                                    <span class="text-xs text-green-600 font-medium">Required First Step</span>
+                                    <h3 class="font-semibold text-gray-900 group-hover:text-primary-700">Pre-Proposal</h3>
+                                    <span class="text-xs text-green-600 font-medium">Required first step</span>
                                 </div>
                             </div>
                             <p class="text-sm text-gray-600 mb-4">
-                                A shorter preliminary submission to gauge NSF interest before the full proposal.
-                                Fewer requirements, faster turnaround.
+                                The short preliminary submission NSF requires before they invite you to send a Full Proposal.
                             </p>
                             <div class="flex items-center text-sm text-gray-500">
+                                {% set ppc = credits.pre_proposal_credits if credits else 0 %}
                                 <span class="mr-4">~2-3 pages</span>
-                                <span>Est. cost: $1-2</span>
+                                {% if ppc > 0 %}
+                                    <span class="font-semibold text-green-700">Credits: {{ ppc }}</span>
+                                {% else %}
+                                    <span><a href="/products/phase-i-pre-proposal" class="text-primary-600 hover:underline">Buy a credit — $250</a></span>
+                                {% endif %}
                             </div>
                         </a>
 
-                        <!-- Phase I Option -->
+                        <!-- Full Proposal Option -->
                         <a
                             href="/generate?agency={{ agency }}&type=phase1"
                             class="block p-6 rounded-xl border-2 border-gray-200 hover:border-primary-500 hover:bg-primary-50 transition-all group"
@@ -105,17 +109,21 @@
                                     </svg>
                                 </div>
                                 <div>
-                                    <h3 class="font-semibold text-gray-900 group-hover:text-primary-700">Phase I SBIR</h3>
-                                    <span class="text-xs text-green-600 font-medium">Full Proposal</span>
+                                    <h3 class="font-semibold text-gray-900 group-hover:text-primary-700">Full Proposal</h3>
+                                    <span class="text-xs text-green-600 font-medium">Post-invitation submission</span>
                                 </div>
                             </div>
                             <p class="text-sm text-gray-600 mb-4">
-                                Full Phase I proposal with detailed technical approach, commercialization plan,
-                                and budget.
+                                Full Phase I proposal with detailed technical approach, commercialization plan, and budget.
                             </p>
                             <div class="flex items-center text-sm text-gray-500">
+                                {% set fpc = credits.full_proposal_credits if credits else 0 %}
                                 <span class="mr-4">~15-20 pages</span>
-                                <span>Est. cost: $3-5</span>
+                                {% if fpc > 0 %}
+                                    <span class="font-semibold text-green-700">Credits: {{ fpc }}</span>
+                                {% else %}
+                                    <span><a href="/products/phase-i-full-proposal" class="text-primary-600 hover:underline">Get access</a></span>
+                                {% endif %}
                             </div>
                         </a>
                     </div>

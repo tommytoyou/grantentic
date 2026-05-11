@@ -107,7 +107,7 @@ class PaymentRecord(BaseModel):
     amount_cents: int
     currency: str = "usd"
     status: str  # 'pending', 'completed', 'failed', 'refunded'
-    tier: str  # 'nsf_pitch', 'nsf_full', 'nsf_bundle', 'blueprint'
+    tier: str  # 'pre_proposal' | 'full_proposal_upfront' | 'full_proposal_success_fee'
     created_at: datetime = Field(default_factory=datetime.now)
     completed_at: Optional[datetime] = None
 

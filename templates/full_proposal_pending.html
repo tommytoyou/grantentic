@@ -1,0 +1,31 @@
+{% extends "marketing_base.html" %}
+
+{% block title %}Application received — Grantentic{% endblock %}
+
+{% block content %}
+<section class="bg-white border-b border-gray-200">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 text-center">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary-50 border-2 border-primary-200 text-primary-600 text-3xl mb-6">✓</div>
+        <h1 class="text-4xl font-bold text-gray-900 tracking-tight">Application received</h1>
+        <p class="mt-4 text-lg text-gray-600 max-w-xl mx-auto">
+            Tom Erickson will review your NSF invitation letter and respond within 24 hours at
+            <span class="font-mono text-sm bg-gray-100 border border-gray-200 rounded px-2 py-0.5 text-gray-800">{{ contact_email }}</span>.
+        </p>
+        <p class="mt-2 text-sm text-gray-500">Reference: <span class="font-mono">{{ approval_id }}</span></p>
+
+        <div class="mt-10 bg-gray-50 border border-gray-200 rounded-lg p-6 text-left">
+            <h2 class="text-base font-semibold text-gray-900 mb-2">What happens next</h2>
+            <ol class="space-y-2 text-sm text-gray-700 list-decimal list-inside">
+                <li>Tom verifies your NSF invitation letter is genuine.</li>
+                <li>You receive an email with the decision (approved or declined).</li>
+                <li>If approved: you can log in and start generating the Full Proposal immediately, no charge today.</li>
+                <li>If NSF later awards you a Phase I grant, you'll receive an invoice for 10% of the award.</li>
+            </ol>
+        </div>
+
+        <div class="mt-8">
+            <a href="/" class="text-sm text-gray-500 hover:text-primary-600">← Back to home</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

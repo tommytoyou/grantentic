@@ -9,6 +9,7 @@ Full HTML control with FastAPI + Jinja2 + HTMX
 import json
 import logging
 import os
+import secrets
 import time
 import asyncio
 from pathlib import Path
@@ -33,12 +34,13 @@ if _sentry_dsn:
     )
     log.info("Sentry initialized")
 
-from fastapi import FastAPI, Request, Form, Depends, HTTPException, Response
+from fastapi import FastAPI, Request, Form, Depends, HTTPException, Response, UploadFile, File
 from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 
+import base64
 import stripe
 
 from config import Config
@@ -55,6 +57,15 @@ from src.database import (
     get_password_reset_token,
     mark_token_used,
     update_user_password,
+    create_pending_approval,
+    list_pending_approvals,
+    get_pending_approval,
+    decide_pending_approval,
+    upload_invitation_letter,
+    signed_invitation_letter_url,
+    StorageBucketMissingError,
+    grant_credits,
+    get_credits,
 )
 from src.auth import hash_password
 from src.agency_loader import load_agency_requirements
@@ -485,6 +496,8 @@ async def dashboard(request: Request, agency: str = "nsf"):
     # Get proposal if exists
     proposal = app_state.proposals.get(user['username'])
 
+    credits = get_credits(user_id) if user_id else {"pre_proposal_credits": 0, "full_proposal_credits": 0}
+
     return templates.TemplateResponse(request, "dashboard.html", {
         "user": user,
         "company_data": company_data,
@@ -495,7 +508,8 @@ async def dashboard(request: Request, agency: str = "nsf"):
             {'code': 'dod', 'name': 'DoD', 'icon': '🛡️', 'full_name': 'Department of Defense'},
             {'code': 'nasa', 'name': 'NASA', 'icon': '🚀', 'full_name': 'Space Technology'}
         ],
-        "proposal": proposal
+        "proposal": proposal,
+        "credits": credits,
     })
 
 
@@ -920,9 +934,8 @@ async def pricing_page(request: Request):
     })
 
 
-@app.post("/checkout/nsf/{product}")
-async def create_checkout_nsf(request: Request, product: str):
-    """Create a Stripe Checkout session for one of the three NSF products."""
+def _stripe_checkout_for(request: Request, product_key: str) -> RedirectResponse:
+    """Common helper: create a Stripe Checkout session for a configured product."""
     user = get_current_user(request)
     if not user:
         raise HTTPException(status_code=401, detail="Not authenticated")
@@ -930,20 +943,18 @@ async def create_checkout_nsf(request: Request, product: str):
     if not Config.STRIPE_SECRET_KEY:
         raise HTTPException(status_code=500, detail="Stripe not configured")
 
-    cfg = Config.NSF_PRODUCTS.get(product)
+    cfg = Config.PRODUCTS.get(product_key)
     if not cfg:
-        raise HTTPException(status_code=400, detail="Unknown NSF product")
+        raise HTTPException(status_code=400, detail="Unknown product")
 
     price_id = getattr(Config, cfg['price_id_env'], '')
     if not price_id:
-        raise HTTPException(status_code=500, detail=f"Stripe price not configured for {product}")
+        raise HTTPException(
+            status_code=503,
+            detail=f"Checkout for {product_key} is not yet available — Stripe price ID not set.",
+        )
 
-    form = await request.form()
-    invitation_confirmed = form.get("invitation_confirmed") == "on"
-
-    request.session["nsf_product"] = product
-    tier_key = f"nsf_{product}"
-
+    request.session["product"] = product_key
     try:
         customer = stripe.Customer.create(metadata={'username': user['username']})
         checkout_session = stripe.checkout.Session.create(
@@ -955,9 +966,7 @@ async def create_checkout_nsf(request: Request, product: str):
             cancel_url=f"{Config.BASE_URL}/payment/cancel",
             metadata={
                 'username': user['username'],
-                'tier': tier_key,
-                'nsf_product': product,
-                'invitation_confirmed': str(invitation_confirmed).lower(),
+                'tier': product_key,
             },
         )
         return RedirectResponse(url=checkout_session.url, status_code=303)
@@ -965,28 +974,149 @@ async def create_checkout_nsf(request: Request, product: str):
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@app.post("/checkout/pre-proposal")
+async def checkout_pre_proposal(request: Request):
+    """SBIR Phase I Pre-Proposal — $250 self-serve."""
+    return _stripe_checkout_for(request, "pre_proposal")
+
+
+@app.post("/checkout/full-proposal/upfront")
+async def checkout_full_proposal_upfront(request: Request):
+    """SBIR Phase I Full Proposal — Option A, $2,500 upfront self-serve."""
+    return _stripe_checkout_for(request, "full_proposal_upfront")
+
+
+@app.post("/checkout/full-proposal/success-fee")
+async def checkout_full_proposal_success_fee(
+    request: Request,
+    invitation_letter: UploadFile = File(...),
+    contact_email: str = Form(...),
+    terms_accepted: str = Form(""),
+):
+    """SBIR Phase I Full Proposal — Option B, $0 upfront + 10% success fee.
+    Captures invitation letter (Supabase Storage) and queues for Tom's review."""
+    if terms_accepted != "on":
+        raise HTTPException(status_code=400, detail="You must accept the success-fee terms.")
+
+    contact = (contact_email or "").strip()
+    if "@" not in contact:
+        raise HTTPException(status_code=400, detail="A valid contact email is required.")
+
+    if (invitation_letter.content_type or "").lower() != "application/pdf":
+        raise HTTPException(status_code=400, detail="Invitation letter must be a PDF.")
+
+    raw = await invitation_letter.read()
+    if not raw:
+        raise HTTPException(status_code=400, detail="Invitation letter file is empty.")
+    if len(raw) > 10 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="Invitation letter must be under 10 MB.")
+
+    user = get_current_user(request)
+    user_id = request.session.get("user_id")
+
+    safe_name = (invitation_letter.filename or "invitation.pdf").replace("/", "_").replace("\\", "_")
+    object_path = (
+        f"{user_id or 'anon'}/"
+        f"{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S')}_"
+        f"{secrets.token_hex(4)}_{safe_name}"
+    )
+
+    try:
+        stored_path = upload_invitation_letter(
+            object_path=object_path,
+            content=raw,
+            content_type="application/pdf",
+        )
+    except StorageBucketMissingError as exc:
+        log.error("success-fee upload blocked: %s", exc)
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "Option B is temporarily unavailable — invitation-letter storage is "
+                "not configured. Please try again later or contact info@grantentic.us."
+            ),
+        )
+
+    approval = create_pending_approval(
+        user_id=user_id,
+        contact_email=contact,
+        product="full_proposal_success_fee",
+        invitation_letter_path=stored_path,
+        invitation_letter_name=safe_name,
+    )
+
+    _notify_admin_of_pending_approval(approval, contact)
+
+    return templates.TemplateResponse(request, "full_proposal_pending.html", {
+        "user": user,
+        "contact_email": contact,
+        "approval_id": approval["id"],
+    })
+
+
+def _notify_admin_of_pending_approval(approval: dict, contact_email: str) -> None:
+    """Best-effort email to Tom when a new success-fee application lands."""
+    if not Config.RESEND_API_KEY:
+        log.warning(
+            "pending_approval %s created for %s — RESEND_API_KEY not set, skipping email",
+            approval["id"], contact_email,
+        )
+        return
+    try:
+        import resend
+        resend.api_key = Config.RESEND_API_KEY
+        resend.Emails.send({
+            "from": "Grantentic <noreply@grantentic.us>",
+            "to": [Config.ADMIN_NOTIFY_EMAIL],
+            "subject": "New Full Proposal success-fee application",
+            "html": (
+                f"<p>A new SBIR Phase I Full Proposal (Option B) application is awaiting your review.</p>"
+                f"<p><b>Contact:</b> {contact_email}<br>"
+                f"<b>Approval ID:</b> {approval['id']}</p>"
+                f"<p><a href='{Config.BASE_URL}/admin/approvals'>Open the approval queue</a></p>"
+            ),
+        })
+        log.info("pending_approval %s: notified admin", approval["id"])
+    except Exception as exc:
+        log.exception("pending_approval %s: admin notification failed: %s", approval["id"], exc)
+
+
 @app.get("/payment/success", response_class=HTMLResponse)
 async def payment_success(request: Request, session_id: str = None):
-    """Payment success page"""
+    """Payment success page. Verifies the Stripe session and grants credits."""
     user = get_current_user(request)
     if not user:
         return RedirectResponse(url="/login", status_code=302)
 
     payment_verified = False
     error_message = None
+    granted_product = None
+    user_id = request.session.get("user_id")
 
     if session_id and Config.STRIPE_SECRET_KEY:
         try:
             session = stripe.checkout.Session.retrieve(session_id)
             if session.payment_status == 'paid':
                 payment_verified = True
+                tier = (session.metadata or {}).get("tier", "")
+                # Idempotency: only grant once per (user, session_id) pair.
+                granted_key = f"granted_session:{session_id}"
+                if user_id and tier and not request.session.get(granted_key):
+                    if tier == "pre_proposal":
+                        grant_credits(user_id, pre_proposal=1)
+                        granted_product = "Pre-Proposal"
+                    elif tier == "full_proposal_upfront":
+                        grant_credits(user_id, full_proposal=1)
+                        granted_product = "Full Proposal"
+                    request.session[granted_key] = True
         except stripe.error.StripeError as e:
             error_message = str(e)
 
     return templates.TemplateResponse(request, "payment_success.html", {
         "user": user,
         "payment_verified": payment_verified,
-        "error_message": error_message
+        "error_message": error_message,
+        "granted_product": granted_product,
     })
 
 
@@ -1100,225 +1230,139 @@ async def product_prompt_pack_signup(request: Request, email: str = Form("")):
     })
 
 
-@app.get("/products/blueprint", response_class=HTMLResponse)
-async def product_blueprint_info(request: Request):
-    """Informational page for the $49 SBIR Blueprint — links to the paid flow at /blueprint."""
-    return templates.TemplateResponse(request, "products/blueprint.html", {
+@app.get("/products/phase-i-pre-proposal", response_class=HTMLResponse)
+async def product_phase_i_pre_proposal(request: Request):
+    return templates.TemplateResponse(request, "products/phase_i_pre_proposal.html", {
         "user": get_current_user(request),
+        "product": Config.PRODUCTS["pre_proposal"],
     })
 
 
-@app.get("/products/generate", response_class=HTMLResponse)
-async def product_generate_legacy(request: Request):
-    return RedirectResponse(url="/pricing", status_code=302)
-
-
-@app.get("/products/nsf-pitch", response_class=HTMLResponse)
-async def product_nsf_pitch(request: Request):
-    return templates.TemplateResponse(request, "products/nsf_pitch.html", {
+@app.get("/products/phase-i-full-proposal", response_class=HTMLResponse)
+async def product_phase_i_full_proposal(request: Request):
+    return templates.TemplateResponse(request, "products/phase_i_full_proposal.html", {
         "user": get_current_user(request),
-        "product": Config.NSF_PRODUCTS["pitch"],
-    })
-
-
-@app.get("/products/nsf-full", response_class=HTMLResponse)
-async def product_nsf_full(request: Request):
-    return templates.TemplateResponse(request, "products/nsf_full.html", {
-        "user": get_current_user(request),
-        "product": Config.NSF_PRODUCTS["full"],
-    })
-
-
-@app.get("/products/nsf-bundle", response_class=HTMLResponse)
-async def product_nsf_bundle(request: Request):
-    return templates.TemplateResponse(request, "products/nsf_bundle.html", {
-        "user": get_current_user(request),
-        "product": Config.NSF_PRODUCTS["bundle"],
-    })
-
-
-@app.get("/products/accelerator", response_class=HTMLResponse)
-async def product_accelerator_info(request: Request):
-    """Space Proposal Accelerator — coming soon, waitlist capture."""
-    return templates.TemplateResponse(request, "products/accelerator.html", {
-        "user": get_current_user(request),
-        "submitted_email": None,
-    })
-
-
-@app.post("/products/accelerator", response_class=HTMLResponse)
-async def product_accelerator_waitlist(request: Request, email: str = Form("")):
-    """Capture email for the Space Proposal Accelerator waitlist."""
-    clean = email.strip()
-    if clean and "@" in clean:
-        log.info("accelerator_waitlist: email=%r", clean)
-    return templates.TemplateResponse(request, "products/accelerator.html", {
-        "user": get_current_user(request),
-        "submitted_email": clean if clean and "@" in clean else None,
+        "upfront": Config.PRODUCTS["full_proposal_upfront"],
+        "success_fee": Config.PRODUCTS["full_proposal_success_fee"],
     })
 
 
 
 # ============================================================================
-# BLUEPRINT PRODUCT
+# ADMIN — Full Proposal Option B approval queue
 # ============================================================================
 
-@app.get("/blueprint", response_class=HTMLResponse)
-async def blueprint_page(request: Request):
-    """SBIR Blueprint intake form"""
-    return templates.TemplateResponse(request, "blueprint.html", {
-        "user": get_current_user(request),
-        "error": None,
-        "form_data": {},
-        "launch_date": Config.BLUEPRINT_LAUNCH_DATE,
+def _require_admin(request: Request) -> Dict[str, Any]:
+    user = get_current_user(request)
+    if not user or not request.session.get("is_admin"):
+        raise HTTPException(status_code=404, detail="Not found")
+    return user
+
+
+@app.get("/admin/approvals", response_class=HTMLResponse)
+async def admin_approvals(request: Request):
+    user = _require_admin(request)
+    approvals = list_pending_approvals()
+    return templates.TemplateResponse(request, "admin/approvals.html", {
+        "user": user,
+        "approvals": approvals,
     })
 
 
-@app.post("/blueprint/checkout")
-async def blueprint_checkout(request: Request):
-    """Validate 13-field intake form and redirect to Stripe checkout"""
-    form = await request.form()
-
-    form_data = {
-        # Section 1 — Problem
-        "problem": form.get("problem", "").strip(),
-        "who_suffers": form.get("who_suffers", "").strip(),
-        "why_current_fail": form.get("why_current_fail", "").strip(),
-        # Section 2 — Technical Approach
-        "technology": form.get("technology", "").strip(),
-        "dev_stage": form.get("dev_stage", "").strip(),
-        "phase1_output": form.get("phase1_output", "").strip(),
-        # Section 3 — Competitive Landscape
-        "competitors": form.get("competitors", "").strip(),
-        "differentiator": form.get("differentiator", "").strip(),
-        "market_size": form.get("market_size", "").strip(),
-        # Section 4 — Team
-        "pi_background": form.get("pi_background", "").strip(),
-        "team_members": form.get("team_members", "").strip(),
-        "prior_work": form.get("prior_work", "").strip(),
-        "solicitation": form.get("solicitation", "").strip(),
-        # Meta
-        "company_name": form.get("company_name", "").strip(),
-        "email": form.get("email", "").strip(),
-        "agency": form.get("agency", "nsf").strip(),
-    }
-    tier = form.get("tier", "standard")
-
-    # Required fields
-    required = ["problem", "who_suffers", "why_current_fail", "technology",
-                 "dev_stage", "phase1_output", "competitors", "differentiator",
-                 "pi_background", "company_name", "email"]
-
-    if not all(form_data.get(f) for f in required):
-        return templates.TemplateResponse(request, "blueprint.html", {
-            "user": get_current_user(request),
-            "error": "Please fill in all required fields.",
-            "form_data": form_data,
-            "launch_date": Config.BLUEPRINT_LAUNCH_DATE,
-        })
-
-    if "@" not in form_data["email"]:
-        return templates.TemplateResponse(request, "blueprint.html", {
-            "user": get_current_user(request),
-            "error": "Please enter a valid email address.",
-            "form_data": form_data,
-            "launch_date": Config.BLUEPRINT_LAUNCH_DATE,
-        })
-
-    # Store form data in session for retrieval after payment
-    request.session["blueprint_data"] = form_data
-
-    # Select Stripe price
-    if tier == "student":
-        price_id = Config.STRIPE_PRICE_BLUEPRINT_STUDENT
-    else:
-        price_id = Config.STRIPE_PRICE_BLUEPRINT
-
-    if not price_id or not Config.STRIPE_SECRET_KEY:
-        # No Stripe configured — skip payment, go straight to generation (dev mode)
-        log.warning("blueprint_checkout: no Stripe price configured, skipping payment")
-        return RedirectResponse(url="/blueprint/deliver", status_code=303)
-
-    try:
-        checkout_session = stripe.checkout.Session.create(
-            payment_method_types=["card"],
-            line_items=[{"price": price_id, "quantity": 1}],
-            mode="payment",
-            customer_email=form_data["email"],
-            success_url=f"{Config.BASE_URL}/blueprint/deliver?session_id={{CHECKOUT_SESSION_ID}}",
-            cancel_url=f"{Config.BASE_URL}/blueprint",
-            metadata={
-                "product": "blueprint",
-                "company_name": form_data["company_name"][:500],
-                "agency": form_data["agency"],
-                "tier": tier,
-            },
+@app.get("/admin/approvals/{approval_id}/letter")
+async def admin_approval_letter(request: Request, approval_id: str):
+    _require_admin(request)
+    approval = get_pending_approval(approval_id)
+    if not approval:
+        raise HTTPException(status_code=404, detail="Approval not found")
+    url = signed_invitation_letter_url(approval["invitation_letter_path"])
+    if not url:
+        raise HTTPException(
+            status_code=503,
+            detail="Could not generate signed URL. Bucket missing or object deleted.",
         )
-        return RedirectResponse(url=checkout_session.url, status_code=303)
-    except stripe.error.StripeError as e:
-        log.exception("blueprint_checkout: Stripe error: %s", e)
-        return templates.TemplateResponse(request, "blueprint.html", {
-            "user": get_current_user(request),
-            "error": f"Payment error: {e}",
-            "form_data": form_data,
-            "launch_date": Config.BLUEPRINT_LAUNCH_DATE,
-        })
+    return RedirectResponse(url=url, status_code=302)
 
 
-@app.get("/blueprint/deliver", response_class=HTMLResponse)
-async def blueprint_deliver(request: Request, session_id: str = None):
-    """After payment: generate Blueprint, email PDFs, show confirmation"""
-    # Verify payment if session_id is provided
-    if session_id and Config.STRIPE_SECRET_KEY:
-        try:
-            session = stripe.checkout.Session.retrieve(session_id)
-            if session.payment_status != "paid":
-                return RedirectResponse(url="/blueprint", status_code=302)
-        except stripe.error.StripeError:
-            return RedirectResponse(url="/blueprint", status_code=302)
+@app.post("/admin/approvals/{approval_id}/approve")
+async def admin_approval_approve(request: Request, approval_id: str):
+    user = _require_admin(request)
+    approval = get_pending_approval(approval_id)
+    if not approval:
+        raise HTTPException(status_code=404, detail="Approval not found")
+    if approval["status"] != "pending":
+        raise HTTPException(status_code=400, detail=f"Already {approval['status']}")
 
-    # Retrieve form data from session
-    bp_data = request.session.get("blueprint_data")
-    if not bp_data:
-        return RedirectResponse(url="/blueprint", status_code=302)
+    # Triple Redundancy Guarantee: Option B grants 3 Full Proposal credits
+    # so the user has up to 3 submission cycles included.
+    if approval.get("user_id"):
+        grant_credits(approval["user_id"], full_proposal=3)
 
-    company_name = bp_data["company_name"]
-    agency = bp_data["agency"]
-    email = bp_data["email"]
+    decide_pending_approval(approval_id, "approved", user.get("username", "admin"))
+    _email_approval_decision(approval, decision="approved")
+    return RedirectResponse(url="/admin/approvals", status_code=303)
 
-    # Generate the Blueprint via Claude
-    from src.blueprint import (
-        generate_blueprint_content,
-        create_blueprint_pdf,
-        create_prompt_pack_pdf,
-        send_blueprint_email,
-    )
 
+@app.post("/admin/approvals/{approval_id}/reject")
+async def admin_approval_reject(request: Request, approval_id: str):
+    user = _require_admin(request)
+    approval = get_pending_approval(approval_id)
+    if not approval:
+        raise HTTPException(status_code=404, detail="Approval not found")
+    if approval["status"] != "pending":
+        raise HTTPException(status_code=400, detail=f"Already {approval['status']}")
+    decide_pending_approval(approval_id, "rejected", user.get("username", "admin"))
+    _email_approval_decision(approval, decision="rejected")
+    return RedirectResponse(url="/admin/approvals", status_code=303)
+
+
+def _email_approval_decision(approval: dict, *, decision: str) -> None:
+    """Best-effort email to the applicant after Tom decides."""
+    if not Config.RESEND_API_KEY:
+        log.warning(
+            "approval %s decided %s — RESEND_API_KEY not set, skipping applicant email",
+            approval["id"], decision,
+        )
+        return
     try:
-        log.info("blueprint_deliver: generating for company=%r agency=%s", company_name, agency)
-        content = generate_blueprint_content(bp_data, agency)
-        blueprint_pdf = create_blueprint_pdf(company_name, agency, content)
-        prompt_pack_pdf = create_prompt_pack_pdf(agency)
-        send_blueprint_email(email, company_name, agency, blueprint_pdf, prompt_pack_pdf)
-    except Exception as exc:
-        log.exception("blueprint_deliver: generation failed: %s", exc)
-        return templates.TemplateResponse(request, "blueprint.html", {
-            "user": get_current_user(request),
-            "error": "An error occurred generating your Blueprint. Please contact info@grantentic.us for help.",
-            "form_data": bp_data,
-            "launch_date": Config.BLUEPRINT_LAUNCH_DATE,
+        import resend
+        resend.api_key = Config.RESEND_API_KEY
+        if decision == "approved":
+            subject = "You're in — Grantentic Full Proposal (Option B) approved"
+            html = (
+                "<p>Your application for the SBIR Phase I Full Proposal (Success-Fee, Option B) "
+                "has been approved.</p>"
+                "<p>You now have access to up to <b>three Full Proposal generation cycles</b> "
+                "covered by our Triple Redundancy Guarantee. "
+                f"<a href='{Config.BASE_URL}/dashboard'>Sign in to start.</a></p>"
+                "<p>Reminder: if NSF awards your Phase I grant, the agreed 10% success fee "
+                "will be invoiced manually after the award notification.</p>"
+            )
+        else:
+            subject = "Your Grantentic Full Proposal (Option B) application"
+            html = (
+                "<p>Thanks for applying to the Grantentic SBIR Phase I Full Proposal "
+                "(Success-Fee, Option B) program.</p>"
+                "<p>After review we are not able to accept your application for the "
+                "success-only program at this time. The $2,500 upfront option (Option A) "
+                f"remains available at <a href='{Config.BASE_URL}/products/phase-i-full-proposal'>"
+                "grantentic.us</a> if you'd like to proceed that way.</p>"
+                "<p>Questions? Reply to this email and Tom will get back to you.</p>"
+            )
+        resend.Emails.send({
+            "from": "Grantentic <noreply@grantentic.us>",
+            "to": [approval["contact_email"]],
+            "subject": subject,
+            "html": html,
         })
+    except Exception as exc:
+        log.exception("approval %s decision email failed: %s", approval["id"], exc)
 
-    # Clear blueprint data from session
-    request.session.pop("blueprint_data", None)
 
-    return templates.TemplateResponse(request, "blueprint_confirm.html", {
-        "user": get_current_user(request),
-        "email": email,
-        "company_name": company_name,
-        "agency": agency,
-    })
-
+# ============================================================================
+# REMOVED — Blueprint product, NSF Pitch/Full/Bundle products, Accelerator
+#           waitlist. Catalog collapsed to the three SBIR products above.
+# ============================================================================
 
 # SEO
 @app.get("/robots.txt")
@@ -1330,11 +1374,15 @@ async def robots_txt():
         "Disallow: /generate\n"
         "Disallow: /results\n"
         "Disallow: /proposals\n"
+        "Disallow: /admin\n"
         "Allow: /\n"
         "Allow: /login\n"
         "Allow: /register\n"
         "Allow: /privacy\n"
-        "Allow: /blueprint\n"
+        "Allow: /pricing\n"
+        "Allow: /products/prompt-pack\n"
+        "Allow: /products/phase-i-pre-proposal\n"
+        "Allow: /products/phase-i-full-proposal\n"
     )
     return Response(content=content, media_type="text/plain")
 
@@ -1348,7 +1396,10 @@ async def sitemap_xml():
         '  <url><loc>https://www.grantentic.us/login</loc></url>\n'
         '  <url><loc>https://www.grantentic.us/register</loc></url>\n'
         '  <url><loc>https://www.grantentic.us/privacy</loc></url>\n'
-        '  <url><loc>https://www.grantentic.us/blueprint</loc></url>\n'
+        '  <url><loc>https://www.grantentic.us/pricing</loc></url>\n'
+        '  <url><loc>https://www.grantentic.us/products/prompt-pack</loc></url>\n'
+        '  <url><loc>https://www.grantentic.us/products/phase-i-pre-proposal</loc></url>\n'
+        '  <url><loc>https://www.grantentic.us/products/phase-i-full-proposal</loc></url>\n'
         '</urlset>\n'
     )
     return Response(content=content, media_type="application/xml")

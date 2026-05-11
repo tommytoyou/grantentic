@@ -38,44 +38,40 @@ class Config:
     STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY', '')
     STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET', '')
 
-    # Blueprint product
-    STRIPE_PRICE_BLUEPRINT = os.environ.get('STRIPE_PRICE_BLUEPRINT', '')          # $49
-    STRIPE_PRICE_BLUEPRINT_STUDENT = os.environ.get('STRIPE_PRICE_BLUEPRINT_STUDENT', '')  # $19
-    BLUEPRINT_LAUNCH_DATE = os.environ.get('BLUEPRINT_LAUNCH_DATE', '2026-05-15T00:00:00Z')
+    # Stripe price IDs for the three-product catalog (create in Stripe Dashboard).
+    STRIPE_PRICE_PRE_PROPOSAL = os.environ.get('STRIPE_PRICE_PRE_PROPOSAL', '')                    # $250
+    STRIPE_PRICE_FULL_PROPOSAL_UPFRONT = os.environ.get('STRIPE_PRICE_FULL_PROPOSAL_UPFRONT', '')  # $2,500
 
-    # NSF product Stripe price IDs (create in Stripe Dashboard)
-    STRIPE_PRICE_NSF_PITCH = os.environ.get('STRIPE_PRICE_NSF_PITCH', '')   # $149
-    STRIPE_PRICE_NSF_FULL = os.environ.get('STRIPE_PRICE_NSF_FULL', '')     # $449
-    STRIPE_PRICE_NSF_BUNDLE = os.environ.get('STRIPE_PRICE_NSF_BUNDLE', '') # $549
-
-    NSF_PRODUCTS = {
-        'pitch': {
-            'name': 'NSF Project Pitch Generator',
-            'price_cents': 14900,
-            'price_id_env': 'STRIPE_PRICE_NSF_PITCH',
+    PRODUCTS = {
+        'pre_proposal': {
+            'name': 'SBIR Phase I Pre-Proposal',
+            'price_cents': 25000,
+            'price_id_env': 'STRIPE_PRICE_PRE_PROPOSAL',
             'requires_invitation': False,
             'expert_review': False,
         },
-        'full': {
-            'name': 'NSF Full Proposal Generator',
-            'price_cents': 44900,
-            'price_id_env': 'STRIPE_PRICE_NSF_FULL',
-            'requires_invitation': True,
+        'full_proposal_upfront': {
+            'name': 'SBIR Phase I Full Proposal (Upfront)',
+            'price_cents': 250000,
+            'price_id_env': 'STRIPE_PRICE_FULL_PROPOSAL_UPFRONT',
+            'requires_invitation': False,
             'expert_review': True,
         },
-        'bundle': {
-            'name': 'NSF Complete Bundle',
-            'price_cents': 54900,
-            'price_id_env': 'STRIPE_PRICE_NSF_BUNDLE',
+        'full_proposal_success_fee': {
+            'name': 'SBIR Phase I Full Proposal (Success Fee)',
+            'price_cents': 0,
+            'success_fee_pct': 10,
             'requires_invitation': True,
+            'requires_admin_approval': True,
             'expert_review': True,
-            'separately_cents': 59800,
-            'savings_cents': 4900,
         },
     }
 
     # Base URL for Stripe redirects (set in production)
     BASE_URL = os.environ.get('BASE_URL', 'http://localhost:8000')
+
+    # Admin contact for success-fee approval notifications.
+    ADMIN_NOTIFY_EMAIL = os.environ.get('ADMIN_NOTIFY_EMAIL', 'tommytoyou@gmail.com')
 
     # ============================================================================
     # AGENCY SELECTION
