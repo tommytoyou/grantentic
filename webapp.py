@@ -187,7 +187,13 @@ def get_agency_info(agency: str) -> Dict[str, Any]:
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
-    """Root: marketing landing page for anonymous visitors, dashboard for logged-in."""
+    """Root: coming-soon gate before launch (non-admins); otherwise marketing
+    landing page for anonymous visitors, dashboard for logged-in."""
+    if launch_gate_active(request):
+        return templates.TemplateResponse(request, "coming_soon.html", {
+            "user": None,
+            "submitted_email": None,
+        })
     user = get_current_user(request)
     if user:
         return RedirectResponse(url="/dashboard", status_code=302)
@@ -1286,15 +1292,10 @@ async def product_phase_i_full_proposal(request: Request):
 
 @app.get("/coming-soon", response_class=HTMLResponse)
 async def coming_soon(request: Request):
-    """Pre-launch holding page. Once launched, send people on to the real app."""
-    if Config.LAUNCH_ENABLED:
-        if get_current_user(request):
-            return RedirectResponse(url="/dashboard", status_code=302)
-        return RedirectResponse(url="/", status_code=302)
-    return templates.TemplateResponse(request, "coming_soon.html", {
-        "user": get_current_user(request),
-        "submitted_email": None,
-    })
+    """The gate now lives on the root URL. Keep this path working by sending
+    visitors to / — which renders the coming-soon page before launch, or the
+    landing/dashboard once LAUNCH_ENABLED is true."""
+    return RedirectResponse(url="/", status_code=302)
 
 
 @app.post("/coming-soon", response_class=HTMLResponse)
