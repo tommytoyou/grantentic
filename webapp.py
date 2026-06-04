@@ -9,6 +9,7 @@ Full HTML control with FastAPI + Jinja2 + HTMX
 import json
 import logging
 import os
+import re
 import secrets
 import time
 import asyncio
@@ -136,6 +137,15 @@ def require_auth(request: Request) -> Dict[str, Any]:
     if not user:
         raise HTTPException(status_code=401, detail="Not authenticated")
     return user
+
+
+_EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+
+
+def _basic_email_valid(email: str) -> bool:
+    """Loose sanity check — one @, a dot in the domain, no whitespace. Not an
+    RFC validator; just enough to flag obviously malformed addresses for logging."""
+    return bool(_EMAIL_RE.match((email or "").strip()))
 
 
 def launch_gate_active(request: Request) -> bool:
@@ -1263,6 +1273,8 @@ async def product_prompt_pack_signup(request: Request, email: str = Form("")):
             add_to_waitlist(saved, "prompt_pack")
         except Exception:
             log.exception("prompt_pack_signup: failed to store waitlist email")
+        if not _basic_email_valid(saved):
+            log.warning("prompt_pack_signup: email failed basic format validation: %r", saved)
         _send_prompt_pack_email(saved)
     return templates.TemplateResponse(request, "products/prompt_pack.html", {
         "user": get_current_user(request),
@@ -1401,6 +1413,8 @@ async def coming_soon_signup(request: Request, email: str = Form("")):
             add_to_waitlist(saved, "launch_waitlist")
         except Exception:
             log.exception("coming_soon_signup: failed to store waitlist email")
+        if not _basic_email_valid(saved):
+            log.warning("coming_soon_signup: email failed basic format validation: %r", saved)
         _send_waitlist_confirmation(saved)
     return templates.TemplateResponse(request, "coming_soon.html", {
         "user": get_current_user(request),

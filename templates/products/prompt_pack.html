@@ -23,13 +23,16 @@
         </div>
         {% else %}
         <form action="/products/prompt-pack" method="post" class="mt-10 max-w-lg mx-auto flex flex-col sm:flex-row gap-3">
-            <input type="email" name="email" required placeholder="you@company.com"
+            <input type="email" name="email" id="pp-email" required placeholder="you@company.com"
                    class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-base">
             <button type="submit"
                     class="inline-flex items-center justify-center px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-colors whitespace-nowrap">
                 Get Free Access
             </button>
         </form>
+        <p id="pp-email-warning" class="hidden max-w-lg mx-auto mt-3 text-sm text-amber-600">
+            Double-check your email — we want to make sure you receive our message.
+        </p>
         {% endif %}
 
         <div class="mt-10">
@@ -37,4 +40,24 @@
         </div>
     </div>
 </section>
+
+<script>
+// Gentle, non-blocking nudge: when the visitor leaves the email field, flag
+// common domain typos so they can fix an address before we email them.
+(function () {
+    var TYPO_DOMAINS = ['gmal.com', 'gmial.com', 'yahooo.com', 'hotmial.com', 'outlok.com'];
+    var input = document.getElementById('pp-email');
+    var warning = document.getElementById('pp-email-warning');
+    if (!input || !warning) return;
+    input.addEventListener('blur', function () {
+        var value = input.value.trim().toLowerCase();
+        var domain = value.split('@')[1] || '';
+        if (value && TYPO_DOMAINS.indexOf(domain) !== -1) {
+            warning.classList.remove('hidden');
+        } else {
+            warning.classList.add('hidden');
+        }
+    });
+})();
+</script>
 {% endblock %}
