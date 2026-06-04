@@ -40,9 +40,11 @@ outputs/
 
 # Training data — large SBIR award dumps (hundreds of MB); kept out of git
 training_data/*
-# ...except small curated extracts we intentionally track
+# ...except curated extracts we intentionally track
 !training_data/nsf_space_awards_training_data.md
 !training_data/nsf_space_awards_training_data.json
+!training_data/nsf_phase1_all_awards.md
+!training_data/nsf_phase1_all_awards.json
 
 # Environment / secrets
 .env
