@@ -174,6 +174,20 @@ def update_user_password(user_id: str, hashed_password: str, salt: str) -> None:
     }).eq("id", user_id).execute()
 
 
+def add_to_waitlist(email: str, product_name: str) -> None:
+    """Record a waitlist signup (email + timestamp) for a given funnel.
+
+    product_name distinguishes which list the email belongs to, e.g.
+    'launch_waitlist' for the pre-launch Coming Soon page.
+    """
+    sb = get_supabase()
+    sb.table("waitlist").insert({
+        "email": email,
+        "product_name": product_name,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }).execute()
+
+
 # ============================================================================
 # CREDITS — pre_proposal_credits + full_proposal_credits on users
 # ============================================================================

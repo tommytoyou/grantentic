@@ -12,6 +12,11 @@ class Config:
     # ============================================================================
     SECRET_KEY = os.environ.get('SECRET_KEY', '')
 
+    # Launch gate. When false (the default), the generator and all paid flows are
+    # held behind the "Coming Soon" page for everyone except admins. Set
+    # LAUNCH_ENABLED=true (also accepts 1/yes/on) to open the app to the public.
+    LAUNCH_ENABLED = os.environ.get('LAUNCH_ENABLED', 'false').strip().lower() in ('1', 'true', 'yes', 'on')
+
     # ============================================================================
     # SUPABASE DATABASE
     # ============================================================================

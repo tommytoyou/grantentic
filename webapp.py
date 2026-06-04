@@ -57,6 +57,7 @@ from src.database import (
     get_password_reset_token,
     mark_token_used,
     update_user_password,
+    add_to_waitlist,
     create_pending_approval,
     list_pending_approvals,
     get_pending_approval,
@@ -135,6 +136,26 @@ def require_auth(request: Request) -> Dict[str, Any]:
     if not user:
         raise HTTPException(status_code=401, detail="Not authenticated")
     return user
+
+
+def launch_gate_active(request: Request) -> bool:
+    """True when the pre-launch gate should block this request.
+
+    The gate is active whenever LAUNCH_ENABLED is false — EXCEPT for admins,
+    who bypass it entirely. When LAUNCH_ENABLED is true the gate is never active.
+    """
+    if Config.LAUNCH_ENABLED:
+        return False
+    return not request.session.get("is_admin", False)
+
+
+def require_launched_or_503(request: Request) -> None:
+    """Raise 503 on gated POST/stream endpoints before launch (admins exempt)."""
+    if launch_gate_active(request):
+        raise HTTPException(
+            status_code=503,
+            detail="Grantentic hasn't launched yet. Join the waitlist at /coming-soon.",
+        )
 
 
 def require_user(request: Request) -> str:
@@ -628,6 +649,9 @@ async def save_company(
 @app.get("/generate", response_class=HTMLResponse)
 async def generate_page(request: Request, agency: str = "nsf"):
     """Generate proposal page"""
+    if launch_gate_active(request):
+        return RedirectResponse(url="/coming-soon", status_code=302)
+
     user = get_current_user(request)
     if not user:
         return RedirectResponse(url="/login", status_code=302)
@@ -644,6 +668,8 @@ async def generate_page(request: Request, agency: str = "nsf"):
 @app.get("/generate/stream")
 async def generate_stream(request: Request, agency: str = "nsf"):
     """SSE endpoint for proposal generation with real-time updates"""
+    require_launched_or_503(request)
+
     user = get_current_user(request)
     if not user:
         raise HTTPException(status_code=401, detail="Not authenticated")
@@ -977,12 +1003,14 @@ def _stripe_checkout_for(request: Request, product_key: str) -> RedirectResponse
 @app.post("/checkout/pre-proposal")
 async def checkout_pre_proposal(request: Request):
     """SBIR Phase I Pre-Proposal — $250 self-serve."""
+    require_launched_or_503(request)
     return _stripe_checkout_for(request, "pre_proposal")
 
 
 @app.post("/checkout/full-proposal/upfront")
 async def checkout_full_proposal_upfront(request: Request):
     """SBIR Phase I Full Proposal — Option A, $2,500 upfront self-serve."""
+    require_launched_or_503(request)
     return _stripe_checkout_for(request, "full_proposal_upfront")
 
 
@@ -995,6 +1023,7 @@ async def checkout_full_proposal_success_fee(
 ):
     """SBIR Phase I Full Proposal — Option B, $0 upfront + 10% success fee.
     Captures invitation letter (Supabase Storage) and queues for Tom's review."""
+    require_launched_or_503(request)
     if terms_accepted != "on":
         raise HTTPException(status_code=400, detail="You must accept the success-fee terms.")
 
@@ -1232,6 +1261,8 @@ async def product_prompt_pack_signup(request: Request, email: str = Form("")):
 
 @app.get("/products/phase-i-pre-proposal", response_class=HTMLResponse)
 async def product_phase_i_pre_proposal(request: Request):
+    if launch_gate_active(request):
+        return RedirectResponse(url="/coming-soon", status_code=302)
     return templates.TemplateResponse(request, "products/phase_i_pre_proposal.html", {
         "user": get_current_user(request),
         "product": Config.PRODUCTS["pre_proposal"],
@@ -1240,12 +1271,51 @@ async def product_phase_i_pre_proposal(request: Request):
 
 @app.get("/products/phase-i-full-proposal", response_class=HTMLResponse)
 async def product_phase_i_full_proposal(request: Request):
+    if launch_gate_active(request):
+        return RedirectResponse(url="/coming-soon", status_code=302)
     return templates.TemplateResponse(request, "products/phase_i_full_proposal.html", {
         "user": get_current_user(request),
         "upfront": Config.PRODUCTS["full_proposal_upfront"],
         "success_fee": Config.PRODUCTS["full_proposal_success_fee"],
     })
 
+
+# ============================================================================
+# COMING SOON — pre-launch holding page + waitlist capture
+# ============================================================================
+
+@app.get("/coming-soon", response_class=HTMLResponse)
+async def coming_soon(request: Request):
+    """Pre-launch holding page. Once launched, send people on to the real app."""
+    if Config.LAUNCH_ENABLED:
+        if get_current_user(request):
+            return RedirectResponse(url="/dashboard", status_code=302)
+        return RedirectResponse(url="/", status_code=302)
+    return templates.TemplateResponse(request, "coming_soon.html", {
+        "user": get_current_user(request),
+        "submitted_email": None,
+    })
+
+
+@app.post("/coming-soon", response_class=HTMLResponse)
+async def coming_soon_signup(request: Request, email: str = Form("")):
+    """Capture a launch-waitlist email (email + timestamp) in Supabase."""
+    if Config.LAUNCH_ENABLED:
+        if get_current_user(request):
+            return RedirectResponse(url="/dashboard", status_code=302)
+        return RedirectResponse(url="/", status_code=302)
+
+    clean = email.strip()
+    saved = clean if clean and "@" in clean else None
+    if saved:
+        try:
+            add_to_waitlist(saved, "launch_waitlist")
+        except Exception:
+            log.exception("coming_soon_signup: failed to store waitlist email")
+    return templates.TemplateResponse(request, "coming_soon.html", {
+        "user": get_current_user(request),
+        "submitted_email": saved,
+    })
 
 
 # ============================================================================
