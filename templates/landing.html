@@ -39,13 +39,16 @@
         </p>
 
         <form action="/products/prompt-pack" method="post" class="mt-10 max-w-xl mx-auto flex flex-col sm:flex-row gap-3">
-            <input type="email" name="email" required placeholder="you@company.com"
+            <input type="email" name="email" id="lp-hero-email" required placeholder="you@company.com"
                    class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-base">
             <button type="submit"
                     class="inline-flex items-center justify-center px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-colors whitespace-nowrap">
                 Get My Free SBIR Prompt Pack
             </button>
         </form>
+        <p id="lp-hero-email-warning" class="hidden max-w-xl mx-auto mt-3 text-sm text-amber-600">
+            Double-check your email — we want to make sure you receive our message.
+        </p>
 
         <div class="mt-6">
             <a href="#how" class="text-sm text-gray-500 hover:text-primary-600">
@@ -239,17 +242,46 @@
         <p class="mt-4 text-lg text-primary-100">Ready-to-use AI prompts for NSF, DoD, and NASA Project Pitches. No payment required.</p>
 
         <form action="/products/prompt-pack" method="post" class="mt-8 max-w-lg mx-auto flex flex-col sm:flex-row gap-3">
-            <input type="email" name="email" required placeholder="you@company.com"
+            <input type="email" name="email" id="lp-cta-email" required placeholder="you@company.com"
                    class="flex-1 px-4 py-3 border border-primary-500 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-white focus:border-white text-base">
             <button type="submit"
                     class="inline-flex items-center justify-center px-6 py-3 bg-white hover:bg-primary-50 text-primary-700 font-semibold rounded-lg transition-colors whitespace-nowrap">
                 Get Free Access
             </button>
         </form>
+        <p id="lp-cta-email-warning" class="hidden max-w-lg mx-auto mt-4 text-sm text-amber-200">
+            Double-check your email — we want to make sure you receive our message.
+        </p>
 
         <p class="mt-6 text-sm text-primary-100">
             Or <a href="/pricing" class="underline underline-offset-4 decoration-primary-200 hover:text-white">see all three products →</a>
         </p>
     </div>
 </section>
+
+<script>
+// Gentle, non-blocking nudge: when the visitor leaves an email field, flag
+// common domain typos so they can fix an address before we email them.
+(function () {
+    var TYPO_DOMAINS = ['gmal.com', 'gmial.com', 'yahooo.com', 'hotmial.com', 'outlok.com'];
+    var PAIRS = [
+        ['lp-hero-email', 'lp-hero-email-warning'],
+        ['lp-cta-email', 'lp-cta-email-warning'],
+    ];
+    PAIRS.forEach(function (pair) {
+        var input = document.getElementById(pair[0]);
+        var warning = document.getElementById(pair[1]);
+        if (!input || !warning) return;
+        input.addEventListener('blur', function () {
+            var value = input.value.trim().toLowerCase();
+            var domain = value.split('@')[1] || '';
+            if (value && TYPO_DOMAINS.indexOf(domain) !== -1) {
+                warning.classList.remove('hidden');
+            } else {
+                warning.classList.add('hidden');
+            }
+        });
+    });
+})();
+</script>
 {% endblock %}
