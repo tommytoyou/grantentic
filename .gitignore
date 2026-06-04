@@ -38,6 +38,9 @@ env/
 outputs/
 *.docx
 
+# Training data — large SBIR award dumps (hundreds of MB); kept out of git
+training_data/
+
 # Environment / secrets
 .env
 .env.*
