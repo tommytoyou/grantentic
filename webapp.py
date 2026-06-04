@@ -1255,13 +1255,18 @@ async def product_prompt_pack(request: Request):
 
 @app.post("/products/prompt-pack", response_class=HTMLResponse)
 async def product_prompt_pack_signup(request: Request, email: str = Form("")):
-    """Capture email for the free SBIR Prompt Pack waitlist."""
+    """Capture email for the free SBIR Prompt Pack, then deliver the pack by email."""
     clean = email.strip()
-    if clean and "@" in clean:
-        log.info("prompt_pack_signup: email=%r", clean)
+    saved = clean if clean and "@" in clean else None
+    if saved:
+        try:
+            add_to_waitlist(saved, "prompt_pack")
+        except Exception:
+            log.exception("prompt_pack_signup: failed to store waitlist email")
+        _send_prompt_pack_email(saved)
     return templates.TemplateResponse(request, "products/prompt_pack.html", {
         "user": get_current_user(request),
-        "submitted_email": clean if clean and "@" in clean else None,
+        "submitted_email": saved,
     })
 
 
@@ -1328,6 +1333,49 @@ def _send_waitlist_confirmation(email: str) -> None:
             log.warning("coming_soon_signup: RESEND_API_KEY not set, skipping confirmation email to %r", email)
     except Exception as exc:
         log.exception("coming_soon_signup: failed to send confirmation email: %s", exc)
+
+
+def _send_prompt_pack_email(email: str) -> None:
+    """Deliver the free SBIR Prompt Pack via Resend (plain text). Best-effort:
+    any failure is logged and swallowed so the user still sees a success page."""
+    text_body = (
+        "Hi,\n\n"
+        "Here are four basic prompts to help you draft your NSF SBIR Project Pitch "
+        "sections. These are starting points — not a substitute for Grantentic's "
+        "full AI generation engine.\n\n"
+        "SECTION 1 — Technology Innovation (3,500 chars max)\n"
+        "Describe the core technical innovation, the knowledge gap it fills, and a "
+        "testable hypothesis with measurable pass/fail criteria. Do not lead with "
+        "product features. Lead with what is scientifically unknown.\n\n"
+        "SECTION 2 — Technical Objectives and Challenges (3,500 chars max)\n"
+        "Write three objectives. For each: what is the challenge, how will you "
+        "investigate it, what new knowledge will exist after Phase I. Frame as "
+        "research questions, not build tasks.\n\n"
+        "SECTION 3 — Market Opportunity (1,750 chars max)\n"
+        "Name specific customer organizations. Explain why existing solutions fail "
+        "technically. Address market size and societal importance.\n\n"
+        "SECTION 4 — Company and Team (1,750 chars max)\n"
+        "For each team member: name, role, relevant credential, specific Phase I "
+        "contribution. Map credentials to the technical work.\n\n"
+        "For a fully AI-generated proposal with character limits enforced in code, "
+        "anti-fabrication protection, and NSF reviewer scoring, visit grantentic.us.\n\n"
+        "— Grantentic"
+    )
+    try:
+        if Config.RESEND_API_KEY:
+            import resend
+            resend.api_key = Config.RESEND_API_KEY
+            resend.Emails.send({
+                "from": "Grantentic <noreply@grantentic.us>",
+                "to": [email],
+                "subject": "Your SBIR Prompt Pack from Grantentic",
+                "text": text_body,
+            })
+            log.info("prompt_pack_signup: delivery email sent to %r", email)
+        else:
+            log.warning("prompt_pack_signup: RESEND_API_KEY not set, skipping delivery email to %r", email)
+    except Exception as exc:
+        log.exception("prompt_pack_signup: failed to send delivery email: %s", exc)
 
 
 @app.get("/coming-soon", response_class=HTMLResponse)
