@@ -1290,6 +1290,46 @@ async def product_phase_i_full_proposal(request: Request):
 # COMING SOON — pre-launch holding page + waitlist capture
 # ============================================================================
 
+def _send_waitlist_confirmation(email: str) -> None:
+    """Send the launch-waitlist confirmation via Resend. Best-effort: any failure
+    is logged and swallowed so the signup still shows the user a success page."""
+    text_body = (
+        "Hi,\n\n"
+        "You are on the list. We will email you the moment Grantentic launches.\n\n"
+        "Grantentic is an AI-powered SBIR proposal writing platform built "
+        "specifically for deep tech founders applying to NSF, DoD, and NASA. "
+        "When we launch you will get first access.\n\n"
+        "— Tom Erickson\n"
+        "Founder, Grantentic\n"
+        "grantentic.us"
+    )
+    html_body = (
+        "<p>Hi,</p>"
+        "<p>You are on the list. We will email you the moment Grantentic launches.</p>"
+        "<p>Grantentic is an AI-powered SBIR proposal writing platform built "
+        "specifically for deep tech founders applying to NSF, DoD, and NASA. "
+        "When we launch you will get first access.</p>"
+        "<p>— Tom Erickson<br>Founder, Grantentic<br>"
+        '<a href="https://grantentic.us">grantentic.us</a></p>'
+    )
+    try:
+        if Config.RESEND_API_KEY:
+            import resend
+            resend.api_key = Config.RESEND_API_KEY
+            resend.Emails.send({
+                "from": "Grantentic <noreply@grantentic.us>",
+                "to": [email],
+                "subject": "You are on the Grantentic launch list",
+                "text": text_body,
+                "html": html_body,
+            })
+            log.info("coming_soon_signup: confirmation email sent to %r", email)
+        else:
+            log.warning("coming_soon_signup: RESEND_API_KEY not set, skipping confirmation email to %r", email)
+    except Exception as exc:
+        log.exception("coming_soon_signup: failed to send confirmation email: %s", exc)
+
+
 @app.get("/coming-soon", response_class=HTMLResponse)
 async def coming_soon(request: Request):
     """The gate now lives on the root URL. Keep this path working by sending
@@ -1313,6 +1353,7 @@ async def coming_soon_signup(request: Request, email: str = Form("")):
             add_to_waitlist(saved, "launch_waitlist")
         except Exception:
             log.exception("coming_soon_signup: failed to store waitlist email")
+        _send_waitlist_confirmation(saved)
     return templates.TemplateResponse(request, "coming_soon.html", {
         "user": get_current_user(request),
         "submitted_email": saved,
