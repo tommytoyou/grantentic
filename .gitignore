@@ -45,6 +45,7 @@ training_data/*
 !training_data/nsf_space_awards_training_data.json
 !training_data/nsf_phase1_all_awards.md
 !training_data/nsf_phase1_all_awards.json
+!training_data/nsf_phase1_all_training_data.json
 
 # Environment / secrets
 .env
