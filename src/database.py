@@ -223,6 +223,16 @@ def get_credits(user_id: str) -> dict:
     }
 
 
+def has_completed_pre_proposal(user_id: Optional[str]) -> bool:
+    """True if the user has a Pre-Proposal on record. A Pre-Proposal purchase
+    grants a pre_proposal credit that is never decremented, so this stays true
+    once the customer has entered the funnel. Gates the $0-upfront success-fee
+    path on the Full Proposal — that option only unlocks after a Pre-Proposal."""
+    if not user_id:
+        return False
+    return get_credits(user_id).get("pre_proposal_credits", 0) > 0
+
+
 # ============================================================================
 # PENDING APPROVALS (Full Proposal — Option B success-fee queue)
 # ============================================================================

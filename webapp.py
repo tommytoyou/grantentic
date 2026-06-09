@@ -68,6 +68,7 @@ from src.database import (
     StorageBucketMissingError,
     grant_credits,
     get_credits,
+    has_completed_pre_proposal,
 )
 from src.auth import hash_password
 from src.agency_loader import load_agency_requirements
@@ -1037,9 +1038,17 @@ async def checkout_full_proposal_success_fee(
     contact_email: str = Form(...),
     terms_accepted: str = Form(""),
 ):
-    """SBIR Phase I Full Proposal — Option B, $0 upfront + 10% success fee.
+    """SBIR Phase I Full Proposal — $0 upfront + 10% success fee path.
+    Only unlocks after the customer has a completed Pre-Proposal on record.
     Captures invitation letter (Supabase Storage) and queues for Tom's review."""
     require_launched_or_503(request)
+
+    # Funnel gate: the $0-upfront success-fee path is not standalone — it is
+    # unlocked only after the customer completes a Pre-Proposal. Block and send
+    # them to buy the Pre-Proposal first. ($2,500 upfront stays open to anyone.)
+    if not has_completed_pre_proposal(request.session.get("user_id")):
+        return RedirectResponse(url="/products/phase-i-pre-proposal?gated=success_fee", status_code=303)
+
     if terms_accepted != "on":
         raise HTTPException(status_code=400, detail="You must accept the success-fee terms.")
 
@@ -1289,6 +1298,8 @@ async def product_phase_i_pre_proposal(request: Request):
     return templates.TemplateResponse(request, "products/phase_i_pre_proposal.html", {
         "user": get_current_user(request),
         "product": Config.PRODUCTS["pre_proposal"],
+        # Set when a user is bounced here after trying the gated success-fee path.
+        "gated": request.query_params.get("gated") == "success_fee",
     })
 
 
@@ -1300,6 +1311,9 @@ async def product_phase_i_full_proposal(request: Request):
         "user": get_current_user(request),
         "upfront": Config.PRODUCTS["full_proposal_upfront"],
         "success_fee": Config.PRODUCTS["full_proposal_success_fee"],
+        # The $0-upfront success-fee path only unlocks once the customer has a
+        # completed Pre-Proposal on record; otherwise we show a locked state.
+        "has_pre_proposal": has_completed_pre_proposal(request.session.get("user_id")),
     })
 
 

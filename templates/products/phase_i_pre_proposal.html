@@ -6,11 +6,22 @@
 {% block content %}
 <section class="bg-white border-b border-gray-200">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
+
+        {% if gated %}
+        <div class="mb-8 rounded-lg border border-amber-300 bg-amber-50 p-4 flex gap-3">
+            <span class="text-amber-600 text-lg leading-none mt-0.5">🔒</span>
+            <div>
+                <p class="text-sm font-semibold text-amber-900">Complete a Pre-Proposal first to unlock this option.</p>
+                <p class="text-sm text-amber-800 mt-0.5">The $0-upfront, 10%-on-award path opens once you have a Pre-Proposal on record. Start here, then the success-fee path is yours.</p>
+            </div>
+        </div>
+        {% endif %}
+
         <div class="text-center">
-            <p class="text-sm uppercase tracking-wider font-semibold text-primary-600 mb-3">$250 · One-time · Per pre-proposal</p>
+            <p class="text-sm uppercase tracking-wider font-semibold text-primary-600 mb-3">$250 · One-time · Per pre-proposal · The entry point</p>
             <h1 class="text-4xl sm:text-5xl font-bold text-gray-900 tracking-tight">SBIR Phase I Pre-Proposal</h1>
             <p class="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
-                The short pre-proposal that NSF SBIR/STTR requires before they invite you to submit a full proposal. Generated end-to-end with character limits enforced and immediate access after payment.
+                The short pre-proposal that NSF SBIR/STTR requires before they invite you to submit a full proposal. It is the entry point to Grantentic — and the only way to unlock the $0-upfront, 10%-on-award path on the Full Proposal. Generated end-to-end with character limits enforced and immediate access after payment.
             </p>
         </div>
 

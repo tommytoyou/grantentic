@@ -1,7 +1,7 @@
 {% extends "marketing_base.html" %}
 
 {% block title %}SBIR Phase I Full Proposal — Grantentic{% endblock %}
-{% block description %}AI-generated SBIR Phase I Full Proposal with maximum critique-refine iterations and anti-fabrication guardrails. Two checkout options: $2,500 upfront self-serve, or $0 upfront with a 10% success fee on the awarded grant.{% endblock %}
+{% block description %}AI-generated SBIR Phase I Full Proposal with maximum critique-refine iterations and anti-fabrication guardrails. Two ways to pay: $0 upfront with a 10% success fee on award (or $2,500 upfront). The success-fee path unlocks after you complete a Pre-Proposal.{% endblock %}
 
 {% block content %}
 <section class="bg-white border-b border-gray-200">
@@ -10,7 +10,14 @@
             <p class="text-sm uppercase tracking-wider font-semibold text-primary-600 mb-3">Two ways to pay</p>
             <h1 class="text-4xl sm:text-5xl font-bold text-gray-900 tracking-tight">SBIR Phase I Full Proposal</h1>
             <p class="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
-                The post-invitation proposal you submit to NSF after they invite you. Generated at maximum quality with hard character-limit enforcement and anti-fabrication guardrails.
+                The post-invitation proposal you submit to NSF after they invite you. Generated at maximum quality with hard character-limit enforcement and anti-fabrication guardrails. Pay <b>$0 upfront with a 10% success fee on award (or $2,500 upfront)</b>.
+            </p>
+        </div>
+
+        <!-- Funnel: the success-fee path is unlocked by the Pre-Proposal -->
+        <div class="mt-8 max-w-3xl mx-auto rounded-lg border border-gray-200 bg-gray-50 p-4 text-center">
+            <p class="text-sm text-gray-700">
+                <b>How the funnel works:</b> Start with the <a href="/products/phase-i-pre-proposal" class="text-primary-600 hover:underline font-medium">$250 Pre-Proposal</a> — that's the entry point. Completing it <b>unlocks the $0-upfront, 10%-on-award path</b> below. The $2,500 upfront option is open to anyone.
             </p>
         </div>
 
@@ -27,55 +34,33 @@
         </div>
 
         <div class="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Option A: Upfront -->
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 flex flex-col">
-                <div class="flex items-start justify-between mb-4">
-                    <div>
-                        <p class="text-xs uppercase tracking-wider font-semibold text-gray-500 mb-2">Option A</p>
-                        <div class="text-4xl font-bold text-gray-900">$2,500</div>
-                        <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mt-1">One-time · Upfront</div>
-                    </div>
-                    <span class="text-xs font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full bg-gray-100 text-gray-600">Self-serve</span>
-                </div>
-                <h3 class="text-lg font-bold text-gray-900 mb-1">Pay upfront — start immediately</h3>
-                <p class="text-sm text-gray-500 italic mb-5">No gate. No invitation upload. Pay and start generating.</p>
-                <ul class="space-y-2.5 text-sm text-gray-700 mb-6 flex-grow">
-                    <li class="flex gap-2"><span class="text-primary-600 font-bold">✓</span> Immediate access after Stripe payment</li>
-                    <li class="flex gap-2"><span class="text-primary-600 font-bold">✓</span> No approval queue, no waiting</li>
-                    <li class="flex gap-2"><span class="text-primary-600 font-bold">✓</span> Keep 100% of any awarded grant</li>
-                </ul>
-                <form action="/checkout/full-proposal/upfront" method="post">
-                    <button type="submit"
-                            class="w-full inline-flex items-center justify-center px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-colors">
-                        Pay $2,500 → Start now
-                    </button>
-                </form>
-            </div>
-
-            <!-- Option B: Success fee -->
+            <!-- Success-fee path: $0 upfront + 10% on award — unlocked by a completed Pre-Proposal -->
             <div class="bg-white rounded-xl shadow-md border-2 border-primary-500 p-8 flex flex-col ring-4 ring-primary-50">
                 <div class="flex items-start justify-between mb-4">
                     <div>
-                        <p class="text-xs uppercase tracking-wider font-semibold text-primary-600 mb-2">Option B</p>
+                        <p class="text-xs uppercase tracking-wider font-semibold text-primary-600 mb-2">Success-fee path</p>
                         <div class="text-4xl font-bold text-gray-900">$0 <span class="text-base font-medium text-gray-500">upfront</span></div>
-                        <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mt-1">+ 10% success fee</div>
+                        <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mt-1">+ 10% success fee on award</div>
                     </div>
                     <span class="text-xs font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full bg-primary-100 text-primary-700">Pay only if awarded</span>
                 </div>
                 <h3 class="text-lg font-bold text-gray-900 mb-1">No upfront cost — 10% on award</h3>
-                <p class="text-sm text-gray-500 italic mb-5">Requires NSF invitation letter and approval by Tom Erickson within 24 hours.</p>
+                <p class="text-sm text-gray-500 italic mb-5">Unlocked after you complete a Pre-Proposal. Also requires your NSF invitation letter for Tom Erickson to verify.</p>
                 <ul class="space-y-2.5 text-sm text-gray-700 mb-6 flex-grow">
+                    <li class="flex gap-2"><span class="text-primary-600 font-bold">✓</span> Requires a completed Pre-Proposal on record</li>
                     <li class="flex gap-2"><span class="text-primary-600 font-bold">✓</span> Upload your official NSF invitation letter (PDF)</li>
-                    <li class="flex gap-2"><span class="text-primary-600 font-bold">✓</span> Tom reviews and approves within 24 hours</li>
+                    <li class="flex gap-2"><span class="text-primary-600 font-bold">✓</span> Tom reviews and verifies your invitation letter</li>
                     <li class="flex gap-2"><span class="text-primary-600 font-bold">✓</span> If awarded: 10% of the awarded NSF SBIR Phase I grant amount, invoiced after award</li>
                     <li class="flex gap-2"><span class="text-primary-600 font-bold">✓</span> If not awarded: nothing owed</li>
-                    <li class="flex gap-2"><span class="text-primary-600 font-bold">✓</span> <span class="font-semibold">Triple Redundancy Guarantee</span> — up to three submission cycles included <span class="text-xs uppercase tracking-wider font-semibold text-primary-700 bg-primary-50 border border-primary-200 rounded px-1.5 py-0.5 ml-1">Option B only</span></li>
+                    <li class="flex gap-2"><span class="text-primary-600 font-bold">✓</span> <span class="font-semibold">Triple Redundancy Guarantee</span> — up to three submission cycles included <span class="text-xs uppercase tracking-wider font-semibold text-primary-700 bg-primary-50 border border-primary-200 rounded px-1.5 py-0.5 ml-1">Success-fee only</span></li>
                 </ul>
 
                 <div class="mb-5 rounded-lg border border-primary-200 bg-primary-50 p-4">
-                    <p class="text-sm font-semibold text-primary-900 mb-1">Triple Redundancy Guarantee <span class="text-xs uppercase tracking-wider font-semibold text-primary-700 bg-white border border-primary-200 rounded px-1.5 py-0.5 ml-1">Exclusive to Option B</span></p>
-                    <p class="text-xs text-primary-900">If NSF doesn't fund your first submission, you get up to two additional generation cycles to resubmit — three total — at no extra cost. Only applies to Option B (success-fee).</p>
+                    <p class="text-sm font-semibold text-primary-900 mb-1">Triple Redundancy Guarantee <span class="text-xs uppercase tracking-wider font-semibold text-primary-700 bg-white border border-primary-200 rounded px-1.5 py-0.5 ml-1">Exclusive to the success-fee path</span></p>
+                    <p class="text-xs text-primary-900">If NSF doesn't fund your first submission, you get up to two additional generation cycles to resubmit — three total — at no extra cost. Only applies to the success-fee path.</p>
                 </div>
+
+                {% if has_pre_proposal %}
                 <form action="/checkout/full-proposal/success-fee" method="post" enctype="multipart/form-data" id="success-fee-form">
                     <label class="block text-sm font-medium text-gray-700 mb-1">NSF invitation letter (PDF)</label>
                     <input type="file" name="invitation_letter" accept="application/pdf" required
@@ -95,6 +80,41 @@
                     <button type="submit"
                             class="w-full inline-flex items-center justify-center px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-colors">
                         Submit for Approval
+                    </button>
+                </form>
+                {% else %}
+                <div class="rounded-lg border border-amber-300 bg-amber-50 p-4 mb-4 flex gap-3">
+                    <span class="text-amber-600 text-lg leading-none mt-0.5">🔒</span>
+                    <p class="text-sm font-semibold text-amber-900">Complete a Pre-Proposal first to unlock this option.</p>
+                </div>
+                <a href="/products/phase-i-pre-proposal"
+                   class="w-full inline-flex items-center justify-center px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-colors">
+                    Start with the Pre-Proposal — $250 →
+                </a>
+                {% endif %}
+            </div>
+
+            <!-- Upfront path: $2,500, available to anyone -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 flex flex-col">
+                <div class="flex items-start justify-between mb-4">
+                    <div>
+                        <p class="text-xs uppercase tracking-wider font-semibold text-gray-500 mb-2">Upfront path</p>
+                        <div class="text-4xl font-bold text-gray-900">$2,500</div>
+                        <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mt-1">One-time · Upfront</div>
+                    </div>
+                    <span class="text-xs font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full bg-gray-100 text-gray-600">Available to anyone</span>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900 mb-1">Pay upfront — start immediately</h3>
+                <p class="text-sm text-gray-500 italic mb-5">No gate. No Pre-Proposal required. No invitation upload. Pay and start generating.</p>
+                <ul class="space-y-2.5 text-sm text-gray-700 mb-6 flex-grow">
+                    <li class="flex gap-2"><span class="text-primary-600 font-bold">✓</span> Immediate access after Stripe payment</li>
+                    <li class="flex gap-2"><span class="text-primary-600 font-bold">✓</span> No approval queue, no waiting</li>
+                    <li class="flex gap-2"><span class="text-primary-600 font-bold">✓</span> Keep 100% of any awarded grant</li>
+                </ul>
+                <form action="/checkout/full-proposal/upfront" method="post">
+                    <button type="submit"
+                            class="w-full inline-flex items-center justify-center px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-colors">
+                        Pay $2,500 → Start now
                     </button>
                 </form>
             </div>
