@@ -52,7 +52,8 @@ training_data/*
 .env.*
 
 # Claude Code local settings (may contain approved command patterns with keys)
-.claude/settings.local.json
+# and transient state (scheduled-task locks); keep the whole dir out of git.
+.claude/
 
 # OS
 .DS_Store
