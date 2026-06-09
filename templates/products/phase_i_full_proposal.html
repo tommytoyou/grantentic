@@ -17,7 +17,7 @@
         <!-- Funnel: the success-fee path is unlocked by the Pre-Proposal -->
         <div class="mt-8 max-w-3xl mx-auto rounded-lg border border-gray-200 bg-gray-50 p-4 text-center">
             <p class="text-sm text-gray-700">
-                <b>How the funnel works:</b> Start with the <a href="/products/phase-i-pre-proposal" class="text-primary-600 hover:underline font-medium">$250 Pre-Proposal</a> — that's the entry point. Completing it <b>unlocks the $0-upfront, 10%-on-award path</b> below. The $2,500 upfront option is open to anyone.
+                <b>How the funnel works:</b> Start with the <a href="/products/phase-i-pre-proposal" class="text-primary-600 hover:underline font-medium">$250 Pre-Proposal</a> — that's the entry point. Completing it <b>unlocks the $0-upfront, 10%-on-award path</b> below. The $2,500 upfront option needs no Pre-Proposal. Either way, your <b>NSF invitation letter is required before full-proposal work begins</b>.
             </p>
         </div>
 
@@ -105,13 +105,17 @@
                     <span class="text-xs font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full bg-gray-100 text-gray-600">Available to anyone</span>
                 </div>
                 <h3 class="text-lg font-bold text-gray-900 mb-1">Pay upfront — start immediately</h3>
-                <p class="text-sm text-gray-500 italic mb-5">No gate. No Pre-Proposal required. No invitation upload. Pay and start generating.</p>
+                <p class="text-sm text-gray-500 italic mb-5">No Pre-Proposal required and open to anyone. Your NSF invitation letter is still required — upload it, pay, and start generating.</p>
                 <ul class="space-y-2.5 text-sm text-gray-700 mb-6 flex-grow">
+                    <li class="flex gap-2"><span class="text-primary-600 font-bold">✓</span> Requires your NSF invitation letter (PDF)</li>
                     <li class="flex gap-2"><span class="text-primary-600 font-bold">✓</span> Immediate access after Stripe payment</li>
-                    <li class="flex gap-2"><span class="text-primary-600 font-bold">✓</span> No approval queue, no waiting</li>
+                    <li class="flex gap-2"><span class="text-primary-600 font-bold">✓</span> No Pre-Proposal needed, no success-fee approval queue</li>
                     <li class="flex gap-2"><span class="text-primary-600 font-bold">✓</span> Keep 100% of any awarded grant</li>
                 </ul>
-                <form action="/checkout/full-proposal/upfront" method="post">
+                <form action="/checkout/full-proposal/upfront" method="post" enctype="multipart/form-data">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">NSF invitation letter (PDF)</label>
+                    <input type="file" name="invitation_letter" accept="application/pdf" required
+                           class="block w-full text-sm text-gray-700 file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 mb-4">
                     <button type="submit"
                             class="w-full inline-flex items-center justify-center px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-colors">
                         Pay $2,500 → Start now

@@ -1017,6 +1017,49 @@ def _stripe_checkout_for(request: Request, product_key: str) -> RedirectResponse
         raise HTTPException(status_code=400, detail=str(e))
 
 
+async def _validate_and_store_invitation_letter(
+    invitation_letter: UploadFile, user_id: Optional[str], *, context: str
+) -> tuple[str, str]:
+    """Validate an NSF invitation-letter upload (PDF, non-empty, <10 MB) and
+    store it in Supabase Storage. Returns (stored_path, safe_name); raises
+    HTTPException on any validation/storage problem.
+
+    The NSF SBIR Phase I invitation letter is required before any Full Proposal
+    work begins, on BOTH the upfront and the success-fee paths — so both routes
+    funnel through this single check."""
+    if (invitation_letter.content_type or "").lower() != "application/pdf":
+        raise HTTPException(status_code=400, detail="Invitation letter must be a PDF.")
+
+    raw = await invitation_letter.read()
+    if not raw:
+        raise HTTPException(status_code=400, detail="Invitation letter file is empty.")
+    if len(raw) > 10 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="Invitation letter must be under 10 MB.")
+
+    safe_name = (invitation_letter.filename or "invitation.pdf").replace("/", "_").replace("\\", "_")
+    object_path = (
+        f"{user_id or 'anon'}/"
+        f"{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S')}_"
+        f"{secrets.token_hex(4)}_{safe_name}"
+    )
+    try:
+        stored_path = upload_invitation_letter(
+            object_path=object_path,
+            content=raw,
+            content_type="application/pdf",
+        )
+    except StorageBucketMissingError as exc:
+        log.error("%s: invitation-letter upload blocked: %s", context, exc)
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "Full Proposal checkout is temporarily unavailable — invitation-letter "
+                "storage is not configured. Please try again later or contact info@grantentic.us."
+            ),
+        )
+    return stored_path, safe_name
+
+
 @app.post("/checkout/pre-proposal")
 async def checkout_pre_proposal(request: Request):
     """SBIR Phase I Pre-Proposal — $250 self-serve."""
@@ -1025,9 +1068,28 @@ async def checkout_pre_proposal(request: Request):
 
 
 @app.post("/checkout/full-proposal/upfront")
-async def checkout_full_proposal_upfront(request: Request):
-    """SBIR Phase I Full Proposal — Option A, $2,500 upfront self-serve."""
+async def checkout_full_proposal_upfront(
+    request: Request,
+    invitation_letter: UploadFile = File(...),
+):
+    """SBIR Phase I Full Proposal — $2,500 upfront, available to anyone.
+
+    No Pre-Proposal gate (that only unlocks the success-fee pricing), but the
+    NSF SBIR Phase I invitation letter is still required before full-proposal
+    work begins — same as the success-fee path — so we capture and store it
+    before sending the customer to Stripe."""
     require_launched_or_503(request)
+    if not get_current_user(request):
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    user_id = request.session.get("user_id")
+    stored_path, safe_name = await _validate_and_store_invitation_letter(
+        invitation_letter, user_id, context="full_proposal_upfront"
+    )
+    # Keep the letter associated with this purchase for the record.
+    request.session["invitation_letter_path"] = stored_path
+    request.session["invitation_letter_name"] = safe_name
+
     return _stripe_checkout_for(request, "full_proposal_upfront")
 
 
@@ -1056,40 +1118,12 @@ async def checkout_full_proposal_success_fee(
     if "@" not in contact:
         raise HTTPException(status_code=400, detail="A valid contact email is required.")
 
-    if (invitation_letter.content_type or "").lower() != "application/pdf":
-        raise HTTPException(status_code=400, detail="Invitation letter must be a PDF.")
-
-    raw = await invitation_letter.read()
-    if not raw:
-        raise HTTPException(status_code=400, detail="Invitation letter file is empty.")
-    if len(raw) > 10 * 1024 * 1024:
-        raise HTTPException(status_code=413, detail="Invitation letter must be under 10 MB.")
-
     user = get_current_user(request)
     user_id = request.session.get("user_id")
 
-    safe_name = (invitation_letter.filename or "invitation.pdf").replace("/", "_").replace("\\", "_")
-    object_path = (
-        f"{user_id or 'anon'}/"
-        f"{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S')}_"
-        f"{secrets.token_hex(4)}_{safe_name}"
+    stored_path, safe_name = await _validate_and_store_invitation_letter(
+        invitation_letter, user_id, context="full_proposal_success_fee"
     )
-
-    try:
-        stored_path = upload_invitation_letter(
-            object_path=object_path,
-            content=raw,
-            content_type="application/pdf",
-        )
-    except StorageBucketMissingError as exc:
-        log.error("success-fee upload blocked: %s", exc)
-        raise HTTPException(
-            status_code=503,
-            detail=(
-                "Option B is temporarily unavailable — invitation-letter storage is "
-                "not configured. Please try again later or contact info@grantentic.us."
-            ),
-        )
 
     approval = create_pending_approval(
         user_id=user_id,
