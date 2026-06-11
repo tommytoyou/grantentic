@@ -43,9 +43,12 @@ class Config:
     STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY', '')
     STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET', '')
 
-    # Stripe price IDs for the three-product catalog (create in Stripe Dashboard).
-    STRIPE_PRICE_PRE_PROPOSAL = os.environ.get('STRIPE_PRICE_PRE_PROPOSAL', '')                    # $250
-    STRIPE_PRICE_FULL_PROPOSAL_UPFRONT = os.environ.get('STRIPE_PRICE_FULL_PROPOSAL_UPFRONT', '')  # $2,500
+    # Stripe price IDs for the current product catalog. Values default to the
+    # live Stripe price IDs and can be overridden per-environment (e.g. Render).
+    # Stripe price IDs are not secrets, so the catalog defaults live in code.
+    STRIPE_PRICE_PRE_PROPOSAL = os.environ.get('STRIPE_PRICE_PRE_PROPOSAL', 'price_1Th0TcLMkjKvxnHanJUDmGEv')          # $250
+    STRIPE_PRICE_FULL_PROPOSAL = os.environ.get('STRIPE_PRICE_FULL_PROPOSAL', 'price_1Th0ayLMkjKvxnHaeakNdrjl')        # $2,500
+    STRIPE_PRICE_MISSION_ASSURANCE = os.environ.get('STRIPE_PRICE_MISSION_ASSURANCE', 'price_1Th1HvLMkjKvxnHanaPx0vf2')  # $20,000
 
     PRODUCTS = {
         'pre_proposal': {
@@ -58,7 +61,7 @@ class Config:
         'full_proposal_upfront': {
             'name': 'SBIR Phase I Full Proposal (Upfront)',
             'price_cents': 250000,
-            'price_id_env': 'STRIPE_PRICE_FULL_PROPOSAL_UPFRONT',
+            'price_id_env': 'STRIPE_PRICE_FULL_PROPOSAL',
             'requires_invitation': False,
             'expert_review': True,
         },
@@ -68,6 +71,13 @@ class Config:
             'success_fee_pct': 10,
             'requires_invitation': True,
             'requires_admin_approval': True,
+            'expert_review': True,
+        },
+        'mission_assurance': {
+            'name': 'Mission Assurance Program',
+            'price_cents': 2000000,
+            'price_id_env': 'STRIPE_PRICE_MISSION_ASSURANCE',
+            'requires_invitation': True,
             'expert_review': True,
         },
     }

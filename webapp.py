@@ -1093,6 +1093,31 @@ async def checkout_full_proposal_upfront(
     return _stripe_checkout_for(request, "full_proposal_upfront")
 
 
+@app.post("/checkout/mission-assurance")
+async def checkout_mission_assurance(
+    request: Request,
+    invitation_letter: UploadFile = File(...),
+):
+    """Mission Assurance Program — $20,000 upfront, available to anyone.
+
+    Mirrors the Full Proposal upfront path: no Pre-Proposal gate and no
+    success-fee variant, but the NSF SBIR Phase I invitation letter is required,
+    so we capture and store it before sending the customer to Stripe."""
+    require_launched_or_503(request)
+    if not get_current_user(request):
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    user_id = request.session.get("user_id")
+    stored_path, safe_name = await _validate_and_store_invitation_letter(
+        invitation_letter, user_id, context="mission_assurance"
+    )
+    # Keep the letter associated with this purchase for the record.
+    request.session["invitation_letter_path"] = stored_path
+    request.session["invitation_letter_name"] = safe_name
+
+    return _stripe_checkout_for(request, "mission_assurance")
+
+
 @app.post("/checkout/full-proposal/success-fee")
 async def checkout_full_proposal_success_fee(
     request: Request,
@@ -1196,6 +1221,11 @@ async def payment_success(request: Request, session_id: str = None):
                     elif tier == "full_proposal_upfront":
                         grant_credits(user_id, full_proposal=1)
                         granted_product = "Full Proposal"
+                    elif tier == "mission_assurance":
+                        # Mission Assurance includes full-proposal generation;
+                        # grant a full-proposal credit like the upfront path.
+                        grant_credits(user_id, full_proposal=1)
+                        granted_product = "Mission Assurance Program"
                     request.session[granted_key] = True
         except stripe.error.StripeError as e:
             error_message = str(e)
@@ -1348,6 +1378,16 @@ async def product_phase_i_full_proposal(request: Request):
         # The $0-upfront success-fee path only unlocks once the customer has a
         # completed Pre-Proposal on record; otherwise we show a locked state.
         "has_pre_proposal": has_completed_pre_proposal(request.session.get("user_id")),
+    })
+
+
+@app.get("/products/mission-assurance", response_class=HTMLResponse)
+async def product_mission_assurance(request: Request):
+    if launch_gate_active(request):
+        return RedirectResponse(url="/coming-soon", status_code=302)
+    return templates.TemplateResponse(request, "products/mission_assurance.html", {
+        "user": get_current_user(request),
+        "product": Config.PRODUCTS["mission_assurance"],
     })
 
 
