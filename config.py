@@ -48,7 +48,7 @@ class Config:
     # Stripe price IDs are not secrets, so the catalog defaults live in code.
     STRIPE_PRICE_PRE_PROPOSAL = os.environ.get('STRIPE_PRICE_PRE_PROPOSAL', 'price_1Th0TcLMkjKvxnHanJUDmGEv')          # $250
     STRIPE_PRICE_FULL_PROPOSAL = os.environ.get('STRIPE_PRICE_FULL_PROPOSAL', 'price_1Th0ayLMkjKvxnHaeakNdrjl')        # $2,500
-    STRIPE_PRICE_MISSION_ASSURANCE = os.environ.get('STRIPE_PRICE_MISSION_ASSURANCE', 'price_1Th1HvLMkjKvxnHanaPx0vf2')  # $20,000
+    STRIPE_PRICE_MISSION_ASSURANCE = os.environ.get('STRIPE_PRICE_MISSION_ASSURANCE', 'price_1Th1HvLMkjKvxnHanaPx0vf2')  # $25,000
 
     PRODUCTS = {
         'pre_proposal': {
@@ -75,7 +75,7 @@ class Config:
         },
         'mission_assurance': {
             'name': 'Mission Assurance Program',
-            'price_cents': 2000000,
+            'price_cents': 2500000,
             'price_id_env': 'STRIPE_PRICE_MISSION_ASSURANCE',
             'requires_invitation': True,
             'expert_review': True,

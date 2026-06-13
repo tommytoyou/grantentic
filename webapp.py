@@ -1098,7 +1098,7 @@ async def checkout_mission_assurance(
     request: Request,
     invitation_letter: UploadFile = File(...),
 ):
-    """Mission Assurance Program — $20,000 upfront, available to anyone.
+    """Mission Assurance Program — $25,000 upfront, available to anyone.
 
     Mirrors the Full Proposal upfront path: no Pre-Proposal gate and no
     success-fee variant, but the NSF SBIR Phase I invitation letter is required,
