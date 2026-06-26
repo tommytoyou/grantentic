@@ -266,6 +266,29 @@ def get_credits(user_id: str) -> dict:
     }
 
 
+def deduct_credit(user_id: str) -> str:
+    """Deduct 1 credit from the user — pre_proposal first, then full_proposal.
+    Returns the credit type deducted, or 'none' if no credits available."""
+    sb = get_supabase()
+    result = sb.table("users").select("pre_proposal_credits,full_proposal_credits").eq("id", user_id).limit(1).execute()
+    rows = result.data or []
+    if not rows:
+        log.warning("deduct_credit: user_id=%r not found", user_id)
+        return "none"
+    current = rows[0]
+    pre = current.get("pre_proposal_credits") or 0
+    full = current.get("full_proposal_credits") or 0
+    if pre > 0:
+        sb.table("users").update({"pre_proposal_credits": pre - 1}).eq("id", user_id).execute()
+        log.info("deduct_credit: deducted pre_proposal credit from user_id=%r (remaining=%d)", user_id, pre - 1)
+        return "pre_proposal"
+    elif full > 0:
+        sb.table("users").update({"full_proposal_credits": full - 1}).eq("id", user_id).execute()
+        log.info("deduct_credit: deducted full_proposal credit from user_id=%r (remaining=%d)", user_id, full - 1)
+        return "full_proposal"
+    return "none"
+
+
 def has_completed_pre_proposal(user_id: Optional[str]) -> bool:
     """True if the user has a Pre-Proposal on record. A Pre-Proposal purchase
     grants a pre_proposal credit that is never decremented, so this stays true

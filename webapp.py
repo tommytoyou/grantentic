@@ -36,7 +36,7 @@ if _sentry_dsn:
     log.info("Sentry initialized")
 
 from fastapi import FastAPI, Request, Form, Depends, HTTPException, Response, UploadFile, File
-from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse, FileResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
@@ -69,6 +69,7 @@ from src.database import (
     StorageBucketMissingError,
     grant_credits,
     get_credits,
+    deduct_credit,
     has_completed_pre_proposal,
     get_all_proposals,
     get_proposal_admin,
@@ -696,6 +697,16 @@ async def generate_stream(request: Request, agency: str = "nsf"):
     if not user:
         raise HTTPException(status_code=401, detail="Not authenticated")
 
+    # Credit gate — admin "Grant" bypasses; all others need >= 1 credit
+    _gate_username = user.get("username", "")
+    if _gate_username != "Grant":
+        _gate_uid = request.session.get("user_id")
+        _gate_credits = get_credits(_gate_uid) if _gate_uid else {"pre_proposal_credits": 0, "full_proposal_credits": 0}
+        _total_credits = _gate_credits.get("pre_proposal_credits", 0) + _gate_credits.get("full_proposal_credits", 0)
+        if _total_credits == 0:
+            log.info("generate_stream: blocked user=%r — no credits", _gate_username)
+            return JSONResponse(status_code=402, content={"error": "No credits. Purchase at /pricing"})
+
     iterations = Config.DEFAULT_ITERATIONS
     nsf_product = request.session.get("nsf_product")
     expert_review_requested = nsf_product in ("full", "bundle")
@@ -834,6 +845,11 @@ async def generate_stream(request: Request, agency: str = "nsf"):
 
             # Final result
             yield f"data: {json.dumps({'type': 'complete', 'total_words': proposal.total_word_count, 'total_cost': f'${proposal.total_cost:.2f}', 'generation_time': f'{proposal.generation_time_seconds:.1f}s', 'output_file': output_file, 'proposal_id': saved_proposal_id})}\n\n"
+
+            # Deduct 1 credit after successful generation (admin "Grant" exempt)
+            _deduct_uid = request.session.get("user_id")
+            if _deduct_uid and user.get("username") != "Grant":
+                deduct_credit(_deduct_uid)
 
         except Exception as e:
             yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
@@ -1273,7 +1289,45 @@ async def stripe_webhook(request: Request):
     except stripe.error.SignatureVerificationError:
         raise HTTPException(status_code=400, detail="Invalid signature")
 
-    # TODO: handle webhook events with Supabase-backed payment records
+    if event["type"] == "checkout.session.completed":
+        session_obj = event["data"]["object"]
+        tier = (session_obj.get("metadata") or {}).get("tier", "")
+        # Stripe populates customer_details.email during checkout; customer_email
+        # is null when a Customer object is passed instead of an email address.
+        email = session_obj.get("customer_email") or (
+            (session_obj.get("customer_details") or {}).get("email", "")
+        )
+        if email and tier:
+            webhook_user = get_user_by_email(email)
+            if webhook_user:
+                uid = str(webhook_user["id"])
+                if tier == "pre_proposal":
+                    grant_credits(uid, pre_proposal=1)
+                    log.info(
+                        "stripe_webhook: granted 1 pre_proposal credit to user_id=%s email=%r",
+                        uid, email,
+                    )
+                elif tier in ("full_proposal_upfront", "mission_assurance"):
+                    grant_credits(uid, full_proposal=1)
+                    log.info(
+                        "stripe_webhook: granted 1 full_proposal credit to user_id=%s email=%r tier=%r",
+                        uid, email, tier,
+                    )
+                else:
+                    log.warning(
+                        "stripe_webhook: unrecognized tier=%r for email=%r — no credit granted",
+                        tier, email,
+                    )
+            else:
+                log.warning(
+                    "stripe_webhook: no user found for email=%r tier=%r — no credit granted",
+                    email, tier,
+                )
+        else:
+            log.warning(
+                "stripe_webhook: checkout.session.completed missing email or tier, skipping grant"
+            )
+
     return {"status": "success"}
 
 
