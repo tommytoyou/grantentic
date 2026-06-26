@@ -43,6 +43,12 @@ class Config:
     STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY', '')
     STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET', '')
 
+    # ============================================================================
+    # GOOGLE OAUTH
+    # ============================================================================
+    GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "821152568091-n1cdpk78jcsnp9v6patck00fa1n2gd16.apps.googleusercontent.com")
+    GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", "")
+
     # Stripe price IDs for the current product catalog. Values default to the
     # live Stripe price IDs and can be overridden per-environment (e.g. Render).
     # Stripe price IDs are not secrets, so the catalog defaults live in code.

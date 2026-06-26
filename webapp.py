@@ -42,6 +42,8 @@ from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 
 import base64
+import requests
+import urllib.parse
 import stripe
 
 from config import Config
@@ -259,6 +261,93 @@ async def logout(request: Request):
     """Handle logout"""
     request.session.clear()
     return RedirectResponse(url="/login", status_code=302)
+
+
+_GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
+_GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
+_GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
+_GOOGLE_REDIRECT_URI = "https://grantentic.us/auth/google/callback"
+
+
+@app.get("/auth/google")
+async def auth_google(request: Request):
+    if not Config.GOOGLE_CLIENT_ID:
+        raise HTTPException(status_code=503, detail="Google OAuth not configured")
+    state = secrets.token_urlsafe(16)
+    request.session["oauth_state"] = state
+    params = urllib.parse.urlencode({
+        "client_id": Config.GOOGLE_CLIENT_ID,
+        "redirect_uri": _GOOGLE_REDIRECT_URI,
+        "response_type": "code",
+        "scope": "openid email profile",
+        "state": state,
+        "access_type": "online",
+    })
+    return RedirectResponse(url=f"{_GOOGLE_AUTH_URL}?{params}", status_code=302)
+
+
+@app.get("/auth/google/callback")
+async def auth_google_callback(
+    request: Request,
+    code: str = None,
+    state: str = None,
+    error: str = None,
+):
+    if error:
+        return RedirectResponse(url="/login?error=Google+sign-in+was+cancelled.", status_code=302)
+
+    expected_state = request.session.pop("oauth_state", None)
+    if not code or state != expected_state:
+        log.warning("auth_google_callback: state mismatch expected=%r got=%r", expected_state, state)
+        return RedirectResponse(url="/login?error=OAuth+state+mismatch.+Please+try+again.", status_code=302)
+
+    token_resp = requests.post(_GOOGLE_TOKEN_URL, data={
+        "code": code,
+        "client_id": Config.GOOGLE_CLIENT_ID,
+        "client_secret": Config.GOOGLE_CLIENT_SECRET,
+        "redirect_uri": _GOOGLE_REDIRECT_URI,
+        "grant_type": "authorization_code",
+    }, timeout=10)
+    if token_resp.status_code != 200:
+        log.error("auth_google_callback: token exchange failed status=%d body=%s", token_resp.status_code, token_resp.text[:300])
+        return RedirectResponse(url="/login?error=Google+sign-in+failed.+Please+try+again.", status_code=302)
+
+    access_token = token_resp.json().get("access_token")
+    userinfo_resp = requests.get(
+        _GOOGLE_USERINFO_URL,
+        headers={"Authorization": f"Bearer {access_token}"},
+        timeout=10,
+    )
+    if userinfo_resp.status_code != 200:
+        log.error("auth_google_callback: userinfo failed status=%d", userinfo_resp.status_code)
+        return RedirectResponse(url="/login?error=Could+not+retrieve+Google+profile.", status_code=302)
+
+    info = userinfo_resp.json()
+    email = info.get("email", "").lower().strip()
+    name = info.get("name", "")
+    if not email:
+        return RedirectResponse(url="/login?error=Google+account+has+no+email.", status_code=302)
+
+    user = get_user_by_email(email)
+    if not user:
+        base_username = re.sub(r"[^a-z0-9_]", "_", name.lower())[:20] or email.split("@")[0][:20]
+        username = base_username
+        for _ in range(5):
+            try:
+                user = register_user(username, secrets.token_urlsafe(32), email=email)
+                break
+            except ValueError:
+                username = base_username + "_" + secrets.token_hex(3)
+        if not user:
+            log.error("auth_google_callback: could not create user for email=%r", email)
+            return RedirectResponse(url="/login?error=Could+not+create+account.+Please+contact+support.", status_code=302)
+
+    log.info("auth_google_callback: login OK email=%r user_id=%r", email, user.get("id"))
+    request.session["username"] = user["username"]
+    request.session["user_id"] = str(user["id"])
+    request.session["is_admin"] = user.get("is_admin", False)
+    request.session["user"] = {"username": user["username"], "role": "admin" if user.get("is_admin") else "user"}
+    return RedirectResponse(url="/dashboard", status_code=303)
 
 
 @app.get("/register", response_class=HTMLResponse)
