@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}Review proposal — Grantentic admin{% endblock %}
+
+{% block extra_head %}
+<script>
+function updateCount(textareaId, countId, limit) {
+    const ta = document.getElementById(textareaId);
+    const counter = document.getElementById(countId);
+    if (!ta || !counter) return;
+    const len = ta.value.length;
+    counter.textContent = len.toLocaleString() + ' / ' + limit.toLocaleString();
+    counter.className = len > limit
+        ? 'text-xs font-semibold text-red-600'
+        : len > limit * 0.95
+            ? 'text-xs font-semibold text-yellow-600'
+            : 'text-xs text-gray-400';
+}
+document.addEventListener('DOMContentLoaded', function () {
+    {% for section_name, char_limit in nsf_sections %}
+    {% set field = section_field_map[section_name] %}
+    updateCount('{{ field }}', 'count_{{ loop.index }}', {{ char_limit }});
+    document.getElementById('{{ field }}').addEventListener('input', function () {
+        updateCount('{{ field }}', 'count_{{ loop.index }}', {{ char_limit }});
+    });
+    {% endfor %}
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <!-- Admin nav -->
+    <div class="mb-6 flex items-center gap-6 text-sm">
+        <a href="/admin/approvals" class="text-gray-500 hover:text-primary-600">Approval queue</a>
+        <a href="/admin/proposals" class="text-gray-500 hover:text-primary-600">Proposals</a>
+        <span class="text-gray-300">/</span>
+        <span class="font-semibold text-gray-900 font-mono text-xs">{{ proposal.id }}</span>
+    </div>
+
+    <!-- Flash message -->
+    {% if flash %}
+    <div class="mb-6 px-4 py-3 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm font-medium">
+        {{ flash }}
+    </div>
+    {% endif %}
+
+    <!-- Header -->
+    <div class="mb-6 flex items-start justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Proposal review</h1>
+            <div class="mt-2 flex flex-wrap gap-4 text-sm text-gray-600">
+                <div><span class="font-medium text-gray-700">Type:</span> {{ proposal.proposal_type or '—' }}</div>
+                <div><span class="font-medium text-gray-700">User:</span> <span class="font-mono text-xs">{{ proposal.user_id or '—' }}</span></div>
+                <div><span class="font-medium text-gray-700">Created:</span> {{ proposal.created_at[:19].replace('T', ' ') if proposal.created_at else '—' }} UTC</div>
+            </div>
+        </div>
+        <span class="mt-1 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider
+            {% if proposal.status == 'complete' or proposal.status == 'approved' %}bg-green-100 text-green-800
+            {% elif proposal.status == 'rejected' %}bg-red-100 text-red-700
+            {% elif proposal.status == 'draft' %}bg-yellow-100 text-yellow-800
+            {% else %}bg-gray-100 text-gray-700{% endif %}">
+            {{ proposal.status or 'unknown' }}
+        </span>
+    </div>
+
+    <!-- Action buttons (top) -->
+    <div class="mb-6 flex flex-wrap gap-3 p-4 bg-gray-50 border border-gray-200 rounded-xl">
+        <form action="/admin/proposals/{{ proposal.id }}/save" method="post" id="edit-form">
+            <button type="submit" class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-md">
+                Save Edits
+            </button>
+        </form>
+        <form action="/admin/proposals/{{ proposal.id }}/approve" method="post">
+            <button type="submit" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-md">
+                Approve
+            </button>
+        </form>
+        <div class="flex items-center gap-2">
+            <form action="/admin/proposals/{{ proposal.id }}/reject" method="post" class="flex items-center gap-2">
+                <input type="text" name="rejection_note" placeholder="Rejection note (optional)"
+                    class="px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-300 w-64">
+                <button type="submit" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-md">
+                    Reject
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sections -->
+    {% set sections = proposal.sections or {} %}
+
+    {% for section_name, char_limit in nsf_sections %}
+    {% set field = section_field_map[section_name] %}
+    {% set sec = sections.get(section_name, {}) %}
+    {% set content = sec.get('content', '') if sec else '' %}
+
+    <div class="mb-8 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center justify-between mb-3">
+            <div>
+                <h2 class="text-base font-semibold text-gray-900">{{ section_name }}</h2>
+                <div class="text-xs text-gray-400 mt-0.5">Limit: {{ '{:,}'.format(char_limit) }} characters</div>
+            </div>
+            <span id="count_{{ loop.index }}" class="text-xs text-gray-400">0 / {{ '{:,}'.format(char_limit) }}</span>
+        </div>
+
+        <textarea
+            id="{{ field }}"
+            name="{{ field }}"
+            form="edit-form"
+            rows="12"
+            class="w-full text-sm text-gray-800 border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-primary-400 resize-y font-mono leading-relaxed"
+        >{{ content }}</textarea>
+
+        {% if sec %}
+        <div class="mt-2 flex flex-wrap gap-4 text-xs text-gray-400">
+            {% if sec.get('word_count') is not none %}
+            <span>{{ sec.word_count }} words</span>
+            {% endif %}
+            {% if sec.get('iteration') is not none %}
+            <span>{{ sec.iteration }} iteration(s)</span>
+            {% endif %}
+            {% if sec.get('critique') %}
+            <details class="text-xs text-gray-500">
+                <summary class="cursor-pointer hover:text-gray-700">Critique</summary>
+                <p class="mt-1 p-2 bg-gray-50 rounded text-gray-600 whitespace-pre-wrap">{{ sec.critique }}</p>
+            </details>
+            {% endif %}
+            {% if sec.get('refinement_notes') %}
+            <details class="text-xs text-gray-500">
+                <summary class="cursor-pointer hover:text-gray-700">Refinement notes</summary>
+                <p class="mt-1 p-2 bg-gray-50 rounded text-gray-600 whitespace-pre-wrap">{{ sec.refinement_notes }}</p>
+            </details>
+            {% endif %}
+            {% for key, val in sec.items() %}
+            {% if key not in ('name', 'content', 'word_count', 'char_count', 'iteration', 'critique', 'refinement_notes') and val %}
+            <div class="text-xs text-orange-600 font-medium">{{ key }}: {{ val }}</div>
+            {% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+
+    <!-- Action buttons (bottom repeat) -->
+    <div class="flex flex-wrap gap-3 p-4 bg-gray-50 border border-gray-200 rounded-xl">
+        <button type="submit" form="edit-form" class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-md">
+            Save Edits
+        </button>
+        <form action="/admin/proposals/{{ proposal.id }}/approve" method="post">
+            <button type="submit" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-md">
+                Approve
+            </button>
+        </form>
+        <form action="/admin/proposals/{{ proposal.id }}/reject" method="post" class="flex items-center gap-2">
+            <input type="text" name="rejection_note" placeholder="Rejection note (optional)"
+                class="px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-300 w-64">
+            <button type="submit" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-md">
+                Reject
+            </button>
+        </form>
+    </div>
+
+</div>
+{% endblock %}

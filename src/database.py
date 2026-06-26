@@ -119,6 +119,49 @@ def update_proposal_status(proposal_id: str, user_id: str, status: str) -> None:
 
 
 # ============================================================================
+# ADMIN — Proposal review functions (no user_id restriction)
+# ============================================================================
+
+def get_user_by_id(user_id: str) -> Optional[dict]:
+    sb = get_supabase()
+    result = sb.table("users").select("*").eq("id", user_id).limit(1).execute()
+    rows = result.data or []
+    return rows[0] if rows else None
+
+
+def get_all_proposals() -> list[dict]:
+    sb = get_supabase()
+    result = sb.table("proposals").select("*").order("created_at", desc=True).execute()
+    proposals = result.data or []
+    for p in proposals:
+        raw = p.get("sections_json")
+        p["sections"] = json.loads(raw) if isinstance(raw, str) else (raw or {})
+    return proposals
+
+
+def get_proposal_admin(proposal_id: str) -> Optional[dict]:
+    sb = get_supabase()
+    result = sb.table("proposals").select("*").eq("id", proposal_id).limit(1).execute()
+    rows = result.data or []
+    if rows:
+        row = rows[0]
+        raw = row.get("sections_json")
+        row["sections"] = json.loads(raw) if isinstance(raw, str) else (raw or {})
+        return row
+    return None
+
+
+def update_proposal_sections_admin(proposal_id: str, sections: dict) -> None:
+    sb = get_supabase()
+    sb.table("proposals").update({"sections_json": json.dumps(sections)}).eq("id", proposal_id).execute()
+
+
+def update_proposal_status_admin(proposal_id: str, status: str) -> None:
+    sb = get_supabase()
+    sb.table("proposals").update({"status": status}).eq("id", proposal_id).execute()
+
+
+# ============================================================================
 # USER LOOKUP BY EMAIL
 # ============================================================================
 

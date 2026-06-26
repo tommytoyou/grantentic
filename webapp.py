@@ -49,6 +49,7 @@ from src.auth import authenticate_user, register_user
 from src.database import (
     get_user_by_username,
     get_user_by_email,
+    get_user_by_id,
     get_company_context,
     save_company_context,
     save_proposal,
@@ -69,6 +70,10 @@ from src.database import (
     grant_credits,
     get_credits,
     has_completed_pre_proposal,
+    get_all_proposals,
+    get_proposal_admin,
+    update_proposal_sections_admin,
+    update_proposal_status_admin,
 )
 from src.auth import hash_password
 from src.agency_loader import load_agency_requirements
@@ -1619,6 +1624,172 @@ def _email_approval_decision(approval: dict, *, decision: str) -> None:
         })
     except Exception as exc:
         log.exception("approval %s decision email failed: %s", approval["id"], exc)
+
+
+# ============================================================================
+# ADMIN — Proposal review panel
+# ============================================================================
+
+_NSF_SECTIONS = [
+    ("Technology Innovation", 3500),
+    ("Technical Objectives and Challenges", 3500),
+    ("Market Opportunity", 1750),
+    ("Company and Team", 1750),
+]
+
+_SECTION_FIELD_MAP = {
+    "Technology Innovation": "section_technology_innovation",
+    "Technical Objectives and Challenges": "section_technical_objectives",
+    "Market Opportunity": "section_market_opportunity",
+    "Company and Team": "section_company_and_team",
+}
+
+
+@app.get("/admin/proposals", response_class=HTMLResponse)
+async def admin_proposals_list(request: Request):
+    user = _require_admin(request)
+    proposals = get_all_proposals()
+    return templates.TemplateResponse(request, "admin/proposals.html", {
+        "user": user,
+        "proposals": proposals,
+    })
+
+
+@app.get("/admin/proposals/{proposal_id}", response_class=HTMLResponse)
+async def admin_proposal_detail(request: Request, proposal_id: str):
+    user = _require_admin(request)
+    proposal = get_proposal_admin(proposal_id)
+    if not proposal:
+        raise HTTPException(status_code=404, detail="Proposal not found")
+    flash = request.query_params.get("flash")
+    return templates.TemplateResponse(request, "admin/proposal_detail.html", {
+        "user": user,
+        "proposal": proposal,
+        "nsf_sections": _NSF_SECTIONS,
+        "section_field_map": _SECTION_FIELD_MAP,
+        "flash": flash,
+    })
+
+
+@app.post("/admin/proposals/{proposal_id}/save")
+async def admin_proposal_save(
+    request: Request,
+    proposal_id: str,
+    section_technology_innovation: str = Form(""),
+    section_technical_objectives: str = Form(""),
+    section_market_opportunity: str = Form(""),
+    section_company_and_team: str = Form(""),
+):
+    _require_admin(request)
+    proposal = get_proposal_admin(proposal_id)
+    if not proposal:
+        raise HTTPException(status_code=404, detail="Proposal not found")
+
+    updated_text = {
+        "Technology Innovation": section_technology_innovation,
+        "Technical Objectives and Challenges": section_technical_objectives,
+        "Market Opportunity": section_market_opportunity,
+        "Company and Team": section_company_and_team,
+    }
+
+    sections = proposal.get("sections") or {}
+    for name, text in updated_text.items():
+        if name in sections and isinstance(sections[name], dict):
+            sections[name]["content"] = text
+            sections[name]["char_count"] = len(text)
+            sections[name]["word_count"] = len(text.split()) if text.strip() else 0
+        else:
+            sections[name] = {
+                "name": name,
+                "content": text,
+                "char_count": len(text),
+                "word_count": len(text.split()) if text.strip() else 0,
+            }
+
+    update_proposal_sections_admin(proposal_id, sections)
+    return RedirectResponse(
+        url=f"/admin/proposals/{proposal_id}?flash=Edits+saved.", status_code=303
+    )
+
+
+@app.post("/admin/proposals/{proposal_id}/approve")
+async def admin_proposal_approve(request: Request, proposal_id: str):
+    _require_admin(request)
+    proposal = get_proposal_admin(proposal_id)
+    if not proposal:
+        raise HTTPException(status_code=404, detail="Proposal not found")
+
+    update_proposal_status_admin(proposal_id, "approved")
+    _email_proposal_decision(proposal, decision="approved", rejection_note=None)
+    return RedirectResponse(
+        url=f"/admin/proposals/{proposal_id}?flash=Proposal+approved+and+user+notified.",
+        status_code=303,
+    )
+
+
+@app.post("/admin/proposals/{proposal_id}/reject")
+async def admin_proposal_reject(
+    request: Request,
+    proposal_id: str,
+    rejection_note: Optional[str] = Form(None),
+):
+    _require_admin(request)
+    proposal = get_proposal_admin(proposal_id)
+    if not proposal:
+        raise HTTPException(status_code=404, detail="Proposal not found")
+
+    update_proposal_status_admin(proposal_id, "rejected")
+    _email_proposal_decision(proposal, decision="rejected", rejection_note=rejection_note)
+    return RedirectResponse(
+        url=f"/admin/proposals/{proposal_id}?flash=Proposal+rejected.",
+        status_code=303,
+    )
+
+
+def _email_proposal_decision(proposal: dict, *, decision: str, rejection_note: Optional[str]) -> None:
+    """Best-effort email to the user after admin approves or rejects a proposal."""
+    user_id = proposal.get("user_id")
+    if not user_id:
+        log.warning("proposal %s has no user_id, skipping email", proposal.get("id"))
+        return
+    if not Config.RESEND_API_KEY:
+        log.warning("proposal %s decided %s — RESEND_API_KEY not set, skipping email", proposal.get("id"), decision)
+        return
+    try:
+        user_rec = get_user_by_id(user_id)
+        to_email = (user_rec or {}).get("email") or ""
+        if not to_email:
+            log.warning("proposal %s: no email on user %s, skipping", proposal.get("id"), user_id)
+            return
+
+        if decision == "approved":
+            subject = "Your Grantentic proposal is ready"
+            html = (
+                "<p>Great news! Your Grantentic proposal has been reviewed and approved.</p>"
+                f"<p><a href='{Config.BASE_URL}/proposals/{proposal['id']}'>Log in to view your proposal.</a></p>"
+                "<p>Thank you for choosing Grantentic.</p>"
+            )
+        else:
+            subject = "Update on your Grantentic proposal"
+            note_block = (
+                f"<p><b>Reviewer note:</b> {rejection_note}</p>" if rejection_note and rejection_note.strip() else ""
+            )
+            html = (
+                "<p>We've reviewed your Grantentic proposal and unfortunately it is not ready to submit at this time.</p>"
+                f"{note_block}"
+                "<p>Please <a href='mailto:support@grantentic.us'>contact us</a> if you have questions.</p>"
+            )
+
+        import resend
+        resend.api_key = Config.RESEND_API_KEY
+        resend.Emails.send({
+            "from": "Grantentic <noreply@grantentic.us>",
+            "to": [to_email],
+            "subject": subject,
+            "html": html,
+        })
+    except Exception as exc:
+        log.exception("proposal %s decision email failed: %s", proposal.get("id"), exc)
 
 
 # ============================================================================
