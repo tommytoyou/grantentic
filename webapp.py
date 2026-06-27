@@ -113,7 +113,9 @@ if not Config.SECRET_KEY:
 app.add_middleware(
     SessionMiddleware,
     secret_key=Config.SECRET_KEY or "temporary-insecure-key-for-local-dev",
-    max_age=3600 * 24  # 24 hours
+    max_age=3600 * 24,
+    https_only=True,
+    same_site="none"
 )
 
 # Static files
